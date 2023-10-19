@@ -1,0 +1,36 @@
+{
+  "name": "hardcastle/ledger-direct-woocommerce",
+  "type": "project",
+  "description": "XRP Ledger integration",
+  "license": "MIT",
+  "require": {
+    "php": "^8.1.0",
+    "hardcastle/xrpl_php": "^v0.8.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hardcastle\\LedgerDirect\\": "src/",
+      "Hardcastle\\LedgerDirect\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Alexander Busse",
+      "email": "dev@ledger-direct.com"
+    }
+  ],
+  "keywords": ["xrp","xrpl","ripple","gemwallet","crossmark","xumm"],
+  "homepage": "https://ledger-direct.com/",
+  "scripts": {
+    "phpcs": "phpcs -s -p",
+    "phpstan": "phpstan",
+    "test": "phpunit -c phpunit.xml"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0",
+    "10up/wp_mock": "^0.4.2",
+    "brain/monkey": "^2.6",
+    "phpstan/phpstan": "^1.10",
+    "php-stubs/wordpress-tests-stubs": "^6.1"
+  }
+}
