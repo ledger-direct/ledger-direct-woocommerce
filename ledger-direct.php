@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: LedgerDirect
+ * Plugin Name: LedgerDirect for WooCommerce
  * Plugin URI: https://ledger-direct.com
  * Description: A XRP Ledger integration.
  * Version: 0.0.1
@@ -13,6 +13,8 @@
  *
  * @package LedgerDirect
  */
+
+define( 'WC_LEDGER_DIRECT_PLUGIN_FILE_PATH', plugin_dir_path( __FILE__ ) );
 
 /**
  * Plugin deactivation hook.
@@ -37,3 +39,12 @@ function ledger_direct_uninstall() {
 
 }
 register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
+
+// include main plugin file.
+require_once( WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.php' );
+
+function run_ledger_direct() {
+    return LedgerDirect::instance();
+}
+
+run_ledger_direct();
