@@ -40,7 +40,7 @@ function ledger_direct_uninstall() {
 }
 register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
 
-// include main plugin file.
+require plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 require_once( WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.php' );
 
 function run_ledger_direct() {
