@@ -16,3 +16,6 @@ project.properties
 # Dependencies
 vendor/
 node_modules/
+
+# TODO
+TODO.md
