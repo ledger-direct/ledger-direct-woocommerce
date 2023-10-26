@@ -7,7 +7,7 @@
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://hardcastle.technology
  * Text Domain: ledger-direct
- * Domain Path: /i18n/languages/
+ * Domain Path: /languages
  * Requires at least: 6.2
  * Requires PHP: 8.1
  *
