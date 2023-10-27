@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class LedgerDirectAdmin
 {
     public function init_form_fields($context): void {
