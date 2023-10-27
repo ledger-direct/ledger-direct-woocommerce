@@ -36,6 +36,7 @@ class LedgerDirect
 
     public function public_hooks(): void {
         add_filter( 'woocommerce_payment_gateways', [$this, 'register_gateway']);
+        add_action( 'template_redirect', [$this, 'render_payment_page'] );
     }
 
     public function admin_hooks(): void {
@@ -50,7 +51,8 @@ class LedgerDirect
 
     public function plugins_loaded_callback() {
         if (class_exists('WooCommerce')) {
-            $ledgerDirectGateway = LedgerDirectPaymentGateway::instance();
+            // Initialize Ledger Direct Gateway
+            LedgerDirectPaymentGateway::instance();
         }
     }
 
@@ -75,5 +77,19 @@ class LedgerDirect
         $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway';
 
         return $gateways;
+    }
+
+    /**
+     * Replace template with custom payment page
+     *
+     * @return void
+     */
+    public function render_payment_page(): void {
+        $page_id = get_the_ID();
+        $post_name = get_post_field('post_name');
+        if ($post_name === 'ledger-direct') { // TODO: Replace hardcoded value
+            require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
+            exit();
+        }
     }
 }
