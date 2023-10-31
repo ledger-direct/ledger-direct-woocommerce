@@ -2,7 +2,11 @@
 
 namespace Hardcastle\LedgerDirect\Woocommerce;
 
-class LedgerDirectPaymentGateway extends \WC_Payment_Gateway
+use Hardcastle\LedgerDirect\Service\OrderTransactionService;
+use WC_Order;
+use WC_Payment_Gateway;
+
+class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 {
     public static self|null $_instance = null;
 
@@ -10,7 +14,10 @@ class LedgerDirectPaymentGateway extends \WC_Payment_Gateway
 
     public string $xrpl_mainnet_destination_account;
 
+
     public string $xrpl_network;
+
+    private OrderTransactionService $orderTransactionService;
 
     public static function instance(): self
     {
@@ -44,6 +51,8 @@ class LedgerDirectPaymentGateway extends \WC_Payment_Gateway
         $this->init_settings();
 
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
+
+        $this->orderTransactionService = OrderTransactionService::instance();
     }
 
     /**
@@ -74,22 +83,47 @@ class LedgerDirectPaymentGateway extends \WC_Payment_Gateway
      */
     public function process_payment($order_id): array
     {
+        global $wp_query;
+
         $order = wc_get_order( $order_id );
 
+        if (empty($order))
+        {
+            $wp_query->set_404();
+            status_header( 404 );
+            get_template_part('404');
+            exit();
+        }
 
-        // Main Logic
+        $xrpl_order_meta = $order->get_meta('xrpl');
+        $tx = $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
+        if ($this->orderTransactionService->checkPayment($order)) {
+            // Payment is settled, let's check wether the paid amount is enough
+            $requestedXrpAmount = (float) $xrpl_order_meta['amount_requested'];
+            $paidXrpAmount = (float) $xrpl_order_meta['delivered_amount'];
+            $slippage = 0.0015; // TODO: Make this configurable
+            $slipped = 1.0 - $paidXrpAmount / $requestedXrpAmount;
+            if($slipped < $slippage) {
+                // Payment completed, set transaction status to "paid"
+                $order->set_status('completed');
 
-        // Fetch Controller URL
-        // Redirect to controller
+                return array(
+                    'result'   => 'success',
+                    'redirect' => $this->get_return_url($order),
+                );
+            } else {
+                // Payment incomplete, something's wrong with the amount delivered.
+            }
+        }
+
+        $ledgerDirectControllerUrl = get_site_url(). '/ledger-direct/payment/' . $order_id;
 
         // Remove cart.
         // WC()->cart->empty_cart();
 
-        $test = 1;
-
         return array(
             'result'   => 'success',
-            'redirect' => $this->get_return_url($order),
+            'redirect' => $ledgerDirectControllerUrl,
         );
     }
 }
