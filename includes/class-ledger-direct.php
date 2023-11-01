@@ -2,14 +2,15 @@
 
 defined( 'ABSPATH' ) || exit();
 
+use DI\Container;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
 class LedgerDirect
 {
-    public  const PAYMENT_IDENTIFIER = 'xpid';
+    public  const PAYMENT_IDENTIFIER = 'order_id';
 
-    public static $_instance;
+    public static self|null $_instance = null;
 
     public static function instance(): self
     {
@@ -29,6 +30,11 @@ class LedgerDirect
         }
     }
 
+    /**
+     * Load classes
+     *
+     * @return void
+     */
     public function load_dependencies(): void {
         require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/admin/class-ledger-direct-admin.php';
 
@@ -37,6 +43,11 @@ class LedgerDirect
         }
     }
 
+    /**
+     * Register public actions and filters
+     *
+     * @return void
+     */
     public function public_hooks(): void {
         add_action('init', [$this, 'add_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
@@ -45,6 +56,11 @@ class LedgerDirect
         add_filter('template_include', [$this, 'render_payment_page']);
     }
 
+    /**
+     * Register admin actions and filters
+     *
+     * @return void
+     */
     public function admin_hooks(): void {
         $classAdmin = new LedgerDirectAdmin();
 
@@ -55,6 +71,11 @@ class LedgerDirect
         add_filter('ledger_direct_render_plugin_settings', [$classAdmin, 'render_plugin_settings'], 10, 1);
     }
 
+    /**
+     * Instanciate singleton
+     *
+     * @return void
+     */
     public function plugins_loaded_callback() {
         if (class_exists('WooCommerce')) {
             // Initialize Ledger Direct Gateway
@@ -62,6 +83,11 @@ class LedgerDirect
         }
     }
 
+    /**
+     * Add LedgerDirect settings link item to WooCommerce menu
+     *
+     * @return void
+     */
     public function admin_menu_callback(): void {
          add_submenu_page(
             'woocommerce',
@@ -74,20 +100,20 @@ class LedgerDirect
     }
 
     /**
-     *
+     * Add custom URL scheme
      *
      * @return void
      */
     public function add_rewrite_rules(): void {
         add_rewrite_rule(
             'ledger-direct/payment/([a-z0-9-]+)[/]?$',
-            'index.php?pagename=ledger.direct.payment&' . self::PAYMENT_IDENTIFIER . '=$matches[1]',
+            'index.php?pagename=ledger-direct-payment&' . self::PAYMENT_IDENTIFIER . '=$matches[1]',
             'top'
         );
     }
 
     /**
-     *
+     * Register GET variables for custom URL scheme
      *
      * @param $query_vars
      * @return array
@@ -111,19 +137,21 @@ class LedgerDirect
     }
 
     /**
-     *
+     * Links payment instructions to an order
      *
      * @param WC_Order $order
      * @param $data
      * @return void
+     * @throws Exception
      */
-    public function before_checkout_create_order( $order, $data ): void {
+    public function before_checkout_create_order(WC_Order $order, $data ): void {
 
         if ($order->get_payment_method() !== 'ledger-direct') {
             return;
         }
 
-        $orderTransactionService = OrderTransactionService::instance();
+        $container = new Container();
+        $orderTransactionService = $container->get(OrderTransactionService::class);
         $order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
         $order->update_meta_data( 'xrpl', $order_meta );
     }
@@ -135,9 +163,9 @@ class LedgerDirect
      * @return string
      */
     public function render_payment_page($template): string {
-        $pid = get_query_var(self::PAYMENT_IDENTIFIER);
+        $order_id = get_query_var(self::PAYMENT_IDENTIFIER);
 
-        if (!empty($pid)) {
+        if (!empty($order_id)) {
             return WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
         }
 

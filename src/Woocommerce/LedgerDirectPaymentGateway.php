@@ -41,7 +41,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         $this->supports = ['products'];
 
-        //$this->enabled = empty($this->logged_in) ? 'false' : $this->get_option('enabled');
         $this->title = 'Ledger Direct';//$this->get_option('title');
         $this->description = 'Pay with XRP'; //$this->get_option('description');
         $this->xrpl_network = $this->get_option('xrpl_network', 'testnet');
@@ -52,7 +51,8 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
 
-        $this->orderTransactionService = OrderTransactionService::instance();
+        $container = new \DI\Container();
+        $this->orderTransactionService = $container->get(OrderTransactionService::class);
     }
 
     /**
@@ -125,5 +125,11 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
             'result'   => 'success',
             'redirect' => $ledgerDirectControllerUrl,
         );
+    }
+
+    private function get_config(): array {
+        return [
+
+        ];
     }
 }

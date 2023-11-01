@@ -15,22 +15,16 @@ class XrplTxService
 
     private XrplClientService $clientService;
 
-    public static function instance(): self
+    public function __construct(XrplClientService $clientService)
     {
-        if (self::$_instance == null) {
-            self::$_instance = new self();
-        }
-
-        return self::$_instance;
-    }
-
-    public function __construct()
-    {
-        $this->clientService = XrplClientService::instance();
+        $this->clientService = $clientService;
     }
 
     /**
+     * Generates a unique DestinationTag which is used to attach a payment request to a specific order.
      *
+     * @see https://xrpl.org/source-and-destination-tags.html
+     * @see https://xrpl.org/require-destination-tags.html
      *
      * @param string $account
      * @return int
@@ -38,9 +32,6 @@ class XrplTxService
      */
     public function generateDestinationTag(string $account): int
     {
-        // https://xrpl.org/source-and-destination-tags.html
-        // https://xrpl.org/require-destination-tags.html
-
         global $wpdb;
 
         while (true) {
@@ -64,7 +55,7 @@ class XrplTxService
     }
 
     /**
-     *
+     * Fetches a specific transaction from the database.
      *
      * @param string $destination
      * @param int $destinationTag

@@ -3,7 +3,6 @@
 namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
-use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use WC_Order;
 use function XRPL_PHP\Sugar\dropsToXrp;
 
@@ -11,23 +10,16 @@ class OrderTransactionService
 {
     public static self|null $_instance = null;
 
-    private LedgerDirectPaymentGateway $ledgerDirectGateway;
+    private ConfigurationService $configurationService;
 
     private XrplTxService $xrplTxService;
 
-    public static function instance(): self
-    {
-        if (self::$_instance == null) {
-            self::$_instance = new self();
-        }
-
-        return self::$_instance;
-    }
-
-    public function __construct()
-    {
-        //$this->ledgerDirectGateway = LedgerDirectPaymentGateway::instance();
-        $this->xrplTxService = XrplTxService::instance();
+    public function __construct(
+        ConfigurationService $configurationService,
+        XrplTxService $xrplTxService
+    ) {
+        $this->configurationService = $configurationService;
+        $this->xrplTxService = $xrplTxService;
     }
 
     /**
@@ -74,8 +66,8 @@ class OrderTransactionService
         $destinationTag = $this->xrplSyncService->generateDestinationTag();
         */
 
-        $network = $this->ledgerDirectGateway->get_option('xrpl_network'); // TODO: Use NetworkId
-        $destination = ($network === 'mainnet') ? $this->ledgerDirectGateway->get_option('xrpl_mainnet_destination_account') : $this->ledgerDirectGateway->get_option('xrpl_testnet_destination_account');
+        $network = $this->configurationService->get('xrpl_network'); // TODO: Use NetworkId
+        $destination = ($network === 'mainnet') ? $this->configurationService->get('xrpl_mainnet_destination_account') : $this->configurationService->get('xrpl_testnet_destination_account');
         $destinationTag = $this->xrplTxService->generateDestinationTag($destination);
 
         $xrplCustomFields = [
@@ -85,9 +77,7 @@ class OrderTransactionService
             'destination_tag' => $destinationTag
         ];
 
-        $xrpPriceCustomFields = [
-            $this->getCurrentXrpPriceForOrder($order)
-        ];
+        $xrpPriceCustomFields =  $this->getCurrentXrpPriceForOrder($order);
 
         return array_replace_recursive($xrplCustomFields, $xrpPriceCustomFields);
 
@@ -114,8 +104,11 @@ class OrderTransactionService
     }
 
     /**
+     *
+     *
      * @param WC_Order $order
      * @return array|null
+     * @throws Exception
      */
     public function syncOrderTransactionWithXrpl(WC_Order $order): array|null {
         $xrpl_order_meta = $order->get_meta('xrpl');
@@ -140,7 +133,7 @@ class OrderTransactionService
                 $tx_order_meta = [
                     'hash' => $tx['hash'],
                     'ctid' => $tx['ctid'],
-                    'amount_paid' => $amount
+                    'delivered_amount' => $amount
                 ];
 
                 $new_order_meta = array_replace_recursive($xrpl_order_meta, $tx_order_meta);
