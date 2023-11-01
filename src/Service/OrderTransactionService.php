@@ -139,7 +139,7 @@ class OrderTransactionService
 
                 $tx_order_meta = [
                     'hash' => $tx['hash'],
-                    'ctid' => $xrpl_order_meta['ctid'], // TODO: Add CTID here
+                    'ctid' => $tx['ctid'],
                     'amount_paid' => $amount
                 ];
 

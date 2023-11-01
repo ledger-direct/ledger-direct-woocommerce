@@ -76,10 +76,10 @@ class XrplTxService
 
         // TODO: Use NetworkId or CTID!
         $statement = $wpdb->prepare(
-            'SELECT * FROM xrpl_tx WHERE destination = %s AND destination_tag = %d',
+            "SELECT * FROM {$wpdb->prefix}xrpl_tx WHERE destination = %s AND destination_tag = %d",
             [$destination, $destinationTag]
         );
-        $matches = $wpdb->get_results($statement);
+        $matches = $wpdb->get_results($statement, ARRAY_A);
 
         if (!empty($matches)) {
             return $matches[0];
