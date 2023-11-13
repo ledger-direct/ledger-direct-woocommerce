@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Woocommerce;
 
+use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
+use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -51,7 +53,9 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
 
-        $container = new \DI\Container();
+        $container = new \DI\Container([
+            CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
+        ]);
         $this->orderTransactionService = $container->get(OrderTransactionService::class);
     }
 

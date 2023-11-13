@@ -2,6 +2,8 @@
 require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
 use DI\Container;
+use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
+use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 
 $order_id = get_query_var(LedgerDirect::PAYMENT_IDENTIFIER);
@@ -16,7 +18,9 @@ if ($current_user->ID !== $order->get_user_id()) {
     exit();
 }
 
-$container = new Container();
+$container = new Container([
+    CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
+]);
 $orderTransactionService = $container->get(OrderTransactionService::class);
 
 $tx = $orderTransactionService->syncOrderTransactionWithXrpl($order);

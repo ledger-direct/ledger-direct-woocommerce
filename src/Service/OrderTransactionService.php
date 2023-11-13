@@ -3,6 +3,7 @@
 namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
+use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use WC_Order;
 use function XRPL_PHP\Sugar\dropsToXrp;
 
@@ -14,12 +15,16 @@ class OrderTransactionService
 
     private XrplTxService $xrplTxService;
 
+    private CryptoPriceProviderInterface $priceProvider;
+
     public function __construct(
         ConfigurationService $configurationService,
-        XrplTxService $xrplTxService
+        XrplTxService $xrplTxService,
+        CryptoPriceProviderInterface $priceProvider
     ) {
         $this->configurationService = $configurationService;
         $this->xrplTxService = $xrplTxService;
+        $this->priceProvider = $priceProvider;
     }
 
     /**
@@ -30,12 +35,13 @@ class OrderTransactionService
      * @throws Exception
      */
     public function getCurrentXrpPriceForOrder(WC_Order $order): array {
-        //TODO: Implement currently hardcoded stuff
         $orderTotal = $order->get_total();
+        $currency = $order->get_currency();
+        $xrpUnitPrice = $this->priceProvider->getCurrentExchangeRate('EUR');
         return [
             'pairing' => 'XRP/EUR',
-            'exchange_rate' => 0.5,
-            'amount_requested' => $orderTotal / 0.5
+            'exchange_rate' => $xrpUnitPrice,
+            'amount_requested' => $orderTotal / $xrpUnitPrice
         ];
         /*
         $currency = $this->currencyRepository->search(new Criteria([$order->getCurrencyId()]), $context)->first();
