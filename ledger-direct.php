@@ -14,6 +14,9 @@
  * @package LedgerDirect
  */
 
+use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
+use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
+
 define( 'WC_LEDGER_DIRECT_PLUGIN_FILE_PATH', plugin_dir_path( __FILE__ ) );
 
 require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
@@ -43,6 +46,12 @@ function ledger_direct_uninstall() {
 
 }
 register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
+
+function get_dependency_injection_container() {
+    return new \DI\Container([
+        CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
+    ]);
+}
 
 function run_ledger_direct(): LedgerDirect {
     return LedgerDirect::instance();

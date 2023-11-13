@@ -53,9 +53,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
 
-        $container = new \DI\Container([
-            CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
-        ]);
+        $container = get_dependency_injection_container();
         $this->orderTransactionService = $container->get(OrderTransactionService::class);
     }
 

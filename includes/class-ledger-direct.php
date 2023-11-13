@@ -54,8 +54,12 @@ class LedgerDirect
         add_action('init', [$this, 'add_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_filter('woocommerce_payment_gateways', [$this, 'register_gateway']);
+        add_filter('woocommerce_before_checkout_form', [$this, 'before_checkout_form'], 20, 2);
         add_filter('woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2);
         add_filter('template_include', [$this, 'render_payment_page']);
+
+        add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
+        add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_scripts'] );
     }
 
     /**
@@ -138,6 +142,10 @@ class LedgerDirect
         return $gateways;
     }
 
+    public function before_checkout_form(): void {
+        // wc_add_notice( 'Quote expired', 'error' );
+    }
+
     /**
      * Links payment instructions to an order
      *
@@ -152,9 +160,7 @@ class LedgerDirect
             return;
         }
 
-        $container = new Container([
-            CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
-        ]);
+        $container = get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
         $order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
         $order->update_meta_data( 'xrpl', $order_meta );
@@ -170,9 +176,28 @@ class LedgerDirect
         $order_id = get_query_var(self::PAYMENT_IDENTIFIER);
 
         if (!empty($order_id)) {
+            $this->enqueue_public_styles();
+            $this->enqueue_public_scripts();
             return WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
         }
 
         return $template;
     }
+
+    public function enqueue_public_styles(): void {
+        wp_enqueue_style(
+            'ledger-direct',
+            plugin_dir_url( __FILE__ ) . '../public/css/ledger-direct.css',
+            []
+        );
+    }
+
+    public function enqueue_public_scripts(): void {
+        wp_enqueue_script(
+            'ledger-direct',
+            plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
+            ['jquery']
+        );
+    }
+
 }

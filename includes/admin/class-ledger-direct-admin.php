@@ -30,6 +30,13 @@ class LedgerDirectAdmin
                 'description' => __('Merchant Account description', 'ledger-direct'),
                 'default'     => '',
                 'desc_tip'    => true
+            ),
+            'xrpl_mainnet_destination_account' => array(
+                'title'       => __("Expiry", 'ledger-direct'),
+                'type'        => 'text',
+                'description' => __('Validity of the quote in minutes', 'ledger-direct'),
+                'default'     => '',
+                'desc_tip'    => true
             )
         ];
     }

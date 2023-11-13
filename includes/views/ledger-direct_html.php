@@ -18,10 +18,11 @@ if ($current_user->ID !== $order->get_user_id()) {
     exit();
 }
 
-$container = new Container([
-    CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
-]);
+$container = get_dependency_injection_container();
 $orderTransactionService = $container->get(OrderTransactionService::class);
+
+$xrpl_order_meta = $order->get_meta('xrpl');
+$expiry = $xrpl_order_meta['expiry'];
 
 $tx = $orderTransactionService->syncOrderTransactionWithXrpl($order);
 if ($tx) {
@@ -43,17 +44,31 @@ if ($tx) {
 
 ?>
 
-<h1>Ledger Direct Payment Page [WIP]</h1>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php wp_head(); ?>
+</head>
 
-<button onclick="location.reload();">
-    Check Payment
-</button>
+<body class="cleanpage">
 
-<div>
-    <h2>DEBUG</h2>
-    OrderId: <?php echo $order_id; ?><br/>
-    UserId: <?php echo $current_user->ID; ?><br/>
-    <pre>
-        <?php print_r($order->get_meta('xrpl')); ?>
-    </pre>
-</div>
+    <h1>Ledger Direct Payment Page [WIP]</h1>
+
+    <button onclick="location.reload();">
+        Check Payment
+    </button>
+
+    <div>
+        <h2>DEBUG</h2>
+        OrderId: <?php echo $order_id; ?><br/>
+        UserId: <?php echo $current_user->ID; ?><br/>
+        <pre>
+            <?php print_r($order->get_meta('xrpl')); ?>
+        </pre>
+    </div>
+
+    <?php wp_footer(); ?>
+</body>
+</html>

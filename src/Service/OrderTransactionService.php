@@ -37,23 +37,12 @@ class OrderTransactionService
     public function getCurrentXrpPriceForOrder(WC_Order $order): array {
         $orderTotal = $order->get_total();
         $currency = $order->get_currency();
-        $xrpUnitPrice = $this->priceProvider->getCurrentExchangeRate('EUR');
+        $xrpUnitPrice = $this->priceProvider->getCurrentExchangeRate($currency);
         return [
-            'pairing' => 'XRP/EUR',
+            'pairing' => 'XRP/' . $currency,
             'exchange_rate' => $xrpUnitPrice,
             'amount_requested' => $orderTotal / $xrpUnitPrice
         ];
-        /*
-        $currency = $this->currencyRepository->search(new Criteria([$order->getCurrencyId()]), $context)->first();
-        $currencyAmountTotal = $order->getAmountTotal();
-        $xrpUnitPrice = $this->priceProvider->getCurrentExchangeRate($currency->getIsoCode());
-
-        return [
-            'pairing' => XrpPriceProvider::CRYPTO_CODE . '/' . $currency->getIsoCode(),
-            'exchange_rate' => $xrpUnitPrice,
-            'amount_requested' => $currencyAmountTotal / $xrpUnitPrice
-        ];
-        */
     }
 
     /**
@@ -80,7 +69,8 @@ class OrderTransactionService
             'type' => 'xrp-payment',
             'network' => $network,
             'destination_account' => $destination,
-            'destination_tag' => $destinationTag
+            'destination_tag' => $destinationTag,
+            'expiry' => time() + (16*15)
         ];
 
         $xrpPriceCustomFields =  $this->getCurrentXrpPriceForOrder($order);
