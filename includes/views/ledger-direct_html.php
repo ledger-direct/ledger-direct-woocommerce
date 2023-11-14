@@ -157,6 +157,7 @@ $issuer = '';
                     </i>
                 </div>
 
+                <!--
                 <div class="ld-warning">
                     <div role="alert" class="alert alert-warning alert-has-icon">
                         {% sw_icon 'warning' %}
@@ -167,6 +168,7 @@ $issuer = '';
                         </div>
                     </div>
                 </div>
+                -->
 
                 <div class="ld-sync">
                     <button id="gem-wallet-button" class="wallet-disabled">G</button>
