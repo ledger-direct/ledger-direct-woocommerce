@@ -14,6 +14,9 @@
  * @package LedgerDirect
  */
 
+defined( 'ABSPATH' ) || exit;
+
+use \DI\Container;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
 
@@ -26,35 +29,47 @@ require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.p
 /**
  * Plugin deactivation hook.
  */
-function ledger_direct_activate() {
+function ld__activate(): void {
     LedgerDirectInstall::install();
 }
-register_activation_hook( __FILE__, 'ledger_direct_activate' );
+register_activation_hook( __FILE__, 'ld_activate' );
 
 /**
  * Plugin deactivation hook.
  */
-function ledger_direct_deactivate() {
+function ld_deactivate(): void {
 
 }
-register_deactivation_hook( __FILE__, 'ledger_direct_deactivate' );
+register_deactivation_hook( __FILE__, 'ld_deactivate' );
 
 /**
  * Plugin deactivation hook.
  */
-function ledger_direct_uninstall() {
+function ld_uninstall(): void {
 
 }
-register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
+register_uninstall_hook(__FILE__, 'ld_uninstall');
 
-function get_dependency_injection_container() {
-    return new \DI\Container([
+/**
+ * Returns the DI container with interfaces wired up.
+ *
+ * @return \DI\Container
+ */
+function ld_get_dependency_injection_container(): Container {
+    return new Container([
         CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
     ]);
 }
 
-function run_ledger_direct(): LedgerDirect {
-    return LedgerDirect::instance();
+/**
+ * Get the plugin url.
+ *
+ * @param string $url
+ * @return string
+ */
+function ld_get_public_url(string $url): string {
+    $base = plugins_url( '/', __FILE__ );
+    return untrailingslashit($base . $url);
 }
 
-run_ledger_direct();
+LedgerDirect::instance();

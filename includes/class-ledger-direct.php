@@ -2,9 +2,6 @@
 
 defined( 'ABSPATH' ) || exit();
 
-use DI\Container;
-use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
-use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
@@ -160,7 +157,7 @@ class LedgerDirect
             return;
         }
 
-        $container = get_dependency_injection_container();
+        $container = ld_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
         $order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
         $order->update_meta_data( 'xrpl', $order_meta );

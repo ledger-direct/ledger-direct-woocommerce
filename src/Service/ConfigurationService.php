@@ -76,6 +76,17 @@ class ConfigurationService
      * @return string
      * @throws Exception
      */
+    public function getNetwork(): string
+    {
+        return $this->get(self::CONFIG_KEY_NETWORK);
+    }
+
+    /**
+     *
+     *
+     * @return string
+     * @throws Exception
+     */
     public function getDestinationAccount(): string
     {
         if ($this->isTest()) {
