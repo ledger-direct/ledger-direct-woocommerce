@@ -72,4 +72,18 @@ function ld_get_public_url(string $url): string {
     return untrailingslashit($base . $url);
 }
 
+/**
+ * Get SVG HTML for icon
+ *
+ * @param string $icon
+ * @return string
+ */
+function ld_get_svg_html(string $icon): string {
+    if (!ctype_alnum($icon)) {
+        die('Forbidden!');
+    }
+
+    return file_get_contents(WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/partials/' . $icon . '_svg.html');
+}
+
 LedgerDirect::instance();

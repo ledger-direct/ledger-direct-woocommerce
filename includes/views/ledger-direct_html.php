@@ -130,10 +130,10 @@ $issuer = '';
                            readonly
                     />
                     <span class="bootstrap-input-group-text ld-hover" data-bs-toggle="tooltip" data-bs-title="Copy">
-                        <?php require __DIR__ . '/../partials/copy_svg.html'; ?>
+                        <?php echo ld_get_svg_html('copy'); ?>
                     </span>
                     <i class="ld-icon">
-                        <?php require __DIR__ . '/../partials/wallet_svg.html'; ?>
+                        <?php echo ld_get_svg_html('wallet'); ?>
                     </i>
                 </div>
 
@@ -150,10 +150,10 @@ $issuer = '';
                            readonly
                     />
                     <span class="bootstrap-input-group-text ld-hover" data-bs-toggle="tooltip" data-bs-title="Copy">
-                        <?php require __DIR__ . '/../partials/copy_svg.html'; ?>
+                        <?php echo ld_get_svg_html('copy'); ?>
                     </span>
                     <i class="ld-icon">
-                        <?php require __DIR__ . '/../partials/tag_svg.html'; ?>
+                        <?php echo ld_get_svg_html('tag'); ?>
                     </i>
                 </div>
 
