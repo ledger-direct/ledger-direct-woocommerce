@@ -130,10 +130,10 @@ $issuer = '';
                            readonly
                     />
                     <span class="bootstrap-input-group-text ld-hover" data-bs-toggle="tooltip" data-bs-title="Copy">
-                            {% sw_icon 'products' %}
-                        </span>
+                        <?php require __DIR__ . '/../partials/copy_svg.html'; ?>
+                    </span>
                     <i class="ld-icon">
-                        {% sw_icon 'money-wallet' %}
+                        <?php require __DIR__ . '/../partials/wallet_svg.html'; ?>
                     </i>
                 </div>
 
@@ -150,10 +150,10 @@ $issuer = '';
                            readonly
                     />
                     <span class="bootstrap-input-group-text ld-hover" data-bs-toggle="tooltip" data-bs-title="Copy">
-                            {% sw_icon 'products' %}
-                        </span>
+                        <?php require __DIR__ . '/../partials/copy_svg.html'; ?>
+                    </span>
                     <i class="ld-icon">
-                        {% sw_icon 'tags' %}
+                        <?php require __DIR__ . '/../partials/tag_svg.html'; ?>
                     </i>
                 </div>
 
@@ -207,14 +207,12 @@ $issuer = '';
     </div>
 </div>
 
-
-<div>
-    <h2>DEBUG</h2>
+<div style="display: none;">
     OrderId: <?php echo $order_id; ?><br/>
     UserId: <?php echo $current_user->ID; ?><br/>
     <pre>
-            <?php print_r($order->get_meta('xrpl')); ?>
-        </pre>
+        <?php print_r($order->get_meta('xrpl')); ?>
+    </pre>
 </div>
 
 <?php wp_footer(); ?>
