@@ -1,9 +1,8 @@
 <?php
+
 require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
-use DI\Container;
-use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
-use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
+use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 
 $order_id = get_query_var(LedgerDirect::PAYMENT_IDENTIFIER);
@@ -20,6 +19,7 @@ if ($current_user->ID !== $order->get_user_id()) {
 
 $container = get_dependency_injection_container();
 $orderTransactionService = $container->get(OrderTransactionService::class);
+$configurationService = $container->get(ConfigurationService::class);
 
 $xrpl_order_meta = $order->get_meta('xrpl');
 $expiry = $xrpl_order_meta['expiry'];
@@ -42,6 +42,8 @@ if ($tx) {
     }
 }
 
+$title = $configurationService->getPaymentPageTitle();
+
 ?>
 
 <!DOCTYPE html>
@@ -54,7 +56,11 @@ if ($tx) {
 
 <body class="cleanpage">
 
-    <h1>Ledger Direct Payment Page [WIP]</h1>
+    <?php if (!empty($title)) { ?>
+        <h1>
+            <?php echo $title; ?>
+        </h1>
+    <?php } ?>
 
     <button onclick="location.reload();">
         Check Payment

@@ -3,27 +3,32 @@
 namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
-use WC_Order;
-use function XRPL_PHP\Sugar\dropsToXrp;
 
 class ConfigurationService
 {
-    private const CONFIG_DOMAIN = 'LedgerDirect';
+    public const CONFIG_DOMAIN = 'ledger-direct';
 
-    private const CONFIG_KEY_MAINNET_ACCOUNT = 'xrplMainnetAccount';
+    public const CONFIG_KEY_NETWORK = 'xrpl_network';
 
-    private const CONFIG_KEY_MAINNET_TOKEN_NAME = 'xrplMainnetCustomTokenName';
+    public const CONFIG_KEY_MAINNET_ACCOUNT = 'xrpl_mainnet_destination_account';
 
-    private const CONFIG_KEY_MAINNET_TOKEN_ISSUER = 'xrplMainnetCustomTokenIssuer';
+    // public const CONFIG_KEY_MAINNET_TOKEN_NAME = '';
 
-    private const CONFIG_KEY_TESTNET_ACCOUNT = 'xrpl_testnet_account';
+    // public const CONFIG_KEY_MAINNET_TOKEN_ISSUER = '';
 
-    private const CONFIG_KEY_TESTNET_TOKEN_NAME = 'xrplTestsnetCustomTokenName';
+    public const CONFIG_KEY_TESTNET_ACCOUNT = 'xrpl_testnet_destination_account';
 
-    private const CONFIG_KEY_TESTNET_TOKEN_ISSUER = 'xrplTestnetCustomTokenIssuer';
-    private const WP_OPTION_NAME = 'woocommerce_ledger-direct_settings';
+    // public const CONFIG_KEY_TESTNET_TOKEN_NAME = '';
 
-    private array $config = [];
+    // private const CONFIG_KEY_TESTNET_TOKEN_ISSUER = '';
+
+    public const CONFIG_KEY_PAYMENT_PAGE_TITLE = 'xrpl_payment_page_title';
+
+    public const CONFIG_KEY_EXPIRY = 'xrpl_quote_expiry';
+
+    public const WP_OPTION_NAME = 'woocommerce_ledger-direct_settings';
+
+    private array $config;
 
     public function __construct() {
         global $wpdb;
@@ -54,11 +59,23 @@ class ConfigurationService
         return $value;
     }
 
+    /**
+     *
+     *
+     * @return bool
+     * @throws Exception
+     */
     public function isTest(): bool
     {
-        return $this->get('xrpl_network');
+        return $this->get(self::CONFIG_KEY_NETWORK) !== 'Testnet';
     }
 
+    /**
+     *
+     *
+     * @return string
+     * @throws Exception
+     */
     public function getDestinationAccount(): string
     {
         if ($this->isTest()) {
@@ -68,5 +85,18 @@ class ConfigurationService
         return $this->get(self::CONFIG_KEY_MAINNET_ACCOUNT);
     }
 
+    /**
+     *
+     *
+     * @return string
+     */
+    public function getPaymentPageTitle(): string
+    {
+        try {
+            return $this->get(self::CONFIG_KEY_PAYMENT_PAGE_TITLE);
+        } catch (Exception $exception) {
+            return '';
+        }
+    }
 
 }
