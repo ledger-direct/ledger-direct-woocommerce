@@ -1,4 +1,4 @@
-body {
+body.ld-body {
     font-family: Montserrat, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -163,6 +163,19 @@ img.ld-astronaut {
 
 .ld-sync button:hover {
     background-color: #59c2ef;
+}
+
+.ld-sync button.wallet-active {
+
+}
+
+.ld-sync button.wallet-active:hover {
+    background-color: #59c2ef;
+}
+
+.ld-sync button.wallet-disabled {
+    background-color: grey;
+    cursor: default;
 }
 
 .ld-sum {

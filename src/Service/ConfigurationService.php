@@ -46,13 +46,17 @@ class ConfigurationService
      *
      *
      * @param string $configIdentifier
+     * @param mixed|null $default
      * @return mixed
      * @throws Exception
      */
-    public function get(string $configIdentifier): mixed
+    public function get(string $configIdentifier, mixed $default = null): mixed
     {
         $value = $this->config[$configIdentifier] ?? null;
         if (empty($value)) {
+            if (!is_null($default)) {
+                return $default;
+            }
             throw new Exception('LedgerDirect: Config value "' . $configIdentifier . '" not found.');
         }
 
@@ -95,6 +99,7 @@ class ConfigurationService
 
         return $this->get(self::CONFIG_KEY_MAINNET_ACCOUNT);
     }
+
 
     /**
      *

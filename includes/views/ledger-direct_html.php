@@ -22,11 +22,10 @@ $orderTransactionService = $container->get(OrderTransactionService::class);
 $configurationService = $container->get(ConfigurationService::class);
 
 $xrpl_order_meta = $order->get_meta('xrpl');
-$expiry = $xrpl_order_meta['expiry'];
 
 $tx = $orderTransactionService->syncOrderTransactionWithXrpl($order);
 if ($tx) {
-    // Payment is settled, let's check wether the paid amount is enough
+    // Payment is settled, let's check if the paid amount is enough
     $xrpl_order_meta = $order->get_meta('xrpl');
     $requestedXrpAmount = (float)$xrpl_order_meta['amount_requested'];
     $paidXrpAmount = (float)$xrpl_order_meta['delivered_amount'];
@@ -42,6 +41,15 @@ if ($tx) {
     }
 }
 
+if ($orderTransactionService->isExpired($order)) {
+    // Quote expired, renew quote
+    $xrpl_order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
+    $order->update_meta_data( 'xrpl', $xrpl_order_meta );
+    $order->save_meta_data();
+    //wp_redirect($order->get_checkout_payment_url());
+    wc_add_notice( 'Quote has expired', 'notice' );
+}
+
 $network = $configurationService->getNetwork();
 $paymentPageTitle = $configurationService->getPaymentPageTitle();
 $type = $xrpl_order_meta['type'];
@@ -51,6 +59,7 @@ $destinationTag = $xrpl_order_meta['destination_tag'];
 
 $price = $order->get_total();
 $currencyCode = $order->get_currency();
+$currencySymbol = get_woocommerce_currency_symbol($currencyCode);
 
 $xrpAmount = $xrpl_order_meta['amount_requested'] ?? -1;
 $exchangeRate = $xrpl_order_meta['exchange_rate'] ?? -1;
@@ -67,7 +76,7 @@ $issuer = '';
     <?php wp_head(); ?>
 </head>
 
-<body>
+<body class="ld-body">
 
 <div class="ld-container" data-xrp-payment-page="true">
     <div class="ld-content">
@@ -185,7 +194,7 @@ $issuer = '';
 
             <div class="ld-card-right">
                 <?php if ($type === 'xrp-payment') { ?>
-                    <div class="ld-sum"><?php echo $price; ?></div>
+                    <div class="ld-sum"><?php echo $price; ?> <?php echo $currencySymbol; ?></div>
                     <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
                     <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span>
                     <br/>

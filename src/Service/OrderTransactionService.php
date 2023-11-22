@@ -9,6 +9,8 @@ use function XRPL_PHP\Sugar\dropsToXrp;
 
 class OrderTransactionService
 {
+    public const DEFAULT_EXPIRY = 60 * 15; // 15 minutes
+
     public static self|null $_instance = null;
 
     private ConfigurationService $configurationService;
@@ -46,6 +48,32 @@ class OrderTransactionService
     }
 
     /**
+     * Return expiry timestamp (in seconds)
+     *
+     * @return int
+     * @throws Exception
+     */
+    public function getExpiryTimestamp(): int {
+        $minutes = $this->configurationService->get('xrpl_quote_expiry', self::DEFAULT_EXPIRY);
+
+        return time() + (60 * $minutes);
+    }
+
+    /**
+     * Checks if a quote is expired
+     *
+     * @param WC_Order $order
+     * @return bool
+     */
+    public function isExpired(WC_Order $order): bool {
+        $xrpl_order_meta = $order->get_meta('xrpl');
+        $expiry = $xrpl_order_meta['expiry'];
+        $now = time();
+
+        return $now > $expiry;
+    }
+
+    /**
      * Get initial order metadata for XRPL payments
      *
      * @param WC_Order $order
@@ -53,15 +81,7 @@ class OrderTransactionService
      * @throws Exception
      */
     public function prepareXrplOrderTransaction(WC_Order $order): array {
-        $paymentMethod = 'ledger-direct';
-
-        /*
-        $network = $this->configurationService->isTest() ? 'Testnet' : 'Mainnet'; // TODO: Use NetworkId
-        $destination = $this->configurationService->getDestinationAccount();
-        $destinationTag = $this->xrplSyncService->generateDestinationTag();
-        */
-
-        $network = $this->configurationService->get('xrpl_network'); // TODO: Use NetworkId
+        $network = $this->configurationService->get('xrpl_network');
         $destination = ($network === 'mainnet') ? $this->configurationService->get('xrpl_mainnet_destination_account') : $this->configurationService->get('xrpl_testnet_destination_account');
         $destinationTag = $this->xrplTxService->generateDestinationTag($destination);
 
@@ -70,7 +90,7 @@ class OrderTransactionService
             'network' => $network,
             'destination_account' => $destination,
             'destination_tag' => $destinationTag,
-            'expiry' => time() + (16*15)
+            'expiry' => $this->getExpiryTimestamp()
         ];
 
         $xrpPriceCustomFields =  $this->getCurrentXrpPriceForOrder($order);
