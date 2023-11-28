@@ -4,14 +4,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LedgerDirect for WooCommerce 0.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledger-direct\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2023-11-28T14:50:34+00:00\n"
+"PO-Revision-Date: 2023-11-28 16:18+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-11-28T14:50:34+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.9.0\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Domain: ledger-direct\n"
 
 #. Plugin Name of the plugin
@@ -25,7 +26,7 @@ msgstr ""
 
 #. Description of the plugin
 msgid "A XRP Ledger integration."
-msgstr ""
+msgstr "A XRP Ledger integration."
 
 #. Author of the plugin
 msgid "Alexander Busse | Hardcastle Technologies"
@@ -41,42 +42,42 @@ msgstr ""
 
 #: includes/views/ledger-direct_html.php:97
 msgid "sendXrpMessage"
-msgstr ""
+msgstr "Please send <strong>%s</strong> XRP to the following address:"
 
 #: includes/views/ledger-direct_html.php:106
 msgid "sendTokenMessage"
-msgstr ""
+msgstr "Please send <strong>%s</strong> <strong>%s</strong> to the following address:"
 
 #: includes/views/ledger-direct_html.php:131
 msgid "destinationAccountLabel"
-msgstr ""
+msgstr "Account"
 
 #: includes/views/ledger-direct_html.php:150
 msgid "destinationTagLabel"
-msgstr ""
+msgstr "Destination Tag"
 
 #: includes/views/ledger-direct_html.php:175
 msgid "destinationTagWarning"
-msgstr ""
+msgstr "It's important to include the given destination tag when sending XRP from your wallet."
 
 #: includes/views/ledger-direct_html.php:189
 msgid "checkPaymentButton"
-msgstr ""
+msgstr "Check payment processing"
 
 #: includes/views/ledger-direct_html.php:198
 #: includes/views/ledger-direct_html.php:205
 msgid "orderNumber"
-msgstr ""
+msgstr "Order number"
 
 #: includes/views/ledger-direct_html.php:199
 #: includes/views/ledger-direct_html.php:201
 #: includes/views/ledger-direct_html.php:206
 msgid "price"
-msgstr ""
+msgstr "Total"
 
 #: includes/views/ledger-direct_html.php:202
 msgid "exchangeRate"
-msgstr ""
+msgstr "Exchange rate"
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:38
 msgid "Accept XRPL payments"

@@ -55,6 +55,7 @@ class LedgerDirect
         add_filter('woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2);
         add_filter('template_include', [$this, 'render_payment_page']);
 
+        add_action( 'plugins_loaded', [$this, 'load_translations'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_scripts'] );
     }
@@ -181,6 +182,24 @@ class LedgerDirect
         return $template;
     }
 
+    /**
+     * Load translations
+     *
+     * @return void
+     */
+    public function load_translations(): void {
+        load_plugin_textdomain(
+            'ledger-direct',
+            false,
+            dirname(dirname(plugin_basename( __FILE__ ))) . '/languages/'
+        );
+    }
+
+    /**
+     * Add frontend styles
+     *
+     * @return void
+     */
     public function enqueue_public_styles(): void {
         wp_enqueue_style(
             'ledger-direct',
@@ -189,6 +208,11 @@ class LedgerDirect
         );
     }
 
+    /**
+     * Add frondend scripts
+     *
+     * @return void
+     */
     public function enqueue_public_scripts(): void {
         wp_enqueue_script(
             'ledger-direct',

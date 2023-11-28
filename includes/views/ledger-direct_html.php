@@ -84,9 +84,9 @@ $issuer = '';
 
         <?php if (!empty($paymentPageTitle)) { ?>
             <div class="ld-header">
-                <h1>
+                <h2>
                     <?php echo $paymentPageTitle; ?>
-                </h1>
+                </h2>
             </div>
         <?php } ?>
 
@@ -94,7 +94,7 @@ $issuer = '';
 
             <div class="ld-card-left">
                 <?php if ($type === 'xrp-payment') { ?>
-                    <p><?php echo __('sendXrpMessage', 'ledger-direct'); ?></p>
+                    <p><?php echo sprintf(__('sendXrpMessage', 'ledger-direct'), round($xrpAmount, 2)); ?></p>
                     <input id="xrp-amount"
                            type="text"
                            name="xrp-amount"
@@ -103,7 +103,7 @@ $issuer = '';
                            style="display: none;"
                     />
                 <?php } elseif ($type === 'token-payment') { ?>
-                    <p><?php echo __('sendTokenMessage', 'ledger-direct'); ?></p>
+                    <p><?php echo sprintf(__('sendTokenMessage', 'ledger-direct'), $tokenAmount); ?></p>
                     <input id="token-amount"
                            type="text"
                            name="token-amount"

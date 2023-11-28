@@ -29,7 +29,7 @@ require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.p
 /**
  * Plugin deactivation hook.
  */
-function ld__activate(): void {
+function ld_activate(): void {
     LedgerDirectInstall::install();
 }
 register_activation_hook( __FILE__, 'ld_activate' );

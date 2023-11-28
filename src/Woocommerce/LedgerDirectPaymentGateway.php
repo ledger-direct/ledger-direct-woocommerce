@@ -33,7 +33,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = 'ledger-direct';
-        $this->icon = plugin_dir_url( __FILE__ ) . 'includes/admin/public/images/label.svg';
+        $this->icon = ld_get_public_url('/public/images/logo-40x40.png');
         $this->has_fields = false;
         $this->method_title = __("Accept XRPL payments", "ledger-direct");
         $this->method_description = __("Receive XRP and any supported currencies into your XRPL account", "ledger-direct");
