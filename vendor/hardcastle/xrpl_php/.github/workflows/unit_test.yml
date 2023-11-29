@@ -1,0 +1,27 @@
+name: Unit Test (PHPUnit)
+on: push
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer, phpunit
+          extensions: ds, gmp, sockets
+          coverage: none
+#
+      - name: Install composer dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: "8.1"
+          php_extensions: gmp sockets
+          version: latest
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit ./tests

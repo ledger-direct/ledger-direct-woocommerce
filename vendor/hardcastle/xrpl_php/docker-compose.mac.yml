@@ -1,0 +1,13 @@
+# Use this as docker-compose.override.yml if you use Mac
+version: '3.7'
+
+services:
+  php:
+    volumes:
+      - .:/app
+      - ~/.composer/cache:/.composer/cache
+      - ./containers/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./containers/php/php.ini:/usr/local/etc/php/conf.d/docker-php.ini
+    user: "501:20"
+    environment:
+      PHP_IDE_CONFIG: "serverName=docker"

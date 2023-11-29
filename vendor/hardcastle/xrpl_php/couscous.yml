@@ -1,0 +1,55 @@
+baseUrl: https://alexanderbuzz.github.io/xrpl-php-docs/
+
+include:
+  - docs
+
+menu:
+  items:
+    introduction:
+      section: Concepts
+      items:
+        quickstart:
+          text: Quickstart
+          url: quickstart.html
+        wallet:
+          text: Wallet
+          url: wallet.html
+        client:
+          text: JSON RPC Client
+          url: client.html
+        methods:
+          text: Client Methods
+          url: methods.html
+    core:
+      section: Core
+      items:
+        address-codec:
+          text: AddressCodec
+          url: address-codec.html
+        binary-codec:
+          text: BinaryCodec
+          url: binary-codec.html
+        keypairs:
+          text: Keypairs
+          url: keypairs.html
+        buffer:
+          text: Buffer
+          url: buffer.html
+        ctid:
+          text: CTID
+          url: ctid.html
+        networks:
+          text: Networks
+          url: networks.html
+    utilities:
+      section: Utilities
+      items:
+        core-utilities:
+          text: Core Utilities
+          url: core-utilities.html
+        math-utilities:
+          text: Math Utilities
+          url: math-utilities.html
+        utilities:
+          text: Utilities
+          url: utilities.html
