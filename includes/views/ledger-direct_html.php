@@ -166,10 +166,8 @@ $issuer = '';
                     </i>
                 </div>
 
-                <!--
                 <div class="ld-warning">
                     <div role="alert" class="alert alert-warning alert-has-icon">
-                        {% sw_icon 'warning' %}
                         <div class="alert-content-container">
                             <div class="alert-content">
                                 <?php echo __('destinationTagWarning', 'ledger-direct'); ?>
@@ -177,7 +175,6 @@ $issuer = '';
                         </div>
                     </div>
                 </div>
-                -->
 
                 <div class="ld-sync">
                     <button id="gem-wallet-button" class="wallet-disabled">G</button>
@@ -206,7 +203,7 @@ $issuer = '';
                     <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span>
                     <br/>
                 <?php } ?>
-                <img src="<?php echo ld_get_public_url('/public/images/astronaut.png'); ?>" class="ld-astronaut"/>
+                <img src="<?php echo ld_get_public_url('/public/images/astronaut.png'); ?>" class="ld-astronaut" alt=""/>
             </div>
 
         </div>
