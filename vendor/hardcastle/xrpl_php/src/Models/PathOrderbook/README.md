@@ -1,1 +1,0 @@
-WebSocket API only: https://xrpl.org/path_find.html

@@ -166,8 +166,10 @@ $issuer = '';
                     </i>
                 </div>
 
+                <!--
                 <div class="ld-warning">
                     <div role="alert" class="alert alert-warning alert-has-icon">
+                        {% sw_icon 'warning' %}
                         <div class="alert-content-container">
                             <div class="alert-content">
                                 <?php echo __('destinationTagWarning', 'ledger-direct'); ?>
@@ -175,6 +177,7 @@ $issuer = '';
                         </div>
                     </div>
                 </div>
+                -->
 
                 <div class="ld-sync">
                     <button id="gem-wallet-button" class="wallet-disabled">G</button>
