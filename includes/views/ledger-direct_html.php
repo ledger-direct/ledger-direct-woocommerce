@@ -127,43 +127,36 @@ $issuer = '';
                     />
                 <?php } ?>
 
-                <label for="destinationAccount" class="bootstrap-form-label">
-                    <?php echo __('destinationAccountLabel', 'ledger-direct'); ?>
-                </label>
-                <div class="bootstrap-input-group">
-                    <input id="destination-account"
-                           type="text"
-                           name="destination-account"
-                           class="bootstrap-form-control"
-                           value="<?php echo $destinationAccount; ?>"
-                           readonly
-                    />
-                    <span class="bootstrap-input-group-text ld-hover" data-bs-toggle="tooltip" data-bs-title="Copy">
-                        <?php echo ld_get_svg_html('copy'); ?>
+                <div class="ld-payment-info">
+                    <span>
+                        <?php echo __('destinationAccountLabel', 'ledger-direct'); ?>
+                        <?php echo ld_get_svg_html('wallet', ['class' => 'inline-svg', 'height' => '16', 'width' => '16', 'viewBox' => '0 0 24 24']); ?>
                     </span>
-                    <i class="ld-icon">
-                        <?php echo ld_get_svg_html('wallet'); ?>
-                    </i>
+                    <div class="ld-payment-info-text">
+                        <div id="destination-account" class="" data-value="<?php echo $destinationAccount; ?>">
+                            <?php echo $destinationAccount; ?>
+                        </div>
+                        <div class="ld-payment-info-functions">
+                            <?php echo ld_get_svg_html('copy', ['class' => 'action-svg']); ?>
+                            <?php echo ld_get_svg_html('qr', ['class' => 'action-svg']); ?>
+                        </div>
+                    </div>
                 </div>
 
-                <label for="destinationTag" class="bootstrap-form-label">
-                    <?php echo __('destinationTagLabel', 'ledger-direct'); ?>
-                </label>
-                <div class="bootstrap-input-group">
-
-                    <input id="destination-tag"
-                           type="text"
-                           name="destination-tag"
-                           class="bootstrap-form-control"
-                           value="<?php echo $destinationTag; ?>"
-                           readonly
-                    />
-                    <span class="bootstrap-input-group-text ld-hover" data-bs-toggle="tooltip" data-bs-title="Copy">
-                        <?php echo ld_get_svg_html('copy'); ?>
+                <div class="ld-payment-info">
+                    <span>
+                        <?php echo __('destinationTagLabel', 'ledger-direct'); ?>
+                        <?php echo ld_get_svg_html('tag', ['class' => 'inline-svg', 'height' => '16', 'width' => '16', 'viewBox' => '0 0 24 24']); ?>
                     </span>
-                    <i class="ld-icon">
-                        <?php echo ld_get_svg_html('tag'); ?>
-                    </i>
+                    <div class="ld-payment-info-text">
+                        <div id="destination-tag" class="" data-value="<?php echo $destinationTag; ?>">
+                            <?php echo $destinationTag; ?>
+                        </div>
+                        <div class="ld-payment-info-functions">
+                            <?php echo ld_get_svg_html('copy', ['class' => 'action-svg']); ?>
+                            <?php echo ld_get_svg_html('qr', ['class' => 'action-svg']); ?>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="ld-warning">

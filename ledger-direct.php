@@ -53,7 +53,7 @@ register_uninstall_hook(__FILE__, 'ld_uninstall');
 /**
  * Returns the DI container with interfaces wired up.
  *
- * @return \DI\Container
+ * @return Container
  */
 function ld_get_dependency_injection_container(): Container {
     return new Container([
@@ -76,14 +76,38 @@ function ld_get_public_url(string $url): string {
  * Get SVG HTML for icon
  *
  * @param string $icon
+ * @param array $properties
  * @return string
  */
-function ld_get_svg_html(string $icon): string {
+function ld_get_svg_html(string $icon, array $properties = []): string {
     if (!ctype_alnum($icon)) {
         die('Forbidden!');
     }
 
-    return file_get_contents(WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/partials/' . $icon . '_svg.html');
+    $defaultProperties = [
+        'class' => '',
+        'width' => '24',
+        'height' => '24',
+        'viewBox' => '0 0 24 24',
+    ];
+
+    $svgContent = file_get_contents(WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/partials/' . $icon . '_svg.html');
+
+    foreach ($defaultProperties as $key => $value) {
+        if (isset($properties[$key])) {
+            $defaultProperties[$key] = $properties[$key];
+        }
+    }
+
+    foreach ($defaultProperties as $key => $value) {
+        $svgContent = str_replace(
+            '{' . $key . '}',
+            $key . '="' . $value . '"',
+            $svgContent
+        );
+    }
+
+    return $svgContent;
 }
 
 LedgerDirect::instance();

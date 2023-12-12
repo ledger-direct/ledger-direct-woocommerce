@@ -61,6 +61,45 @@ img.ld-astronaut {
     bottom: 0;
 }
 
+.ld-payment-info {
+    margin-bottom: 8px
+}
+
+.ld-payment-info-text {
+    display: flex;
+    padding: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+}
+
+.ld-payment-info-functions {
+    display: grid;
+    column-gap: 6px;
+    grid-auto-flow: column;
+    margin-left: auto;
+}
+
+.inline-svg {
+    display: inline-block;
+    margin-bottom: -2px;
+    color: #3a3a3a;
+}
+
+.action-svg {
+    display: block;
+    cursor: pointer;
+    fill: #758ca3;
+}
+.action-svg:hover {
+    fill: #3a3a3a;
+}
+
+
+
+
+
 .bootstrap-input-group {
     position: relative;
     display: -ms-flexbox;
@@ -137,6 +176,12 @@ img.ld-astronaut {
     display: block;
     position: absolute;
     padding: 0.5625rem 0.5625rem;
+}
+
+.ld-icon span.icon {
+    display: block;
+    height: 24px;
+    width: 24px;
 }
 
 .ld-icon span.icon svg {

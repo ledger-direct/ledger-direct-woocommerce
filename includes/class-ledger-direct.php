@@ -206,6 +206,11 @@ class LedgerDirect
             plugin_dir_url( __FILE__ ) . '../public/css/ledger-direct.css',
             []
         );
+        wp_enqueue_style(
+            'qr-bundle',
+            plugin_dir_url( __FILE__ ) . '../public/css/qr-bundle.min.css',
+            []
+        );
     }
 
     /**
@@ -217,6 +222,11 @@ class LedgerDirect
         wp_enqueue_script(
             'ledger-direct',
             plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
+            ['jquery']
+        );
+        wp_enqueue_script(
+            'qr-bundle',
+            plugin_dir_url( __FILE__ ) . '../public/js/qr-bundle.min.js',
             ['jquery']
         );
     }
