@@ -51,7 +51,6 @@ class LedgerDirect
         add_action('init', [$this, 'add_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_filter('woocommerce_payment_gateways', [$this, 'register_gateway']);
-        add_filter('woocommerce_before_checkout_form', [$this, 'before_checkout_form'], 20, 2);
         add_filter('woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2);
         add_filter('template_include', [$this, 'render_payment_page']);
 
@@ -216,14 +215,29 @@ class LedgerDirect
      */
     public function enqueue_public_scripts(): void {
         wp_enqueue_script(
-            'ledger-direct',
-            plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
-            ['jquery']
+            'bignumber',
+            plugin_dir_url( __FILE__ ) . '../public/js/bignumber-9.1.2.min.js',
+            []
         );
+        wp_enqueue_script(
+            'gemwallet',
+            plugin_dir_url( __FILE__ ) . '../public/js/gemwallet-3.5.1.min.js',
+            []
+        );
+        // wp_enqueue_script(
+        //     'crossmark',
+        //     plugin_dir_url( __FILE__ ) . '../public/js/crossmark-3.5.min.js',
+        //     []
+        // );
         wp_enqueue_script(
             'qr-bundle',
             plugin_dir_url( __FILE__ ) . '../public/js/qr-bundle.min.js',
             ['jquery']
+        );
+        wp_enqueue_script(
+            'ledger-direct',
+            plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
+            ['jquery', 'qr-bundle', 'bignumber', 'gemwallet']
         );
     }
 
