@@ -140,10 +140,6 @@ class LedgerDirect
         return $gateways;
     }
 
-    public function before_checkout_form(): void {
-        // wc_add_notice( 'Quote expired', 'error' );
-    }
-
     /**
      * Links payment instructions to an order
      *
@@ -214,7 +210,7 @@ class LedgerDirect
     }
 
     /**
-     * Add frondend scripts
+     * Add frontend scripts
      *
      * @return void
      */

@@ -59,6 +59,8 @@ img.ld-astronaut {
     position: absolute;
     right: 0;
     bottom: 0;
+    width: 128px;
+    height: 128px;
 }
 
 .ld-payment-info {
@@ -160,7 +162,7 @@ img.ld-astronaut {
         background-color: white;
     }
 
-    .ld-header, .ld-footer {
+    .ld-header{
         display: none;
     }
 

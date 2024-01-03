@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use XRPL_PHP\Client\JsonRpcClient;
 use XRPL_PHP\Core\Networks;
 use XRPL_PHP\Models\Account\AccountTxRequest;
@@ -15,6 +16,11 @@ class XrplClientService
 
     private JsonRpcClient $client;
 
+    /**
+     * Constructor.
+     *
+     * @throws Exception
+     */
     public function __construct(ConfigurationService $configurationService)
     {
         $this->configurationService = $configurationService;
@@ -27,6 +33,7 @@ class XrplClientService
      * @param string $address
      * @param int|null $lastLedgerIndex
      * @return array
+     * @throws GuzzleException
      */
     public function fetchAccountTransactions(string $address, ?int $lastLedgerIndex): array
     {

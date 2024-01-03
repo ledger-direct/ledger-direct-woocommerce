@@ -1,22 +1,28 @@
-<?php
+<?php declare(strict_types=1);
 
 defined( 'ABSPATH' ) || exit;
 
 class LedgerDirectInstall {
+
+    public const TRANSIENT_INSTALLING = 'ledger-direct_installing';
+
+    /**
+     * Install the plugin.
+     *
+     * @return void
+     */
     public static function install(): void {
-        // Check if we are not already running this routine.
         if ( self::is_installing() ) {
             return;
         }
 
-        // If we made it till here nothing is running yet, lets set the transient now.
-        set_transient( 'ledger-direct_installing', 'yes', MINUTE_IN_SECONDS * 10 );
-        //wc_maybe_define_constant( 'lEDGER_DIRECT_INSTALLING', true );
+        set_transient( self::TRANSIENT_INSTALLING, 'yes', MINUTE_IN_SECONDS * 10 );
 
+        self::add_rewrite_rules();
         self::create_tables();
         self::maybe_create_pages();
 
-        delete_transient( 'wc_installing' );
+        delete_transient( self::TRANSIENT_INSTALLING );
     }
 
     /**
@@ -25,7 +31,22 @@ class LedgerDirectInstall {
      * @return bool
      */
     private static function is_installing(): bool {
-        return 'yes' === get_transient( 'ledger-direct_installing' );
+        return 'yes' === get_transient( self::TRANSIENT_INSTALLING );
+    }
+
+    /**
+     * Add rewrite rules.
+     *
+     * @return void
+     */
+    private static function add_rewrite_rules(): void {
+        global $wp_rewrite;
+        add_rewrite_rule(
+            'ledger-direct/payment/([a-z0-9-]+)[/]?$',
+            'index.php?pagename=ledger-direct-payment&' . LedgerDirect::PAYMENT_IDENTIFIER . '=$matches[1]',
+            'top'
+        );
+        $wp_rewrite->flush_rules();
     }
 
     /**

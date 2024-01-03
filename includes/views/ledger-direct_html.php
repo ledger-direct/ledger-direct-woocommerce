@@ -4,17 +4,17 @@ require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
+use XRPL_PHP\Core\Networks;
 
 $order_id = get_query_var(LedgerDirect::PAYMENT_IDENTIFIER);
 $order = wc_get_order($order_id);
 $current_user = wp_get_current_user();
 
 if ($current_user->ID !== $order->get_user_id()) {
+    // User is not the owner of this order, redirect to shop page
     global $wp_query;
-    $wp_query->set_404();
-    status_header(404);
-    get_template_part('404');
-    exit();
+    $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
+    wp_redirect($shop_page_url);
 }
 
 $container = ld_get_dependency_injection_container();
@@ -37,7 +37,10 @@ if ($tx) {
         //wp_redirect($ledgerDirectGateway->get_return_url($order));
         wp_redirect($order->get_checkout_order_received_url()); // http://127.0.0.1/kasse/order-received/27/?key=wc_order_KfJjClCXNDN2o
     } else {
-
+        // Payment amount is not enough, let's wait for more
+        $order->set_status('on-hold');
+        //wp_redirect($order->get_checkout_payment_url());
+        wc_add_notice( 'Payment amount is not enough', 'notice' );
     }
 }
 
@@ -46,11 +49,12 @@ if ($orderTransactionService->isExpired($order)) {
     $xrpl_order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
     $order->update_meta_data( 'xrpl', $xrpl_order_meta );
     $order->save_meta_data();
-    //wp_redirect($order->get_checkout_payment_url());
-    wc_add_notice( 'Quote has expired', 'notice' );
+    // wc_add_notice( 'Quote has expired', 'notice' );
+    // wp_redirect($order->get_checkout_payment_url());
 }
 
 $network = $configurationService->getNetwork();
+$networkName = Networks::getNetwork($network)['label'];
 $paymentPageTitle = $configurationService->getPaymentPageTitle();
 $type = $xrpl_order_meta['type'];
 
@@ -186,15 +190,15 @@ $issuer = '';
                 <?php if ($type === 'xrp-payment') { ?>
                     <div class="ld-sum"><?php echo $price; ?> <?php echo $currencySymbol; ?></div>
                     <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
-                    <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span>
-                    <br/>
+                    <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span><br/>
                     <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $xrpAmount; ?> XRP</span><br/>
-                    <span><?php echo __('exchangeRate', 'ledger-direct'); ?>: <?php echo $exchangeRate; ?> XRP / <?php echo $currencyCode; ?></span>
+                    <span><?php echo __('exchangeRate', 'ledger-direct'); ?>: <?php echo $exchangeRate; ?> XRP / <?php echo $currencyCode; ?></span><br/>
+                    <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $networkName; ?></span><br/>
                 <?php } elseif ($type === 'token-payment') { ?>
                     <div class="ld-sum">{{ price|currency }}</div>
                     <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
-                    <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span>
-                    <br/>
+                    <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span><br/>
+                    <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $networkName; ?></span><br/>
                 <?php } ?>
                 <img src="<?php echo ld_get_public_url('/public/images/astronaut.png'); ?>" class="ld-astronaut" alt=""/>
             </div>
@@ -202,7 +206,9 @@ $issuer = '';
         </div>
 
         <div class="ld-footer">
-            <?php echo $network; ?> - LedgerDirect Payment Plugin
+            <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="ld-back">
+                <?php echo __('backButton', 'ledger-direct'); ?>
+            </a>
         </div>
 
     </div>
