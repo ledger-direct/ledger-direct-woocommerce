@@ -20,10 +20,32 @@ class LedgerDirectInstall {
 
         self::add_rewrite_rules();
         self::create_tables();
-        self::maybe_create_pages();
+        self::create_pages();
 
         delete_transient( self::TRANSIENT_INSTALLING );
     }
+
+    /**
+     * Deactivate the plugin.
+     *
+     * @return void
+     */
+    public static function deactivate(): void {
+        flush_rewrite_rules();
+    }
+
+    /**
+     * Uninstall the plugin.
+     *
+     * @return void
+     */
+    public static function uninstall(): void {
+        global $wpdb;
+
+        $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}xrpl_tx" );
+        $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}xrpl_destination_tag" );
+    }
+
 
     /**
      * Returns true if we're installing.
@@ -40,13 +62,12 @@ class LedgerDirectInstall {
      * @return void
      */
     private static function add_rewrite_rules(): void {
-        global $wp_rewrite;
         add_rewrite_rule(
             'ledger-direct/payment/([a-z0-9-]+)[/]?$',
             'index.php?pagename=ledger-direct-payment&' . LedgerDirect::PAYMENT_IDENTIFIER . '=$matches[1]',
             'top'
         );
-        $wp_rewrite->flush_rules();
+        flush_rewrite_rules();
     }
 
     /**
@@ -102,15 +123,6 @@ class LedgerDirectInstall {
     }
 
     /**
-     * Create "ledger-direct" page on installation.
-     *
-     * @return void
-     */
-    public static function maybe_create_pages(): void  {
-        self::create_pages();
-    }
-
-    /**
      * Create pages that the plugin relies on, storing page IDs in variables.
      *
      * @return void
@@ -124,8 +136,7 @@ class LedgerDirectInstall {
             ]
         ];
 
-        foreach ( $pages as $key => $page ) {
-            // Use WooCommerce function to create pages
+        foreach ( $pages as $page ) {
             wc_create_page(
                 esc_sql( $page['name'] ),
                 'ledger-direct_page_id',

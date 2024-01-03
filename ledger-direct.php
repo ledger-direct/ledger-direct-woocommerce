@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Plugin Name: LedgerDirect for WooCommerce
  * Plugin URI: https://www.ledger-direct.com
@@ -38,7 +38,7 @@ register_activation_hook( __FILE__, 'ld_activate' );
  * Plugin deactivation hook.
  */
 function ld_deactivate(): void {
-
+    LedgerDirectInstall::deactivate();
 }
 register_deactivation_hook( __FILE__, 'ld_deactivate' );
 
@@ -46,7 +46,7 @@ register_deactivation_hook( __FILE__, 'ld_deactivate' );
  * Plugin deactivation hook.
  */
 function ld_uninstall(): void {
-
+    // LedgerDirectInstall::uninstall();
 }
 register_uninstall_hook(__FILE__, 'ld_uninstall');
 
