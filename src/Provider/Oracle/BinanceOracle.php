@@ -2,7 +2,6 @@
 
 namespace Hardcastle\LedgerDirect\Provider\Oracle;
 
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use GuzzleHttp\Client;
 
 class BinanceOracle implements OracleInterface

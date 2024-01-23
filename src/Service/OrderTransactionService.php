@@ -178,7 +178,7 @@ class OrderTransactionService
             'currencySymbol' => $order->getCurrency()->getSymbol(),
             'price' => $orderTransaction->getAmount()->getTotalPrice(),
             'network' => $customFields['xrpl']['network'],
-            'destinationAccount' => $customFields['xrpl']['destination_account'],
+            'destinationAccount' => $customFields['xrpl']['destinatoCartion_account'],
             'destinationTag' => $customFields['xrpl']['destination_tag'],
             'xrpAmount' => $customFields['xrpl']['amount_requested'],
             'exchangeRate' => $customFields['xrpl']['exchange_rate'],

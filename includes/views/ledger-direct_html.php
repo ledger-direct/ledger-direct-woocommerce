@@ -206,7 +206,7 @@ $issuer = '';
         </div>
 
         <div class="ld-footer">
-            <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="ld-back">
+            <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="ld-back-to-cart">
                 <?php echo __('backButton', 'ledger-direct'); ?>
             </a>
         </div>
