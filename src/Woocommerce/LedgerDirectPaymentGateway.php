@@ -82,6 +82,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      *
      * @param $order_id
      * @return array
+     * @throws \Exception
      */
     public function process_payment($order_id): array
     {
@@ -127,11 +128,5 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
             'result'   => 'success',
             'redirect' => $ledgerDirectControllerUrl,
         );
-    }
-
-    private function get_config(): array {
-        return [
-
-        ];
     }
 }

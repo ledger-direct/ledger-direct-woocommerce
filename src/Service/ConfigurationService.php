@@ -12,15 +12,15 @@ class ConfigurationService
 
     public const CONFIG_KEY_MAINNET_ACCOUNT = 'xrpl_mainnet_destination_account';
 
-    // public const CONFIG_KEY_MAINNET_TOKEN_NAME = '';
+    public const CONFIG_KEY_MAINNET_TOKEN_NAME = 'xrpl_mainnet_token_name';
 
-    // public const CONFIG_KEY_MAINNET_TOKEN_ISSUER = '';
+    public const CONFIG_KEY_MAINNET_TOKEN_ISSUER = 'xrpl_mainnet_token_issuer';
 
     public const CONFIG_KEY_TESTNET_ACCOUNT = 'xrpl_testnet_destination_account';
 
-    // public const CONFIG_KEY_TESTNET_TOKEN_NAME = '';
+    public const CONFIG_KEY_TESTNET_TOKEN_NAME = 'xrpl_testnet_token_name';
 
-    // private const CONFIG_KEY_TESTNET_TOKEN_ISSUER = '';
+    public const CONFIG_KEY_TESTNET_TOKEN_ISSUER = 'xrpl_testnet_token_issuer';
 
     public const CONFIG_KEY_PAYMENT_PAGE_TITLE = 'xrpl_payment_page_title';
 
