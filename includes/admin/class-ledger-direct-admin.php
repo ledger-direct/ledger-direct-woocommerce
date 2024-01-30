@@ -26,10 +26,38 @@ class LedgerDirectAdmin
                 'default'     => '',
                 'desc_tip'    => true
             ],
+            ConfigurationService::CONFIG_KEY_TESTNET_TOKEN_NAME => [
+                'title'       => __("Token Name - TESTNET", ConfigurationService::CONFIG_DOMAIN),
+                'type'        => 'text',
+                'description' => __('', ConfigurationService::CONFIG_DOMAIN),
+                'default'     => '',
+                'desc_tip'    => true
+            ],
+            ConfigurationService::CONFIG_KEY_TESTNET_TOKEN_ISSUER => [
+                'title'       => __("Token Issuer - TESTNET", ConfigurationService::CONFIG_DOMAIN),
+                'type'        => 'text',
+                'description' => __('', ConfigurationService::CONFIG_DOMAIN),
+                'default'     => '',
+                'desc_tip'    => true
+            ],
             ConfigurationService::CONFIG_KEY_MAINNET_ACCOUNT => [
                 'title'       => __("Merchant Account - MAINNET", ConfigurationService::CONFIG_DOMAIN),
                 'type'        => 'text',
                 'description' => __('Merchant Account address (MAINNET) - receiving account', ConfigurationService::CONFIG_DOMAIN),
+                'default'     => '',
+                'desc_tip'    => true
+            ],
+            ConfigurationService::CONFIG_KEY_MAINNET_TOKEN_NAME => [
+                'title'       => __("Token Name - MAINNET", ConfigurationService::CONFIG_DOMAIN),
+                'type'        => 'text',
+                'description' => __('', ConfigurationService::CONFIG_DOMAIN),
+                'default'     => '',
+                'desc_tip'    => true
+            ],
+            ConfigurationService::CONFIG_KEY_MAINNET_TOKEN_ISSUER => [
+                'title'       => __("Token Issuer - MAINNET", ConfigurationService::CONFIG_DOMAIN),
+                'type'        => 'text',
+                'description' => __('', ConfigurationService::CONFIG_DOMAIN),
                 'default'     => '',
                 'desc_tip'    => true
             ],

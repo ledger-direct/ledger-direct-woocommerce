@@ -3,7 +3,6 @@
 namespace Hardcastle\LedgerDirect\Provider\Oracle;
 
 use GuzzleHttp\Exception\GuzzleException;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use GuzzleHttp\Client;
 
 class RippleOracle implements OracleInterface

@@ -4,14 +4,15 @@ require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
+use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use XRPL_PHP\Core\Networks;
 
 $order_id = get_query_var(LedgerDirect::PAYMENT_IDENTIFIER);
 $order = wc_get_order($order_id);
 $current_user = wp_get_current_user();
 
+// Check if user is owner of the order, otherwise redirect to shop page
 if ($current_user->ID !== $order->get_user_id()) {
-    // User is not the owner of this order, redirect to shop page
     global $wp_query;
     $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
     wp_redirect($shop_page_url);
@@ -21,13 +22,32 @@ $container = ld_get_dependency_injection_container();
 $orderTransactionService = $container->get(OrderTransactionService::class);
 $configurationService = $container->get(ConfigurationService::class);
 
+$paymentMethod = $order->get_payment_method();
+
+// Check if payment method is Ledger Direct, otherwise redirect to shop page
+if (!in_array($paymentMethod, [LedgerDirectPaymentGateway::XRP_PAYMENT_ID, LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID])) {
+    global $wp_query;
+    $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
+    wp_redirect($shop_page_url);
+}
+
 $xrpl_order_meta = $order->get_meta('xrpl');
+
+// Check if quote is prepared, otherwise prepare quote
+if (empty($xrpl_order_meta)) {
+    $orderTransactionService->prepareOrderForXrpl($order, $paymentMethod);
+    $xrpl_order_meta = $order->get_meta('xrpl');
+}
 
 $tx = $orderTransactionService->syncOrderTransactionWithXrpl($order);
 if ($tx) {
     // Payment is settled, let's check if the paid amount is enough
     $xrpl_order_meta = $order->get_meta('xrpl');
-    $requestedXrpAmount = (float)$xrpl_order_meta['amount_requested'];
+    if ($paymentMethod === LedgerDirectPaymentGateway::XRP_PAYMENT_ID) {
+        $requestedXrpAmount = (float)$xrpl_order_meta['amount_requested'];
+    } else {
+        $requestedXrpAmount = (float)$xrpl_order_meta['value'];
+    }
     $paidXrpAmount = (float)$xrpl_order_meta['delivered_amount'];
     $slippage = 0.0015; // TODO: Make this configurable
     $slipped = 1.0 - $paidXrpAmount / $requestedXrpAmount;
@@ -46,11 +66,7 @@ if ($tx) {
 
 if ($orderTransactionService->isExpired($order)) {
     // Quote expired, renew quote
-    $xrpl_order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
-    $order->update_meta_data( 'xrpl', $xrpl_order_meta );
-    $order->save_meta_data();
-    // wc_add_notice( 'Quote has expired', 'notice' );
-    // wp_redirect($order->get_checkout_payment_url());
+    $orderTransactionService->prepareOrderForXrpl($order, $order->get_payment_method());
 }
 
 $network = $configurationService->getNetwork();
@@ -68,8 +84,9 @@ $currencySymbol = get_woocommerce_currency_symbol($currencyCode);
 $xrpAmount = $xrpl_order_meta['amount_requested'] ?? -1;
 $exchangeRate = $xrpl_order_meta['exchange_rate'] ?? -1;
 
-$tokenAmount = $xrpl_order_meta['amount_requested'] ?? -1;
+$tokenAmount = $xrpl_order_meta['value'] ?? -1;
 $issuer = '';
+$currencyCode = $xrpl_order_meta['currency'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -97,7 +114,7 @@ $issuer = '';
         <div class="ld-card">
 
             <div class="ld-card-left">
-                <?php if ($type === 'xrp-payment') { ?>
+                <?php if ($type === LedgerDirectPaymentGateway::XRP_PAYMENT_TYPE) { ?>
                     <p><?php echo sprintf(__('sendXrpMessage', 'ledger-direct'), round($xrpAmount, 2)); ?></p>
                     <input id="xrp-amount"
                            type="text"
@@ -106,8 +123,8 @@ $issuer = '';
                            readonly
                            style="display: none;"
                     />
-                <?php } elseif ($type === 'token-payment') { ?>
-                    <p><?php echo sprintf(__('sendTokenMessage', 'ledger-direct'), $tokenAmount); ?></p>
+                <?php } elseif ($type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_TYPE) { ?>
+                    <p><?php echo sprintf(__('sendTokenMessage', 'ledger-direct'), $tokenAmount, $currencyCode); ?></p>
                     <input id="token-amount"
                            type="text"
                            name="token-amount"
@@ -187,17 +204,17 @@ $issuer = '';
             </div>
 
             <div class="ld-card-right">
-                <?php if ($type === 'xrp-payment') { ?>
+                <?php if ($type === LedgerDirectPaymentGateway::XRP_PAYMENT_TYPE) { ?>
                     <div class="ld-sum"><?php echo $price; ?> <?php echo $currencySymbol; ?></div>
                     <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
                     <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span><br/>
                     <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $xrpAmount; ?> XRP</span><br/>
                     <span><?php echo __('exchangeRate', 'ledger-direct'); ?>: <?php echo $exchangeRate; ?> XRP / <?php echo $currencyCode; ?></span><br/>
                     <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $networkName; ?></span><br/>
-                <?php } elseif ($type === 'token-payment') { ?>
-                    <div class="ld-sum">{{ price|currency }}</div>
+                <?php } elseif ($type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_TYPE) { ?>
+                    <div class="ld-sum"><?php echo $tokenAmount; ?> | <?php echo $currencyCode; ?></div>
                     <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
-                    <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $price; ?> <?php echo $currencyCode; ?></span><br/>
+                    <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $tokenAmount; ?> <?php echo $currencyCode; ?></span><br/>
                     <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $networkName; ?></span><br/>
                 <?php } ?>
                 <img src="<?php echo ld_get_public_url('/public/images/astronaut.png'); ?>" class="ld-astronaut" alt=""/>
@@ -206,7 +223,7 @@ $issuer = '';
         </div>
 
         <div class="ld-footer">
-            <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="ld-back">
+            <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="ld-back-to-cart">
                 <?php echo __('backButton', 'ledger-direct'); ?>
             </a>
         </div>

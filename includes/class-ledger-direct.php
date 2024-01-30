@@ -51,8 +51,10 @@ class LedgerDirect
         add_action('init', [$this, 'add_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_filter('woocommerce_payment_gateways', [$this, 'register_gateway']);
+        add_filter('woocommerce_get_price_html', [$this, 'custom_price_html']);
         add_filter('woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2);
         add_filter('template_include', [$this, 'render_payment_page']);
+
 
         add_action( 'plugins_loaded', [$this, 'load_translations'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
@@ -69,6 +71,9 @@ class LedgerDirect
 
         add_action('plugins_loaded', [$this, 'plugins_loaded_callback'], 10);
         add_action('admin_menu', [$this, 'admin_menu_callback']);
+
+        add_action( 'woocommerce_product_options_general_product_data', [$this, 'add_product_custom_fields'] );
+        add_action( 'woocommerce_process_product_meta', [$this, 'save_product_custom_fields'] );
 
         add_filter('ledger_direct_init_form_fields', [$classAdmin, 'init_form_fields'], 10, 1);
         add_filter('ledger_direct_render_plugin_settings', [$classAdmin, 'render_plugin_settings'], 10, 1);
@@ -100,6 +105,49 @@ class LedgerDirect
              admin_url('admin.php?page=wc-settings&tab=checkout&section=ledger-direct'),
             null
         );
+    }
+
+    public function custom_price_html($price): string {
+        global $product;
+
+        $lpt_price = $product->get_meta('_ledger_direct_lpt_price');
+
+        if (!empty($lpt_price)) {
+            $price = $price . ' | <span class="woocommerce-Price-amount amount">' . $lpt_price . ' LPT</span>';
+        }
+
+        return $price;
+    }
+
+    /**
+     * Add custom fields to the checkout page
+     *
+     * @return void
+     */
+    public function add_product_custom_fields(): void
+    {
+        echo '<div class="options_group">';
+        woocommerce_wp_text_input(
+            array(
+                'id' => '_ledger_direct_lpt_price',
+                'label' => __('LPT Price', 'woocommerce'),
+                'desc_tip' => 'true',
+                'description' => __('Enter the Loyalty Point price here.', 'woocommerce')
+            )
+        );
+        echo '</div>';
+    }
+
+    /**
+     * Save custom fields to the database
+     *
+     * @param $post_id
+     * @return void
+     */
+    public function save_product_custom_fields($post_id): void
+    {
+        $custom_field_value = isset($_POST['_ledger_direct_lpt_price']) ? $_POST['_ledger_direct_lpt_price'] : '';
+        update_post_meta($post_id, '_ledger_direct_lpt_price', sanitize_text_field($custom_field_value));
     }
 
     /**
@@ -134,7 +182,8 @@ class LedgerDirect
      * @return array
      */
     public function register_gateway($gateways): array {
-        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway';
+        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrpPaymentGateway';
+        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrplTokenPaymentGateway';
 
         return $gateways;
     }
@@ -148,15 +197,14 @@ class LedgerDirect
      * @throws Exception
      */
     public function before_checkout_create_order(WC_Order $order, $data ): void {
-
-        if ($order->get_payment_method() !== 'ledger-direct') {
+        $payment_method = $order->get_payment_method();
+        if ($payment_method !== 'ledger-direct-xrp' && $payment_method !== 'ledger-direct-xrpl-token') {
             return;
         }
 
         $container = ld_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
-        $order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
-        $order->update_meta_data( 'xrpl', $order_meta );
+        $orderTransactionService->prepareOrderForXrpl($order, $payment_method);
     }
 
     /**

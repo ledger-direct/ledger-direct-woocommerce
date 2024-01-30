@@ -156,6 +156,11 @@ img.ld-astronaut {
     text-align: center;
 }
 
+.ld-back-to-cart {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
 @media only screen and (max-width: 768px) {
     body.ld-body {
         font-size: 14px;
