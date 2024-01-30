@@ -100,6 +100,36 @@ class ConfigurationService
         return $this->get(self::CONFIG_KEY_MAINNET_ACCOUNT);
     }
 
+    /**
+     *
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function getTokenName(): string
+    {
+        if ($this->isTest()) {
+            return $this->get(self::CONFIG_KEY_TESTNET_TOKEN_NAME);
+        }
+
+        return $this->get(self::CONFIG_KEY_MAINNET_TOKEN_NAME);
+    }
+
+    /**
+     *
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function getIssuer(): string
+    {
+        if ($this->isTest()) {
+            return $this->get(self::CONFIG_KEY_TESTNET_TOKEN_ISSUER);
+        }
+
+        return $this->get(self::CONFIG_KEY_MAINNET_TOKEN_ISSUER);
+    }
+
 
     /**
      *

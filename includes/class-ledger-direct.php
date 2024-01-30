@@ -182,7 +182,8 @@ class LedgerDirect
      * @return array
      */
     public function register_gateway($gateways): array {
-        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway';
+        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrpPaymentGateway';
+        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrplTokenPaymentGateway';
 
         return $gateways;
     }
@@ -196,15 +197,14 @@ class LedgerDirect
      * @throws Exception
      */
     public function before_checkout_create_order(WC_Order $order, $data ): void {
-
-        if ($order->get_payment_method() !== 'ledger-direct') {
+        $payment_method = $order->get_payment_method();
+        if ($payment_method !== 'ledger-direct-xrp' && $payment_method !== 'ledger-direct-xrpl-token') {
             return;
         }
 
         $container = ld_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
-        $order_meta = $orderTransactionService->prepareXrplOrderTransaction($order);
-        $order->update_meta_data( 'xrpl', $order_meta );
+        $orderTransactionService->prepareOrderForXrpl($order, $payment_method);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
+use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use WC_Order;
 use function XRPL_PHP\Sugar\dropsToXrp;
 
@@ -77,34 +78,66 @@ class OrderTransactionService
      * Get initial order metadata for XRPL payments
      *
      * @param WC_Order $order
-     * @return array
+     * @param string $paymentMethod
+     * @return void
      * @throws Exception
      */
-    public function prepareXrplOrderTransaction(WC_Order $order): array {
+    public function prepareOrderForXrpl(WC_Order $order, string $paymentMethod): void {
         $network = $this->configurationService->get('xrpl_network');
         $destination = ($network === 'mainnet') ? $this->configurationService->get('xrpl_mainnet_destination_account') : $this->configurationService->get('xrpl_testnet_destination_account');
         $destinationTag = $this->xrplTxService->generateDestinationTag($destination);
 
-        $xrplCustomFields = [
-            'type' => 'xrp-payment',
+        $xrplData = [
             'network' => $network,
             'destination_account' => $destination,
             'destination_tag' => $destinationTag,
             'expiry' => $this->getExpiryTimestamp()
         ];
 
-        $xrpPriceCustomFields =  $this->getCurrentXrpPriceForOrder($order);
+        $this->addAdditionalDataToPayment($order, $xrplData);
 
-        return array_replace_recursive($xrplCustomFields, $xrpPriceCustomFields);
-
-
-        // Additional XRP / Token routine
-        /*
-        match ($paymentMethod->getId()) {
-            PaymentMethodInstaller::XRP_PAYMENT_ID => $this->prepareXrpPayment($order, $orderTransaction, $context),
-            PaymentMethodInstaller::TOKEN_PAYMENT_ID => $this->prepareTokenPayment($order, $orderTransaction, $context),
+        match ($paymentMethod) {
+            LedgerDirectPaymentGateway::XRP_PAYMENT_ID => $this->prepareXrpPayment($order),
+            LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID => $this->prepareTokenPayment($order),
         };
-        */
+    }
+
+    private function prepareXrpPayment(WC_Order $order): void
+    {
+        $additionalData = $this->getCurrentXrpPriceForOrder($order);
+        $additionalData['type'] = LedgerDirectPaymentGateway::XRP_PAYMENT_TYPE;
+
+        $this->addAdditionalDataToPayment($order, $additionalData);
+    }
+
+    private function prepareTokenPayment(WC_Order $order): void
+    {
+        $issuer = $this->configurationService->getIssuer();
+        $tokenName = $this->configurationService->getTokenName();
+        $total = calculate_token_order_total($order, $tokenName);
+
+        $additionalData = [
+            'type' => LedgerDirectPaymentGateway::TOKEN_PAYMENT_TYPE,
+            'issuer' => $issuer,
+            'currency' => $tokenName,
+            'value' => $total // $order->get_total(),
+        ];
+
+        $this->addAdditionalDataToPayment($order, $additionalData);
+    }
+
+    /**
+     * Add additional data to order payment
+     *
+     * @param WC_Order $order
+     * @param array $xrplCustomFields
+     * @return void
+     */
+    private function addAdditionalDataToPayment(WC_Order $order, array $xrplCustomFields): void {
+        $xrpl_order_meta = is_array($order->get_meta('xrpl')) ? $order->get_meta('xrpl') : [];
+        $new_order_meta = array_replace_recursive($xrpl_order_meta, $xrplCustomFields);
+        $order->update_meta_data( 'xrpl', $new_order_meta );
+        $order->save();
     }
 
     /**
@@ -114,7 +147,7 @@ class OrderTransactionService
      * @return bool
      */
     public function checkPayment(WC_Order $order): bool {
-        $xrpl_order_meta = $order->get_meta('xrpl');
+        $xrpl_order_meta = is_array($order->get_meta('xrpl')) ? $order->get_meta('xrpl') : [];
 
         return (isset($xrpl_order_meta['hash']) && isset($xrpl_order_meta['ctid']));
     }
@@ -154,6 +187,7 @@ class OrderTransactionService
 
                 $new_order_meta = array_replace_recursive($xrpl_order_meta, $tx_order_meta);
                 $order->update_meta_data( 'xrpl', $new_order_meta );
+                $order->save();
 
                 return $tx;
             }

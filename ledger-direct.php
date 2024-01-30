@@ -110,4 +110,22 @@ function ld_get_svg_html(string $icon, array $properties = []): string {
     return $svgContent;
 }
 
+function calculate_token_order_total(WC_Order $order): float
+{
+    $total = 0.0;
+    foreach ($order->get_items() as $item_id => $item) {
+        $product_id = $item->get_product_id();
+        $product = wc_get_product($product_id);
+        $lpt_price = $product->get_meta('_ledger_direct_lpt_price');
+
+        // Get the product quantity
+        $quantity = $item->get_quantity();
+
+        // Do something with these values...
+        $total += $lpt_price * $quantity;
+    }
+
+    return $total;
+}
+
 LedgerDirect::instance();
