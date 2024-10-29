@@ -4,10 +4,10 @@ namespace Hardcastle\LedgerDirect\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-final class TransactionTest extends TestCase
+final class ScriptTest extends TestCase
 {
-    public function trueIsTrue(): void
+    public function testTrueIsTrue(): void
     {
-        //$this->assertTr
+        $this->assertTrue(true);
     }
 }
