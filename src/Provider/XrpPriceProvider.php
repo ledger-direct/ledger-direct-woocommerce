@@ -36,7 +36,7 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
         $oracles = [
             new BinanceOracle(),
             new KrakenOracle(),
-            new RippleOracle(),
+            // new RippleOracle(), // Disabled due to issues with the Ripple Oracle
         ];
 
         foreach ($oracles as $oracle) {
