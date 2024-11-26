@@ -6,7 +6,7 @@ use Exception;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use WC_Order;
-use function XRPL_PHP\Sugar\dropsToXrp;
+use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
 
 class OrderTransactionService
 {

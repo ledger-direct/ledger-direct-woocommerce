@@ -4,9 +4,9 @@ namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use XRPL_PHP\Client\JsonRpcClient;
-use XRPL_PHP\Core\Networks;
-use XRPL_PHP\Models\Account\AccountTxRequest;
+use Hardcastle\XRPL_PHP\Client\JsonRpcClient;
+use Hardcastle\XRPL_PHP\Core\Networks;
+use Hardcastle\XRPL_PHP\Models\Account\AccountTxRequest;
 
 class XrplClientService
 {
