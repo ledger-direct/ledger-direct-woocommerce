@@ -13,7 +13,9 @@
     "10up/wp_mock": "^0.4.2",
     "brain/monkey": "^2.6",
     "phpstan/phpstan": "^1.10",
-    "php-stubs/wordpress-tests-stubs": "^6.1"
+    "php-stubs/wordpress-tests-stubs": "^6.1",
+    "yoast/phpunit-polyfills": "^2.0",
+    "mockery/mockery": "^1.6"
   },
   "autoload": {
     "psr-4": {
