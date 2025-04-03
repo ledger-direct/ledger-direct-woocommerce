@@ -2,7 +2,7 @@
 
 namespace Hardcastle\LedgerDirect\Service;
 
-use XRPL_PHP\Core\Ctid;
+use Hardcastle\XRPL_PHP\Core\Ctid;
 
 class XrplTxService
 {

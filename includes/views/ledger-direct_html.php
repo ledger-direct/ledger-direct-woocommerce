@@ -5,7 +5,7 @@ require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use XRPL_PHP\Core\Networks;
+use Hardcastle\XRPL_PHP\Core\Networks;
 
 $order_id = get_query_var(LedgerDirect::PAYMENT_IDENTIFIER);
 $order = wc_get_order($order_id);
