@@ -10,6 +10,8 @@ use WC_Payment_Gateway;
 
 class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 {
+    public const LEDGER_DIRECT_PAYMENT_ID = 'ledger-direct';
+
     public const XRP_PAYMENT_ID = 'ledger-direct-xrp';
 
     public const XRP_PAYMENT_TYPE = 'xrp_payment';
@@ -40,6 +42,9 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     public function __construct()
     {
+        if (empty($this->id)) {
+            $this->id = self::LEDGER_DIRECT_PAYMENT_ID;
+        }
         $this->icon = ld_get_public_url('/public/images/logo-40x40.png');
         $this->has_fields = false;
         $this->enabled = $this->get_option('enabled');
@@ -77,5 +82,18 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function admin_options() : void
     {
         apply_filters('ledger_direct_render_plugin_settings', $this);
+    }
+
+    /**
+     * Prevent the default payment method from being selected
+     *
+     * @return bool
+     */
+    public function is_available(): bool
+    {
+        if ($this->id === self::LEDGER_DIRECT_PAYMENT_ID) {
+            return false;
+        }
+        return true;
     }
 }
