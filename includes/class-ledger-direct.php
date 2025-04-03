@@ -182,6 +182,7 @@ class LedgerDirect
      * @return array
      */
     public function register_gateway($gateways): array {
+        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway';
         $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrpPaymentGateway';
         $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrplTokenPaymentGateway';
 
