@@ -18,6 +18,11 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     public const TOKEN_PAYMENT_TYPE = 'xrpl_token_payment';
 
+    public const STABLECOIN_PAYMENT_ID = 'ledger-direct-xrpl-stablecoin';
+
+    public const STABLECOIN_PAYMENT_TYPE = 'xrpl_stablecoin_payment';
+
+
     public static self|null $_instance = null;
 
     public string $xrpl_testnet_destination_account;

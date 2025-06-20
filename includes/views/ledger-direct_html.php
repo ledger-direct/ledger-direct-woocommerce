@@ -5,7 +5,7 @@ require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use XRPL_PHP\Core\Networks;
+use Hardcastle\XRPL_PHP\Core\Networks;
 
 $order_id = get_query_var(LedgerDirect::PAYMENT_IDENTIFIER);
 $order = wc_get_order($order_id);
@@ -25,7 +25,12 @@ $configurationService = $container->get(ConfigurationService::class);
 $paymentMethod = $order->get_payment_method();
 
 // Check if payment method is Ledger Direct, otherwise redirect to shop page
-if (!in_array($paymentMethod, [LedgerDirectPaymentGateway::XRP_PAYMENT_ID, LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID])) {
+$supportedPaymentMethods = [
+    LedgerDirectPaymentGateway::XRP_PAYMENT_ID,
+    LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID,
+    LedgerDirectPaymentGateway::STABLECOIN_PAYMENT_ID
+];
+if (!in_array($paymentMethod, $supportedPaymentMethods)) {
     global $wp_query;
     $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
     wp_redirect($shop_page_url);

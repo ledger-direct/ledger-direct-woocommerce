@@ -117,7 +117,7 @@
     }
 
     function setupCrossmark() {
-        if (window.xrpl.isCrossmark) {
+        if (window.xrpl?.isCrossmark) {
             const CrossmarkSDK = window.xrpl.crossmark;
             const crossmarkWalletButton = $('#crossmark-wallet-button');
             crossmarkWalletButton.removeClass('wallet-disabled');
