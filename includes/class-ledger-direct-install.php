@@ -64,7 +64,7 @@ class LedgerDirectInstall {
     private static function add_rewrite_rules(): void {
         add_rewrite_rule(
             'ledger-direct/payment/([a-z0-9-]+)[/]?$',
-            'index.php?pagename=ledger-direct-payment&' . LedgerDirect::PAYMENT_IDENTIFIER . '=$matches[1]',
+            'index.php?pagename=ledger-direct-payment&' . LedgerDirect::ORDER_IDENTIFIER . '=$matches[1]',
             'top'
         );
         flush_rewrite_rules();

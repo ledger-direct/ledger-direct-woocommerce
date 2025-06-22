@@ -5,6 +5,7 @@ namespace Hardcastle\LedgerDirect\Service;
 use Exception;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
+use LedgerDirect;
 use WC_Order;
 use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
 
@@ -67,7 +68,7 @@ class OrderTransactionService
      * @return bool
      */
     public function isExpired(WC_Order $order): bool {
-        $xrpl_order_meta = $order->get_meta('xrpl');
+        $xrpl_order_meta = $order->get_meta(LedgerDirect::META_KEY);
         $expiry = $xrpl_order_meta['expiry'];
         $now = time();
 
@@ -88,6 +89,7 @@ class OrderTransactionService
         $destinationTag = $this->xrplTxService->generateDestinationTag($destination);
 
         $xrplData = [
+            'chain' => 'XRPL',
             'network' => $network,
             'destination_account' => $destination,
             'destination_tag' => $destinationTag,
@@ -98,14 +100,15 @@ class OrderTransactionService
 
         match ($paymentMethod) {
             LedgerDirectPaymentGateway::XRP_PAYMENT_ID => $this->prepareXrpPayment($order),
-            LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID => $this->prepareTokenPayment($order),
+            //LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID => $this->prepareTokenPayment($order),
+            LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID => $this->prepareRlusdPayment($order),
         };
     }
 
     private function prepareXrpPayment(WC_Order $order): void
     {
         $additionalData = $this->getCurrentXrpPriceForOrder($order);
-        $additionalData['type'] = LedgerDirectPaymentGateway::XRP_PAYMENT_TYPE;
+        $additionalData['type'] = LedgerDirectPaymentGateway::XRP_PAYMENT_ID;
 
         $this->addAdditionalDataToPayment($order, $additionalData);
     }
@@ -117,11 +120,20 @@ class OrderTransactionService
         $total = calculate_token_order_total($order, $tokenName);
 
         $additionalData = [
-            'type' => LedgerDirectPaymentGateway::TOKEN_PAYMENT_TYPE,
+            'type' => LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID,
             'issuer' => $issuer,
             'currency' => $tokenName,
             'value' => $total // $order->get_total(),
         ];
+
+        $this->addAdditionalDataToPayment($order, $additionalData);
+    }
+
+    private function prepareRlusdPayment(WC_Order $order): void
+    {
+        $additionalData = $this->getCurrentXrpPriceForOrder($order);
+        $additionalData['type'] = LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID;
+        $additionalData['currency'] = 'RLUSD';
 
         $this->addAdditionalDataToPayment($order, $additionalData);
     }
@@ -134,9 +146,9 @@ class OrderTransactionService
      * @return void
      */
     private function addAdditionalDataToPayment(WC_Order $order, array $xrplCustomFields): void {
-        $xrpl_order_meta = is_array($order->get_meta('xrpl')) ? $order->get_meta('xrpl') : [];
+        $xrpl_order_meta = is_array($order->get_meta(LedgerDirect::META_KEY)) ? $order->get_meta(LedgerDirect::META_KEY) : [];
         $new_order_meta = array_replace_recursive($xrpl_order_meta, $xrplCustomFields);
-        $order->update_meta_data( 'xrpl', $new_order_meta );
+        $order->update_meta_data( LedgerDirect::META_KEY, $new_order_meta );
         $order->save();
     }
 
@@ -147,7 +159,7 @@ class OrderTransactionService
      * @return bool
      */
     public function checkPayment(WC_Order $order): bool {
-        $xrpl_order_meta = is_array($order->get_meta('xrpl')) ? $order->get_meta('xrpl') : [];
+        $xrpl_order_meta = is_array($order->get_meta(LedgerDirect::META_KEY)) ? $order->get_meta(LedgerDirect::META_KEY) : [];
 
         return (isset($xrpl_order_meta['hash']) && isset($xrpl_order_meta['ctid']));
     }
@@ -160,7 +172,7 @@ class OrderTransactionService
      * @throws Exception
      */
     public function syncOrderTransactionWithXrpl(WC_Order $order): array|null {
-        $xrpl_order_meta = $order->get_meta('xrpl');
+        $xrpl_order_meta = $order->get_meta(LedgerDirect::META_KEY);
 
         if (isset($xrpl_order_meta['destination_account']) && isset($xrpl_order_meta['destination_tag'])) {
             $this->xrplTxService->syncTransactions($xrpl_order_meta['destination_account']);
@@ -186,7 +198,7 @@ class OrderTransactionService
                 ];
 
                 $new_order_meta = array_replace_recursive($xrpl_order_meta, $tx_order_meta);
-                $order->update_meta_data( 'xrpl', $new_order_meta );
+                $order->update_meta_data( LedgerDirect::META_KEY, $new_order_meta );
                 $order->save();
 
                 return $tx;

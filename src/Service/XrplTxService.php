@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Service;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\XRPL_PHP\Core\Ctid;
 
 class XrplTxService
@@ -28,7 +30,7 @@ class XrplTxService
      *
      * @param string $account
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     public function generateDestinationTag(string $account): int
     {
@@ -82,10 +84,11 @@ class XrplTxService
     }
 
     /**
-     *
+     * Synchronizes transactions for a given address with the XRPL.
      *
      * @param string $address
      * @return void
+     * @throws GuzzleException
      */
     public function syncTransactions(string $address): void {
         global $wpdb;
@@ -103,11 +106,12 @@ class XrplTxService
     }
 
     /**
-     *
+     * Inserts new transactions into the database.
      *
      * @param array $transactions
      * @param string $address
      * @return void
+     * @throws Exception
      */
     public function txToDb(array $transactions, string $address): void
     {
@@ -179,7 +183,7 @@ class XrplTxService
      *
      * @param array $transactions
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function hydrateRows(array $transactions): array
     {
