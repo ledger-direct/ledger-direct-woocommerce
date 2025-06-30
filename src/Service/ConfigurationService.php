@@ -32,7 +32,7 @@ class ConfigurationService
 
     public const WP_OPTION_NAME = 'woocommerce_ledger-direct_settings';
 
-    private array $config;
+    protected array $config;
 
     public function __construct() {
         global $wpdb;
@@ -57,6 +57,7 @@ class ConfigurationService
     public function get(string $configIdentifier, mixed $default = null): mixed
     {
         $value = $this->config[$configIdentifier] ?? null;
+
         if (empty($value)) {
             if (!is_null($default)) {
                 return $default;

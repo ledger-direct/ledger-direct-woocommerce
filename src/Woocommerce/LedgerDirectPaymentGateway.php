@@ -55,6 +55,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $this->method_description = 'Accept payments via XRPL (XRP, Tokens, RLUSD)';
         $this->title = 'Pay with XRPL';
         $this->description = 'Choose your preferred XRPL payment method';
+
         $this->icon = ld_get_public_url('/public/images/logo-40x40.png');
         $this->has_fields = true; // Wichtig für payment_fields()
         $this->enabled = $this->get_option('enabled');

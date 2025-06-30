@@ -17,5 +17,10 @@ project.properties
 vendor/
 node_modules/
 
-# TODO
+# Test and Caches
+.phpunit.result.cache
+.phpunit.cache
+
+# Project specific
 TODO.md
+bin/install-wp-tests-local.sh
