@@ -200,6 +200,20 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     private function is_rlusd_payment_valid(array $meta): bool
     {
+        if (!isset($meta['delivered_amount']) || !isset($meta['amount_requested'])) {
+            return false;
+        }
+        $requestedRlusdAmount = (float) $meta['amount_requested'];
+        $paidRlusdAmount = (float) $meta['delivered_amount'];
+
+        if ($requestedRlusdAmount <= 0 || $paidRlusdAmount <= 0) {
+            return false;
+        }
+
+        if ($paidRlusdAmount === $requestedRlusdAmount) {
+            return true;
+        }
+
         return false;
     }
 }
