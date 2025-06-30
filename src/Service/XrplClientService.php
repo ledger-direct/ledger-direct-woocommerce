@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\XRPL_PHP\Client\JsonRpcClient;
 use Hardcastle\XRPL_PHP\Core\Networks;
 use Hardcastle\XRPL_PHP\Models\Account\AccountTxRequest;
+use LedgerDirect;
 
 class XrplClientService
 {
@@ -28,7 +29,7 @@ class XrplClientService
     }
 
     /**
-     *
+     * Fetches account transactions from the XRPL network.
      *
      * @param string $address
      * @param int|null $lastLedgerIndex
@@ -39,6 +40,11 @@ class XrplClientService
     {
         $req = new AccountTxRequest($address, $lastLedgerIndex);
         $res = $this->client->syncRequest($req);
+
+        if ($res->getStatus() === 'error') {
+            LedgerDirect::log('Error fetching account transactions: ' . $res->getError(), 'error');
+            return []; // Return an empty array on error
+        }
 
         return $res->getResult()['transactions'];
     }

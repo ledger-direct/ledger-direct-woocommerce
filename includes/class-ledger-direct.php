@@ -7,10 +7,16 @@ use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
 class LedgerDirect
 {
-    public  const PAYMENT_IDENTIFIER = 'order_id';
+    public const META_KEY = '_ledger_direct';
+    public const PAYMENT_IDENTIFIER = 'ledger-direct-payment';
 
     public static self|null $_instance = null;
 
+    /**
+     * Get the singleton instance of LedgerDirect
+     *
+     * @return self
+     */
     public static function instance(): self
     {
         if (self::$_instance == null) {
@@ -20,12 +26,45 @@ class LedgerDirect
         return self::$_instance;
     }
 
+    /**
+     * LedgerDirect constructor.
+     */
     public function __construct() {
         $this->load_dependencies();
 
         $this->public_hooks();
         if ( is_admin() ) {
             $this->admin_hooks();
+        }
+    }
+
+    /**
+     * Log messages to WooCommerce logger
+     *
+     * @param $message
+     * @param $level
+     * @return void
+     */
+    public static function log($message, $level = 'info'): void {
+        if (!class_exists('WC_Logger')) {
+            return;
+        }
+
+        $logger = wc_get_logger();
+        $context = array('source' => 'ledger-direct');
+
+        switch ($level) {
+            case 'error':
+                $logger->error($message, $context);
+                break;
+            case 'warning':
+                $logger->warning($message, $context);
+                break;
+            case 'debug':
+                $logger->debug($message, $context);
+                break;
+            default:
+                $logger->info($message, $context);
         }
     }
 
@@ -48,17 +87,18 @@ class LedgerDirect
      * @return void
      */
     public function public_hooks(): void {
-        add_action('init', [$this, 'add_rewrite_rules']);
-        add_filter('query_vars', [$this, 'add_query_vars']);
+        add_action('init', [$this, 'add_rewrite_endpoint']);
         add_filter('woocommerce_payment_gateways', [$this, 'register_gateway']);
         add_filter('woocommerce_get_price_html', [$this, 'custom_price_html']);
         add_filter('woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2);
         add_filter('template_include', [$this, 'render_payment_page']);
 
-
         add_action( 'plugins_loaded', [$this, 'load_translations'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_scripts'] );
+
+        add_action('wp_ajax_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method']);
+        add_action('wp_ajax_nopriv_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method']);
     }
 
     /**
@@ -80,11 +120,12 @@ class LedgerDirect
     }
 
     /**
-     * Instanciate singleton
+     * Instantiate singleton
      *
      * @return void
      */
-    public function plugins_loaded_callback() {
+    public function plugins_loaded_callback(): void
+    {
         if (class_exists('WooCommerce')) {
             // Initialize Ledger Direct Gateway
             LedgerDirectPaymentGateway::instance();
@@ -106,6 +147,44 @@ class LedgerDirect
             null
         );
     }
+
+    /**
+     * AJAX-Handler für Zahlungsmethoden-Wechsel
+     */
+    public function ajax_change_payment_method(): void {
+        // Nonce-Prüfung
+        if (!wp_verify_nonce($_POST['nonce'], 'ledger_direct_nonce')) {
+            wp_die('Security check failed');
+        }
+
+        $order_id = sanitize_text_field($_POST['order_id']);
+        $payment_type = sanitize_text_field($_POST['payment_type']);
+
+        if (!in_array($payment_type, ['xrp', 'token', 'rlusd'])) {
+            wp_send_json_error('Invalid payment type');
+        }
+
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            wp_send_json_error('Order not found');
+        }
+
+        // Zahlungstyp aktualisieren
+        $order->update_meta_data('_ledger_direct_payment_type', $payment_type);
+        $order->save();
+
+        // Neue Zahlungsdaten für XRPL vorbereiten
+        $container = ld_get_dependency_injection_container();
+        $orderTransactionService = $container->get(OrderTransactionService::class);
+        $payment_data = $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
+
+        wp_send_json_success([
+            'payment_type' => $payment_type,
+            'payment_data' => $payment_data,
+            'message' => __('Payment method updated successfully', 'ledger-direct')
+        ]);
+    }
+
 
     public function custom_price_html($price): string {
         global $product;
@@ -151,28 +230,14 @@ class LedgerDirect
     }
 
     /**
-     * Add custom URL scheme
+     * Add custom URL endpoint for Ledger Direct payment page
      *
      * @return void
      */
-    public function add_rewrite_rules(): void {
-        add_rewrite_rule(
-            'ledger-direct/payment/([a-z0-9-]+)[/]?$',
-            'index.php?pagename=ledger-direct-payment&' . self::PAYMENT_IDENTIFIER . '=$matches[1]',
-            'top'
-        );
-    }
-
-    /**
-     * Register GET variables for custom URL scheme
-     *
-     * @param $query_vars
-     * @return array
-     */
-    public function add_query_vars($query_vars): array {
-        $query_vars[] = self::PAYMENT_IDENTIFIER;
-
-        return $query_vars;
+    public function add_rewrite_endpoint(): void
+    {
+        add_rewrite_endpoint('ledger-direct-payment', EP_ROOT);
+        // flush_rewrite_rules();
     }
 
     /**
@@ -183,8 +248,6 @@ class LedgerDirect
      */
     public function register_gateway($gateways): array {
         $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway';
-        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrpPaymentGateway';
-        $gateways[] = 'Hardcastle\LedgerDirect\Woocommerce\LedgerDirectXrplTokenPaymentGateway';
 
         return $gateways;
     }
@@ -198,14 +261,7 @@ class LedgerDirect
      * @throws Exception
      */
     public function before_checkout_create_order(WC_Order $order, $data ): void {
-        $payment_method = $order->get_payment_method();
-        if ($payment_method !== 'ledger-direct-xrp' && $payment_method !== 'ledger-direct-xrpl-token') {
-            return;
-        }
-
-        $container = ld_get_dependency_injection_container();
-        $orderTransactionService = $container->get(OrderTransactionService::class);
-        $orderTransactionService->prepareOrderForXrpl($order, $payment_method);
+        // Is already handled by LedgerDirectPaymentGateway
     }
 
     /**
@@ -215,16 +271,98 @@ class LedgerDirect
      * @return string
      */
     public function render_payment_page($template): string {
-        $order_id = get_query_var(self::PAYMENT_IDENTIFIER);
+        $order_key = get_query_var(self::PAYMENT_IDENTIFIER);
 
-        if (!empty($order_id)) {
+        if (!empty($order_key)) {
+            $order = $this->get_order_by_order_key($order_key);
+
+            if (!$order) {
+                // Order nicht gefunden - 404 anzeigen
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("Ledger Direct: Order not found for key: " . $order_key);
+                }
+
+                global $wp_query;
+                $wp_query->set_404();
+                status_header(404);
+                return get_404_template();
+            }
+
+            $gateway = LedgerDirectPaymentGateway::instance();
+            $is_paid = $gateway->sync_and_check_payment($order);
+            if ($is_paid) {
+                wp_redirect($gateway->get_return_url($order));
+                //wp_redirect(wc_get_checkout_url());
+                exit;
+            }
+
+            global $ledger_direct_order;
+            $ledger_direct_order = $order;
+
             $this->enqueue_public_styles();
             $this->enqueue_public_scripts();
-            return WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
+
+            $template_path = WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
+
+            if (!file_exists($template_path)) {
+                error_log("Ledger Direct: Template file not found: " . $template_path);
+                return $template;
+            }
+
+            return $template_path;
         }
 
         return $template;
     }
+
+    /**
+     * Get Order by Order Key
+     *
+     * @param string $order_key
+     * @return WC_Order|false
+     */
+    private function get_order_by_order_key(string $order_key) {
+        $order = wc_get_order($order_key);
+
+        if ($order && $order->get_order_key() === $order_key) {
+            return $order;
+        }
+
+        // Fallback: Manual DB search
+        global $wpdb;
+
+        // // Fallback: Manual DB search for HPOS
+        if (class_exists('Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore')) {
+            $order_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT order_id FROM {$wpdb->prefix}wc_order_operational_data WHERE order_key = %s",
+                $order_key
+            ));
+
+            if ($order_id) {
+                $order = wc_get_order($order_id);
+                if ($order) {
+                    return $order;
+                }
+            }
+        }
+
+        // Fallback: Legacy Post Meta
+        $order_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE meta_key = '_order_key' AND meta_value = %s",
+            $order_key
+        ));
+
+        if ($order_id) {
+            $order = wc_get_order($order_id);
+            if ($order) {
+                return $order;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * Load translations
@@ -276,7 +414,7 @@ class LedgerDirect
         // wp_enqueue_script(
         //     'crossmark',
         //     plugin_dir_url( __FILE__ ) . '../public/js/crossmark-3.5.min.js',
-        //     []
+        //    []
         // );
         wp_enqueue_script(
             'qr-bundle',

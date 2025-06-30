@@ -128,4 +128,10 @@ function calculate_token_order_total(WC_Order $order): float
     return $total;
 }
 
+function ld_round_stable_coin(float $value): float
+{
+    // Round to 2 decimal places for stable coins
+    return round($value, 2);
+}
+
 LedgerDirect::instance();
