@@ -12,11 +12,15 @@ class ConfigurationService
 
     public const CONFIG_KEY_MAINNET_ACCOUNT = 'xrpl_mainnet_destination_account';
 
+    public const CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED = 'xrpl_mainnet_rlusd_enabled';
+
     public const CONFIG_KEY_MAINNET_TOKEN_NAME = 'xrpl_mainnet_token_name';
 
     public const CONFIG_KEY_MAINNET_TOKEN_ISSUER = 'xrpl_mainnet_token_issuer';
 
     public const CONFIG_KEY_TESTNET_ACCOUNT = 'xrpl_testnet_destination_account';
+
+    public const CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED = 'xrpl_testnet_rlusd_enabled';
 
     public const CONFIG_KEY_TESTNET_TOKEN_NAME = 'xrpl_testnet_token_name';
 
@@ -75,7 +79,7 @@ class ConfigurationService
     }
 
     /**
-     *
+     * Get the XRPL network type.
      *
      * @return string
      * @throws Exception
@@ -132,7 +136,7 @@ class ConfigurationService
 
 
     /**
-     *
+     * Get the custom title for the payment page.
      *
      * @return string
      */
@@ -142,6 +146,23 @@ class ConfigurationService
             return $this->get(self::CONFIG_KEY_PAYMENT_PAGE_TITLE);
         } catch (Exception $exception) {
             return '';
+        }
+    }
+
+    /**
+     * Check if RLUSD payment is enabled.
+     *
+     * @return bool
+     */
+    public function isRlusdEnabled(): bool
+    {
+        try {
+            if ($this->isTest()) {
+                return $this->get(self::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED, false);
+            }
+            return $this->get(self::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED, false);
+        } catch (Exception $exception) {
+            return false;
         }
     }
 

@@ -26,6 +26,13 @@ class LedgerDirectAdmin
                 'default'     => '',
                 'desc_tip'    => true
             ],
+            ConfigurationService::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED => [
+                'title'       => __("Enable RLUSD - TESTNET", ConfigurationService::CONFIG_DOMAIN),
+                'type'        => 'checkbox',
+                'label'       => __('Enable RLUSD payments on TESTNET', ConfigurationService::CONFIG_DOMAIN),
+                'default'     => 'no',
+                'desc_tip'    => true
+            ],
 //            ConfigurationService::CONFIG_KEY_TESTNET_TOKEN_NAME => [
 //                'title'       => __("Token Name - TESTNET", ConfigurationService::CONFIG_DOMAIN),
 //                'type'        => 'text',
@@ -47,6 +54,14 @@ class LedgerDirectAdmin
                 'default'     => '',
                 'desc_tip'    => true
             ],
+            ConfigurationService::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED => [
+                'title'       => __("Enable RLUSD - MAINNET", ConfigurationService::CONFIG_DOMAIN),
+                'type'        => 'checkbox',
+                'label'       => __('Enable RLUSD payments on MAINNET', ConfigurationService::CONFIG_DOMAIN),
+                'default'     => 'no',
+                'desc_tip'    => true
+            ],
+
 //            ConfigurationService::CONFIG_KEY_MAINNET_TOKEN_NAME => [
 //                'title'       => __("Token Name - MAINNET", ConfigurationService::CONFIG_DOMAIN),
 //                'type'        => 'text',
@@ -61,6 +76,7 @@ class LedgerDirectAdmin
 //                'default'     => '',
 //                'desc_tip'    => true
 //            ],
+
             ConfigurationService::CONFIG_KEY_PAYMENT_PAGE_TITLE => [
                 'title'       => __("LedgerDirect Payment Page Title", ConfigurationService::CONFIG_DOMAIN),
                 'type'        => 'text',

@@ -115,6 +115,7 @@ $exchange_rate = $meta['exchange_rate'] ?? -1;
 $token_amount = $meta['token_amount'] ?? -1;
 $issuer = $meta['issuer'] ?? -1;
 $currency_code = $meta['currency_code'] ?? -1;
+$pairing = $meta['pairing'] ?? -1;
 ?>
 
 <?php if (!empty($payment_page_title)) { ?>
@@ -134,6 +135,22 @@ $currency_code = $meta['currency_code'] ?? -1;
                    type="text"
                    name="xrp-amount"
                    value="<?php echo $amount_requested; ?>"
+                   readonly
+                   style="display: none;"
+            />
+        <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
+            <p><?php echo sprintf(__('sendTokenMessage', 'ledger-direct'), $amount_requested, 'RLUSD'); ?></p>
+            <input id="rlusd-amount"
+                   type="text"
+                   name="rlusd-amount"
+                   value="<?php echo $amount_requested; ?>"
+                   readonly
+                   style="display: none;"
+            />
+            <input id="pairing"
+                   type="text"
+                   name="pairing"
+                   value="<?php echo $pairing; ?>"
                    readonly
                    style="display: none;"
             />
@@ -225,6 +242,15 @@ $currency_code = $meta['currency_code'] ?? -1;
             <br/>
             <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $amount_requested; ?> XRP</span><br/>
             <span><?php echo __('exchangeRate', 'ledger-direct'); ?>: <?php echo $exchange_rate; ?> XRP / <?php echo $currency_code; ?></span>
+            <br/>
+            <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $network_name; ?></span><br/>
+        <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
+            <div class="ld-sum"><?php echo $total; ?><?php echo $currency_symbol; ?></div>
+            <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
+            <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $total; ?> <?php echo $wp_currency; ?></span>
+            <br/>
+            <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $amount_requested; ?> RLUSD</span><br/>
+            <span><?php echo __('exchangeRate', 'ledger-direct'); ?>: <?php echo $exchange_rate; ?> <?php echo $pairing; ?></span>
             <br/>
             <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $network_name; ?></span><br/>
         <?php } elseif ($payment_type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID) { ?>

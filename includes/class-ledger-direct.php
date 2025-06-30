@@ -414,7 +414,7 @@ class LedgerDirect
         // wp_enqueue_script(
         //     'crossmark',
         //     plugin_dir_url( __FILE__ ) . '../public/js/crossmark-3.5.min.js',
-        //     []
+        //    []
         // );
         wp_enqueue_script(
             'qr-bundle',

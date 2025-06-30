@@ -8,9 +8,9 @@ use Hardcastle\LedgerDirect\Provider\Oracle\BinanceOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\CoingeckoOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\KrakenOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\RippleOracle;
-class XrpPriceProvider implements CryptoPriceProviderInterface
+class RlusdPriceProvider implements CryptoPriceProviderInterface
 {
-    public const CRYPTO_CODE = 'XRP';
+    public const CRYPTO_CODE = 'RLUSD';
 
     public const DEFAULT_ALLOWED_DIVERGENCE = 0.05;
 
@@ -31,14 +31,16 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
      */
     public function getCurrentExchangeRate(string $code): float|false
     {
+        // If the code is USD, return 1 as RLUSD is pegged to USD
+        if ($code === 'USD') {
+            return 1;
+        }
+
         $oracleResults = [];
         $filteredPrices = [];
 
         $oracles = [
-            new BinanceOracle(),
-            new KrakenOracle(),
-            new RippleOracle(),
-            new CoingeckoOracle()
+            new CoingeckoOracle(),
         ];
 
         foreach ($oracles as $oracle) {
@@ -72,7 +74,7 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
     }
 
     /**
-     *
+     * Checks if the given price is plausible
      *
      * @param float $price
      * @return bool
