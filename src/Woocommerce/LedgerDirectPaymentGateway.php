@@ -204,14 +204,10 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         if (!isset($meta['delivered_amount']) || !isset($meta['amount_requested'])) {
             return false;
         }
-        $requestedRlusdAmount = (float) $meta['amount_requested'];
-        $paidRlusdAmount = (float) $meta['delivered_amount'];
+        $requestedRlusdAmount = $meta['amount_requested'];
+        $deliveredRlusdAmount = $meta['delivered_amount'];
 
-        if ($requestedRlusdAmount <= 0 || $paidRlusdAmount <= 0) {
-            return false;
-        }
-
-        if ($paidRlusdAmount === $requestedRlusdAmount) {
+        if ($deliveredRlusdAmount === $requestedRlusdAmount) {
             return true;
         }
 

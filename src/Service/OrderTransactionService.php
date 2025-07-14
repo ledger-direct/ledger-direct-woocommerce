@@ -6,8 +6,8 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Provider\RlusdPriceProvider;
-use Hardcastle\LedgerDirect\Provider\RusdPriceProvider;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
+use Hardcastle\XRPL_PHP\Core\Stablecoin;
 use LedgerDirect;
 use WC_Order;
 use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
@@ -42,7 +42,7 @@ class OrderTransactionService
      * @param $cryptoCode
      * @return array
      */
-    public function getCryptoPriceForOrder(WC_Order $order, $cryptoCode): array
+    public function getCryptoPriceForOrder(WC_Order $order, $cryptoCode, ?string $network = null): array
     {
         $orderTotal = $order->get_total();
         $currency = $order->get_currency();
@@ -54,7 +54,10 @@ class OrderTransactionService
             $container = ld_get_dependency_injection_container();
             $priceProvider = $container->get(RlusdPriceProvider::class);
             $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
-            $amountRequested = ld_round_stable_coin($orderTotal / $exchangeRate);
+            $amountRequested = Stablecoin::getRLUSDAmount(
+                $network,
+                ld_round_stable_coin($orderTotal / $exchangeRate)
+            );
         } else {
             throw new Exception('Unsupported crypto code: ' . $cryptoCode);
         }
@@ -121,7 +124,7 @@ class OrderTransactionService
         match ($paymentMethod) {
             LedgerDirectPaymentGateway::XRP_PAYMENT_ID => $this->prepareXrpPayment($order),
             //LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID => $this->prepareTokenPayment($order),
-            LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID => $this->prepareRlusdPayment($order),
+            LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID => $this->prepareRlusdPayment($order, $network),
         };
     }
 
@@ -139,12 +142,12 @@ class OrderTransactionService
         $this->addAdditionalDataToPayment($order, $additionalData);
     }
 
-    private function prepareRlusdPayment(WC_Order $order): void
+    private function prepareRlusdPayment(WC_Order $order, $network): void
     {
         if (!$this->configurationService->isRlusdEnabled()) {
             throw new Exception('RLUSD payments are not enabled in the configuration.');
         }
-        $additionalData = $this->getCryptoPriceForOrder($order, 'RLUSD');
+        $additionalData = $this->getCryptoPriceForOrder($order, 'RLUSD', $network);
         $additionalData['type'] = LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID;
         $additionalData['currency'] = 'RLUSD';
 
@@ -218,7 +221,7 @@ class OrderTransactionService
                 $txMeta = json_decode($tx['meta'], true);
 
                 if (is_array($txMeta['delivered_amount'])) {
-                    $amount = $txMeta['delivered_amount']['value'];
+                    $amount = $txMeta['delivered_amount'];
                 } else {
                     $amount = dropsToXrp($txMeta['delivered_amount']);
                 }

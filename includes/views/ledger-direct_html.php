@@ -139,7 +139,7 @@ $pairing = $meta['pairing'] ?? -1;
                    style="display: none;"
             />
         <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
-            <p><?php echo sprintf(__('sendTokenMessage', 'ledger-direct'), $amount_requested, 'RLUSD'); ?></p>
+            <p><?php echo sprintf(__('sendTokenMessage', 'ledger-direct'), $amount_requested['value'], 'RLUSD'); ?></p>
             <input id="rlusd-amount"
                    type="text"
                    name="rlusd-amount"
@@ -249,7 +249,7 @@ $pairing = $meta['pairing'] ?? -1;
             <span><?php echo __('orderNumber', 'ledger-direct'); ?>: <?php echo $order_id; ?></span><br/>
             <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $total; ?> <?php echo $wp_currency; ?></span>
             <br/>
-            <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $amount_requested; ?> RLUSD</span><br/>
+            <span><?php echo __('price', 'ledger-direct'); ?>: <?php echo $amount_requested['value']; ?> RLUSD</span><br/>
             <span><?php echo __('exchangeRate', 'ledger-direct'); ?>: <?php echo $exchange_rate; ?> <?php echo $pairing; ?></span>
             <br/>
             <span><?php echo __('Network:', 'ledger-direct'); ?>: <?php echo $network_name; ?></span><br/>
