@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 use Hardcastle\LedgerDirect\Provider\Oracle\BinanceOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\CoingeckoOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\KrakenOracle;
-use Hardcastle\LedgerDirect\Provider\Oracle\RippleOracle;
+
 class XrpPriceProvider implements CryptoPriceProviderInterface
 {
     public const CRYPTO_CODE = 'XRP';
@@ -36,9 +36,8 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
 
         $oracles = [
             new BinanceOracle(),
+            new CoingeckoOracle(),
             new KrakenOracle(),
-            new RippleOracle(),
-            new CoingeckoOracle()
         ];
 
         foreach ($oracles as $oracle) {
@@ -72,7 +71,7 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
     }
 
     /**
-     *
+     * Checks if the given price is plausible for XRP.
      *
      * @param float $price
      * @return bool

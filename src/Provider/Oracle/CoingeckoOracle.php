@@ -47,6 +47,12 @@ class CoingeckoOracle implements OracleInterface
         return $this;
     }
 
+    /**
+     * Maps currency codes to Coingecko's expected format.
+     *
+     * @param string $currencyCode The currency code to map.
+     * @return string Mapped currency code.
+     */
     private function mapCurrencyCode(string $currencyCode): string
     {
         $mappings = [
