@@ -31,6 +31,12 @@ class CoinbaseOracle implements OracleInterface
         return 0.0;
     }
 
+    /**
+     * Set the HTTP client.
+     *
+     * @param Client $client
+     * @return OracleInterface
+     */
     public function prepare(Client $client): OracleInterface
     {
         $this->client = $client;

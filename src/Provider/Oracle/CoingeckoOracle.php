@@ -35,7 +35,7 @@ class CoingeckoOracle implements OracleInterface
     }
 
     /**
-     * Prepares the oracle with a Guzzle client.
+     * Set the HTTP client.
      *
      * @param Client $client
      * @return OracleInterface
