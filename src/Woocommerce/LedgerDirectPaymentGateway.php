@@ -4,8 +4,7 @@ namespace Hardcastle\LedgerDirect\Woocommerce;
 
 use DI\DependencyException;
 use DI\NotFoundException;
-use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
-use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
+use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use LedgerDirect;
@@ -98,9 +97,12 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     }
 
     /**
-     * Zeigt die Zahlungsmethoden-Auswahl im Checkout
+     * Display the payment fields on the checkout page. This method is called by
+     * WooCommerce to render the payment options.
+     *
+     * @return void
      */
-    public function payment_fields()
+    public function payment_fields(): void
     {
         if ($this->description) {
             echo wpautop(wptexturize($this->description));
@@ -128,7 +130,8 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     }
 
     /**
-     * Validiert die ausgewählte Zahlungsmethode
+     * Validates the fields submitted by the user on the checkout page. This method is called by
+     * WooCommerce to ensure that the selected payment method is valid.
      */
     public function validate_fields(): bool
     {
@@ -167,6 +170,13 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         ];
     }
 
+    /**
+     * Syncs the order transaction with XRPL and checks if the payment is valid.
+     *
+     * @param WC_Order $order
+     * @return bool
+     * @throws GuzzleException
+     */
     public function sync_and_check_payment(WC_Order $order): bool
     {
         $meta = $order->get_meta(LedgerDirect::META_KEY);
@@ -184,6 +194,12 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         return false;
     }
 
+    /**
+     * Checks if the XRP payment is valid based on the delivered amount and requested amount.
+     *
+     * @param array $meta
+     * @return bool
+     */
     private function is_xrp_payment_valid(array $meta): bool
     {
         // Payment is settled, let's check whether the paid amount is enough
@@ -194,11 +210,23 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         return $slipped < $slippage;
     }
 
+    /**
+     * Checks if the token payment is valid based on the delivered amount and requested amount.
+     *
+     * @param array $meta
+     * @return bool
+     */
     private function is_token_payment_valid(array $meta): bool
     {
         return false;
     }
 
+    /**
+     * Checks if the RLUSD payment is valid based on the delivered amount and requested amount.
+     *
+     * @param array $meta
+     * @return bool
+     */
     private function is_rlusd_payment_valid(array $meta): bool
     {
         if (!isset($meta['delivered_amount']) || !isset($meta['amount_requested'])) {

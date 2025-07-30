@@ -129,6 +129,13 @@ class XrplTxService
         }
     }
 
+    /**
+     * Filters out transactions that are not incoming to the specified address.
+     *
+     * @param array $transactions
+     * @param string $ownAddress
+     * @return array
+     */
     private function filterIncomingTransactions(array $transactions, string $ownAddress): array
     {
         foreach ($transactions as $key => $transaction) {
@@ -141,7 +148,7 @@ class XrplTxService
     }
 
     /**
-     *
+     * Filters out transactions that are already present in the database.
      *
      * @param array $transactions
      * @return array
@@ -179,7 +186,7 @@ class XrplTxService
     }
 
     /**
-     *
+     * Hydrates the transaction data into a format suitable for database insertion.
      *
      * @param array $transactions
      * @return array
