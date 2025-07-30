@@ -1,6 +1,7 @@
 {
   "name": "hardcastle/ledger-direct-woocommerce",
   "type": "project",
+  "version": "0.7.0",
   "description": "XRP Ledger integration",
   "license": "MIT",
   "require": {

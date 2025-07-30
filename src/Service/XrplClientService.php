@@ -29,7 +29,7 @@ class XrplClientService
     }
 
     /**
-     * Fetches account transactions from the XRPL network.
+     * Fetches account transactions for a given address from the XRPL network.
      *
      * @param string $address
      * @param int|null $lastLedgerIndex

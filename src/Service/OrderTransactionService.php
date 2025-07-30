@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Service;
 
+use DI\DependencyException;
+use DI\NotFoundException;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
@@ -14,6 +16,7 @@ use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
 
 class OrderTransactionService
 {
+    public const METADATA_VERSION = 1;
     public const DEFAULT_EXPIRY = 60 * 15; // 15 minutes
 
     public static self|null $_instance = null;
@@ -40,7 +43,10 @@ class OrderTransactionService
      *
      * @param WC_Order $order
      * @param $cryptoCode
+     * @param string|null $network
      * @return array
+     * @throws DependencyException
+     * @throws NotFoundException
      */
     public function getCryptoPriceForOrder(WC_Order $order, $cryptoCode, ?string $network = null): array
     {
@@ -114,6 +120,7 @@ class OrderTransactionService
         $xrplData = [
             'chain' => 'XRPL',
             'network' => $network,
+            'version' => self::METADATA_VERSION,
             'destination_account' => $destination,
             'destination_tag' => $destinationTag,
             'expiry' => $this->getExpiryTimestamp()
@@ -129,10 +136,11 @@ class OrderTransactionService
     }
 
     /**
-     *
+     * Prepare XRP payment data for the order
      *
      * @param WC_Order $order
      * @return void
+     * @throws Exception
      */
     private function prepareXrpPayment(WC_Order $order): void
     {
@@ -142,6 +150,14 @@ class OrderTransactionService
         $this->addAdditionalDataToPayment($order, $additionalData);
     }
 
+    /**
+     * Prepare RLUSD payment data for the order
+     *
+     * @param WC_Order $order
+     * @param string $network
+     * @return void
+     * @throws Exception
+     */
     private function prepareRlusdPayment(WC_Order $order, $network): void
     {
         if (!$this->configurationService->isRlusdEnabled()) {
@@ -154,6 +170,13 @@ class OrderTransactionService
         $this->addAdditionalDataToPayment($order, $additionalData);
     }
 
+    /**
+     * Prepare token payment data for the order
+     *
+     * @param WC_Order $order
+     * @return void
+     * @throws Exception
+     */
     private function prepareTokenPayment(WC_Order $order): void
     {
         $issuer = $this->configurationService->getIssuer();
