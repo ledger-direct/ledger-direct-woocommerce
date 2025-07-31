@@ -27,9 +27,10 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
      * Gets the current XRP price by querying averaging multiple oracles
      *
      * @param string $code
+     * @param bool|null $round
      * @return float|false
      */
-    public function getCurrentExchangeRate(string $code): float|false
+    public function getCurrentExchangeRate(string $code, ?bool $round = false): float|false
     {
         $oracleResults = [];
         $filteredPrices = [];
@@ -63,8 +64,8 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
         }
 
         if(count($filteredPrices) > 0) {
-            $price = array_sum($filteredPrices) / count($filteredPrices);
-            return round($price, self::XRP_ROUND_PLACES);
+            $avg = array_sum($filteredPrices) / count($filteredPrices);
+            return $round ? $this->roundPrice($avg) : $avg;
         }
 
         return false;
@@ -83,5 +84,16 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
         }
 
         return false ;
+    }
+
+    /**
+     * Rounds the price to the defined XRP round places.
+     *
+     * @param float $price
+     * @return float
+     */
+    private function roundPrice(float $price): float
+    {
+        return round($price, self::XRP_ROUND_PLACES);
     }
 }

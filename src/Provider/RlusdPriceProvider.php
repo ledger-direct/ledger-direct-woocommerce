@@ -14,7 +14,7 @@ class RlusdPriceProvider implements CryptoPriceProviderInterface
 
     public const DEFAULT_ALLOWED_DIVERGENCE = 0.05;
 
-    public const XRP_ROUND_PLACES = 5;
+    public const RLUSD_ROUND_PLACES = 2;
 
     private Client $client;
 
@@ -27,9 +27,10 @@ class RlusdPriceProvider implements CryptoPriceProviderInterface
      * Gets the current XRP price by querying averaging multiple oracles
      *
      * @param string $code
+     * @param bool|null $round
      * @return float|false
      */
-    public function getCurrentExchangeRate(string $code): float|false
+    public function getCurrentExchangeRate(string $code, ?bool $round = false): float|false
     {
         // If the code is USD, return 1 as RLUSD is pegged to USD
         if ($code === 'USD') {
@@ -65,9 +66,9 @@ class RlusdPriceProvider implements CryptoPriceProviderInterface
             }
         }
 
-        if(count($filteredPrices) > 0) {
-            $price = array_sum($filteredPrices) / count($filteredPrices);
-            return round($price, self::XRP_ROUND_PLACES);
+        if (count($filteredPrices) > 0) {
+            $avg = array_sum($filteredPrices) / count($filteredPrices);
+            return $round ? $this->roundPrice($avg) : $avg;
         }
 
         return false;
@@ -86,5 +87,16 @@ class RlusdPriceProvider implements CryptoPriceProviderInterface
         }
 
         return false ;
+    }
+
+    /**
+     * Rounds the price to the defined RLUSD round places.
+     *
+     * @param float $price
+     * @return float
+     */
+    private function roundPrice(float $price): float
+    {
+        return round($price, self::RLUSD_ROUND_PLACES);
     }
 }

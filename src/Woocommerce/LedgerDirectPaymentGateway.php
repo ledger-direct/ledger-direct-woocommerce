@@ -116,10 +116,10 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         echo __('XRP', 'ledger-direct');
         echo '</label><br>';
 
-        echo '<label>';
-        echo '<input type="radio" name="ledger_direct_payment_type" value="token"> ';
-        echo __('XRPL Token', 'ledger-direct');
-        echo '</label><br>';
+        // echo '<label>';
+        // echo '<input type="radio" name="ledger_direct_payment_type" value="token"> ';
+        // echo __('XRPL Token', 'ledger-direct');
+        // echo '</label><br>';
 
         echo '<label>';
         echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';

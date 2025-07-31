@@ -9,6 +9,10 @@
     "hardcastle/xrpl_php": "^v0.9.10",
     "php-di/php-di": "^7.0"
   },
+  "suggest": {
+    "ext-gmp": "Not required for Ledger Direct, but recommended for performance improvements",
+    "ext-bcmath": "Not required for Ledger Direct, but recommended for performance improvements"
+  },
   "require-dev": {
     "phpunit/phpunit": "^10.0",
     "10up/wp_mock": "^0.4.2",
@@ -30,11 +34,19 @@
       "email": "dev@ledger-direct.com"
     }
   ],
-  "keywords": ["xrp","xrpl","ripple","gemwallet","crossmark","xumm"],
-  "homepage": "https://ledger-direct.com/",
+  "keywords": ["ledger","direct","xrp","xrpl","rlusd","stablecoin","ripple","gemwallet","crossmark","xumm"],
+  "homepage": "https://www.ledger-direct.com/",
   "scripts": {
     "phpcs": "phpcs -s -p",
     "phpstan": "phpstan",
-    "test": "phpunit -c phpunit.xml"
+    "test": "phpunit -c phpunit.xml",
+    "build": [
+        "composer install --no-dev --no-scripts --optimize-autoloader",
+        "git archive --prefix=ledger-direct-woocommerce/ --format=zip --output ledger-direct-woocommerce-$(git rev-parse HEAD).zip $(git rev-parse --abbrev-ref HEAD)",
+        "mkdir ledger-direct-woocommerce",
+        "cp -r vendor ledger-direct-woocommerce/.",
+        "zip -r ledger-direct-woocommerce-$(git rev-parse HEAD).zip ledger-direct-woocommerce/vendor",
+        "rm -rf ledger-direct-woocommerce"
+    ]
   }
 }
