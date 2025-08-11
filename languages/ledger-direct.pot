@@ -9,9 +9,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-06-28T13:08:50+00:00\n"
+"POT-Creation-Date: 2025-08-03T17:53:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ledger-direct\n"
 
 #. Plugin Name of the plugin
@@ -67,6 +67,7 @@ msgid "Payment not required"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:62
+#, php-format
 msgid "Order #%d is already %s."
 msgstr ""
 
@@ -76,46 +77,43 @@ msgstr ""
 
 #: includes/views/ledger-direct_html.php:71
 #: includes/views/ledger-direct_html.php:95
-msgid "Invalid Payment Method"
+msgid "Invalid payment method"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:72
 #: includes/views/ledger-direct_html.php:96
-msgid "This order was not paid with Ledger Direct."
+msgid "This order was not paid with LedgerDirect."
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:133
-msgid "sendXrpMessage"
+msgid "Please send <strong>%s</strong> XRP to the following address:"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:142
-msgid "sendRlusdMessage"
-msgstr ""
-
 #: includes/views/ledger-direct_html.php:158
-msgid "sendTokenMessage"
+msgid "Please send <strong>%s</strong> <strong>%s</strong> to the following address:"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:184
-msgid "destinationAccountLabel"
+msgid "Account"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:200
-msgid "destinationTagLabel"
+msgid "Destination Tag"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:218
-msgid "destinationTagWarning"
+msgid "It is important to include the given destination tag when sending funds from your wallet."
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:231
-msgid "checkPaymentButton"
+msgid "Check payment processing"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:240
 #: includes/views/ledger-direct_html.php:249
 #: includes/views/ledger-direct_html.php:258
-msgid "orderNumber"
+msgid "Order ID"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:241
@@ -123,40 +121,36 @@ msgstr ""
 #: includes/views/ledger-direct_html.php:250
 #: includes/views/ledger-direct_html.php:252
 #: includes/views/ledger-direct_html.php:259
-msgid "price"
+msgid "Total"
 msgstr ""
 
 #: includes/views/ledger-direct_html.php:244
 #: includes/views/ledger-direct_html.php:253
-msgid "exchangeRate"
-msgstr ""
+msgid "Exchange rate"
+msgstr "Wechselkurs"
 
 #: includes/views/ledger-direct_html.php:246
 #: includes/views/ledger-direct_html.php:255
 #: includes/views/ledger-direct_html.php:261
-msgid "Network:"
-msgstr ""
+msgid "Network"
+msgstr "Netzwerk"
 
 #: includes/views/ledger-direct_html.php:270
-msgid "backButton"
-msgstr ""
+msgid "Back"
+msgstr "Zurück"
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:109
-msgid "Choose Payment Method"
-msgstr ""
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:112
+msgid "Choose payment method"
+msgstr "Zahlungsmethode auswählen"
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:113
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:116
 msgid "XRP"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:118
-msgid "XRPL Token"
-msgstr ""
-
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:123
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:126
 msgid "RLUSD Stablecoin"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:137
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:141
 msgid "Please select a valid payment method."
-msgstr ""
+msgstr "Bitte wählen Sie eine gültige Zahlungsmethode aus."
