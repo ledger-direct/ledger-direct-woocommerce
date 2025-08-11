@@ -1,6 +1,4 @@
-# LedgerDirect - Direct Crypto and Stablecoins Payments for WooCommerce
-
-# WooCommerce plugin for XRP ledger payments using XUMM
+# LedgerDirect Payment plugin for WooCommerce
 
 LedgerDirect is a payment plugin for WooCommerce. Receive crypto and stablecoin payments directly – without middlemen, 
 intermediary wallets, extra servers or external payment providers. Maximum control, minimal detours!
