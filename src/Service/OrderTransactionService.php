@@ -55,7 +55,7 @@ class OrderTransactionService
 
         if($cryptoCode === 'XRP') {
             $exchangeRate = $this->priceProvider->getCurrentExchangeRate($currency);
-            $amountRequested = $orderTotal / $exchangeRate;
+            $amountRequested = round($orderTotal / $exchangeRate, 2);
         } elseif ($cryptoCode === 'RLUSD') {
             $container = ld_get_dependency_injection_container();
             $priceProvider = $container->get(RlusdPriceProvider::class);

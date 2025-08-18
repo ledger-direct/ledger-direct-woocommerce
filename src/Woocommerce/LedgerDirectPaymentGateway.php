@@ -50,13 +50,13 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = self::ID;
-        $this->method_title = 'Ledger Direct';
+        $this->method_title = 'LedgerDirect';
         $this->method_description = 'Accept payments via XRPL (XRP, Tokens, RLUSD)';
-        $this->title = 'Pay with XRPL';
+        $this->title = __('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
         $this->description = 'Choose your preferred XRPL payment method';
 
-        $this->icon = ld_get_public_url('/public/images/logo-40x40.png');
-        $this->has_fields = true; // Wichtig für payment_fields()
+        $this->icon = ld_get_public_url('/public/images/checkout.png');
+        $this->has_fields = true; // Important for payment_fields()
         $this->enabled = $this->get_option('enabled');
 
         $this->xrpl_network = $this->get_option('xrpl_network', 'testnet');
@@ -105,11 +105,11 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function payment_fields(): void
     {
         if ($this->description) {
-            echo wpautop(wptexturize($this->description));
+            // echo wpautop(wptexturize($this->description));
         }
 
         echo '<div id="ledger-direct-payment-methods">';
-        echo '<h4>' . __('Choose Payment Method', 'ledger-direct') . '</h4>';
+        echo '<h4>' . __('Choose payment method', 'ledger-direct') . '</h4>';
 
         echo '<label>';
         echo '<input type="radio" name="ledger_direct_payment_type" value="xrp" checked> ';

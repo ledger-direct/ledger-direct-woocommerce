@@ -85,6 +85,7 @@ function ld_get_svg_html(string $icon, array $properties = []): string {
     }
 
     $defaultProperties = [
+        'id' => $icon . '-icon',
         'class' => '',
         'width' => '24',
         'height' => '24',

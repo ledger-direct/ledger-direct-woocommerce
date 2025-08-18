@@ -55,8 +55,8 @@
         const destinationTagCopy = destinationTag.next().children().eq(0);
         const destinationTagQrCode = destinationTag.next().children().eq(1);
 
-        destinationAccountCopy.on('click', copyToClipboard.bind(this, destinationAccount));
-        destinationTagCopy.on('click', copyToClipboard.bind(this, destinationTag));
+        destinationAccountCopy.on('click', copyToClipboard.bind(this, destinationAccount, destinationAccountCopy));
+        destinationTagCopy.on('click', copyToClipboard.bind(this, destinationTag, destinationTagCopy));
 
         attachQrCodeTooltip(destinationAccountQrCode, destinationAccount.attr("data-value"));
         attachQrCodeTooltip(destinationTagQrCode, destinationTag.attr("data-value"));
@@ -77,14 +77,44 @@
      * @param element
      * @param event
      */
-    function copyToClipboard(element, event) {
+    function copyToClipboard(element, icon, event) {
         if (typeof navigator.clipboard === 'undefined') {
             console.log('Clipboard API not supported - is this a secure context?');
 
             return;
         }
-        navigator.clipboard.writeText(element.attr("data-value"))
+
+        const message = 'copied!';
+        navigator.clipboard.writeText(element.attr("data-value")).then(() => {
+            showCopyFeedback(message, icon);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            showCopyFeedback('Failed to copy to clipboard', icon, true);
+        });
     }
+
+    /**
+     * Shows a temporary toast notification for copy feedback
+     * @param {string} message
+     * @param {boolean} isError
+     */
+    function showCopyFeedback(message, icon, isError = false) {
+        // Remove any existing toast
+        $('.copy-toast').remove();
+
+        const toast = $('<div class="copy-toast">')
+            .text(message)
+            .css('background-color', isError ? '#f44336' : '#1daae6');
+
+        icon.parent().append(toast);
+
+        // Auto-remove after 3 seconds with fade effect
+        setTimeout(() => {
+            toast.addClass('fade-out');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
 
     /**
      * Checks the payment status by reloading the page.
