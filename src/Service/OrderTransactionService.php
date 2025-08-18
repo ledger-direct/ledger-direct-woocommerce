@@ -9,7 +9,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Provider\RlusdPriceProvider;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use Hardcastle\XRPL_PHP\Core\Stablecoin;
+use Hardcastle\XRPL_PHP\Core\Stablecoin\RLUSD;
 use LedgerDirect;
 use WC_Order;
 use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
@@ -60,7 +60,7 @@ class OrderTransactionService
             $container = ld_get_dependency_injection_container();
             $priceProvider = $container->get(RlusdPriceProvider::class);
             $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
-            $amountRequested = Stablecoin::getRLUSDAmount(
+            $amountRequested = RLUSD::getAmount(
                 $network,
                 ld_round_stable_coin($orderTotal / $exchangeRate)
             );
