@@ -7,7 +7,7 @@
   "require": {
     "php": "^8.1.0",
     "hardcastle/xrpl_php": "^v0.10.0",
-    "php-di/php-di": "^7.0"
+    "php-di/php-di": "^7.1.1"
   },
   "suggest": {
     "ext-gmp": "Not required for LedgerDirect, but recommended for performance improvements",
