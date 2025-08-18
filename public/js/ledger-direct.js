@@ -66,18 +66,40 @@
             checkPayment();
         });
 
-        setTimeout(setupWallets, 1000);
+        // Disable Wallets for now
+        // setTimeout(setupWallets, 1000);
 
     });
 
+    /**
+     * Copies the value of the given element to the clipboard.
+     *
+     * @param element
+     * @param event
+     */
     function copyToClipboard(element, event) {
+        if (typeof navigator.clipboard === 'undefined') {
+            console.log('Clipboard API not supported - is this a secure context?');
+
+            return;
+        }
         navigator.clipboard.writeText(element.attr("data-value"))
     }
 
+    /**
+     * Checks the payment status by reloading the page.
+     * This is a simple way to check if the payment has been received.
+     */
     function checkPayment() {
         location.reload();
     }
 
+    /**
+     * Attaches a QR code tooltip to the given element.
+     * The tooltip will display a QR code with the given value.
+     * @param element
+     * @param value
+     */
     function attachQrCodeTooltip(element, value) {
         element.tooltipster({
             theme: 'tooltipster-shadow',
@@ -95,11 +117,17 @@
         });
     }
 
+    /**
+     * Sets up wallets for payment if API is detected.
+     */
     function setupWallets() {
         setupGemWallet();
         setupCrossmark();
     }
 
+    /**
+     * Check if the Gem Wallet API is installed and sets Gem Wallet payments accordingly.
+     */
     function setupGemWallet() {
         const gemWalletButton = $('#gem-wallet-button');
         GemWalletApi.isInstalled().then((response) => {
@@ -116,6 +144,9 @@
         });
     }
 
+    /**
+     * Check if the Crossmark SDK is available and set up Crossmark Wallet accordingly.
+     */
     function setupCrossmark() {
         if (window.xrpl?.isCrossmark) {
             const CrossmarkSDK = window.xrpl.crossmark;
@@ -137,6 +168,10 @@
         }
     }
 
+    /**
+     * Generate a payment payload.
+     * @returns {{amount: {currency: (*|string|jQuery), issuer: (*|string|jQuery), value: (*|string|jQuery)}, destination: *, destinationTag: number}|{amount: *, destination: *, destinationTag: number}}
+     */
     function preparePaymentPayload() {
         // XRP Payment
         try {
@@ -159,7 +194,7 @@
             console.log(error)
         }
 
-        // Token Payment
+        // Token/Stablecoin Payment
         try {
             const tokenAmount = $('#token-amount')
             const issuer = $('#issuer')

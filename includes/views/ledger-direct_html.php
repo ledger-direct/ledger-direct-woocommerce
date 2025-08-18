@@ -222,9 +222,12 @@ $pairing = $meta['pairing'] ?? -1;
         </div>
 
         <div class="ld-sync">
+            <!-- Wallet buttons -->
+            <!--
             <button id="gem-wallet-button" class="wallet-disabled">G</button>
             <button id="crossmark-wallet-button" class="wallet-disabled">C</button>
             <button id="xumm-wallet-button" class="wallet-disabled">X</button>
+            -->
             <button id="check-payment-button" data-order-id="<?php echo $order_id; ?>">
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none"></span>
                 <?php echo __('Check payment processing', 'ledger-direct'); ?>
