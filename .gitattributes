@@ -6,8 +6,8 @@
 
 composer.lock export-ignore
 
+bin/ export-ignore
 phpunit.xml export-ignore
 .phpunit.cache export-ignore
 tests/ export-ignore
-
 _scripts/ export-ignore
