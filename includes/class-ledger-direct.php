@@ -140,8 +140,8 @@ class LedgerDirect
     public function admin_menu_callback(): void {
          add_submenu_page(
             'woocommerce',
-            __('LedgerDirect', 'woocommerce-ledger-direct'),
-            __('LedgerDirect', 'woocommerce-ledger-direct'),
+            __('LedgerDirect', 'ledger-direct'),
+            __('LedgerDirect', 'ledger-direct'),
             'manage_woocommerce',
              admin_url('admin.php?page=wc-settings&tab=checkout&section=ledger-direct'),
             null
@@ -149,16 +149,17 @@ class LedgerDirect
     }
 
     /**
-     * AJAX-Handler für Zahlungsmethoden-Wechsel
+     * Handle AJAX request to change payment method
      */
     public function ajax_change_payment_method(): void {
-        // Nonce-Prüfung
-        if (!wp_verify_nonce($_POST['nonce'], 'ledger_direct_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        $order_id = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
+        $payment_type = isset($_POST['payment_type']) ? sanitize_text_field(wp_unslash($_POST['text'])) : '';
+
+
+        if (!wp_verify_nonce($nonce, 'ledger_direct_nonce')) {
             wp_die('Security check failed');
         }
-
-        $order_id = sanitize_text_field($_POST['order_id']);
-        $payment_type = sanitize_text_field($_POST['payment_type']);
 
         if (!in_array($payment_type, ['xrp', 'token', 'rlusd'])) {
             wp_send_json_error('Invalid payment type');
@@ -169,11 +170,9 @@ class LedgerDirect
             wp_send_json_error('Order not found');
         }
 
-        // Zahlungstyp aktualisieren
         $order->update_meta_data('_ledger_direct_payment_type', $payment_type);
         $order->save();
 
-        // Neue Zahlungsdaten für XRPL vorbereiten
         $container = ld_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
         $payment_data = $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
@@ -209,9 +208,9 @@ class LedgerDirect
         woocommerce_wp_text_input(
             array(
                 'id' => '_ledger_direct_lpt_price',
-                'label' => __('LPT Price', 'woocommerce'),
+                'label' => __('LPT Price', 'ledger-direct'),
                 'desc_tip' => 'true',
-                'description' => __('Enter the Loyalty Point price here.', 'woocommerce')
+                'description' => __('Enter the Loyalty Point price here.', 'ledger-direct'),
             )
         );
         echo '</div>';
@@ -225,8 +224,11 @@ class LedgerDirect
      */
     public function save_product_custom_fields($post_id): void
     {
-        $custom_field_value = isset($_POST['_ledger_direct_lpt_price']) ? $_POST['_ledger_direct_lpt_price'] : '';
-        update_post_meta($post_id, '_ledger_direct_lpt_price', sanitize_text_field($custom_field_value));
+        if (!current_user_can('edit_product', $post_id)) {
+            return;
+        }
+        $custom_field_value = isset($_POST['_ledger_direct_lpt_price']) ? sanitize_text_field($_POST['_ledger_direct_lpt_price']) : '';
+        update_post_meta($post_id, '_ledger_direct_lpt_price', $custom_field_value);
     }
 
     /**
@@ -277,7 +279,7 @@ class LedgerDirect
             $order = $this->get_order_by_order_key($order_key);
 
             if (!$order) {
-                // Order nicht gefunden - 404 anzeigen
+                // Order not found - show 404
                 if (defined('WP_DEBUG') && WP_DEBUG) {
                     error_log("Ledger Direct: Order not found for key: " . $order_key);
                 }

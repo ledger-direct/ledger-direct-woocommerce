@@ -135,7 +135,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      */
     public function validate_fields(): bool
     {
-        $payment_type = $_POST['ledger_direct_payment_type'] ?? '';
+        $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
         if (!in_array($payment_type, ['xrp', 'token', 'rlusd'])) {
             wc_add_notice(__('Please select a valid payment method.', 'ledger-direct'), 'error');
@@ -156,7 +156,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function process_payment($order_id): array
     {
         $order = wc_get_order($order_id);
-        $payment_type = $_POST['ledger_direct_payment_type'] ?? 'xrp';
+        $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
         $container = ld_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);

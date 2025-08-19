@@ -1,9 +1,12 @@
-=== LedgerDirect - Direct Payments ===
+=== LedgerDirect for WooCommerce ===
 Contributors: ledgerdirect, alexanderbuzz
-Tags: xrpl, xrp, rlusd, usdc, eurc, ledger, cryptocurrency, payments, woocommerce
-Requires at least: 6.3
+Tags: xrpl, xrp, rlusd, usdc, eurc, cryptocurrency, woocommerce
+Stable tag: 0.7.0
+Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 8.1
+License: MIT
+License URI: https://opensource.org/license/mit/
 
 Accept XRP, EUR, USD directly on the XRP Ledger, using LedgerDirect!
 
@@ -16,7 +19,7 @@ LedgerDirect is a WordPress plugin that allows you to accept direct payments in 
 
 = How do I know if my XRP account is setup correctly? =
 
-The best way is to configure the plugion to use the testnet and make a test payment.
+The best way is to configure the plugin to use the testnet and make a test payment.
 
 == Installation ==
 

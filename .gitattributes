@@ -1,0 +1,13 @@
+# Exclude from git archive (builds)
+
+.github/ export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+
+composer.lock export-ignore
+
+phpunit.xml export-ignore
+.phpunit.cache export-ignore
+tests/ export-ignore
+
+_scripts/ export-ignore
