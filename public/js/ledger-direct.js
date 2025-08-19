@@ -99,7 +99,6 @@
      * @param {boolean} isError
      */
     function showCopyFeedback(message, icon, isError = false) {
-        // Remove any existing toast
         $('.copy-toast').remove();
 
         const toast = $('<div class="copy-toast">')
@@ -108,7 +107,6 @@
 
         icon.parent().append(toast);
 
-        // Auto-remove after 3 seconds with fade effect
         setTimeout(() => {
             toast.addClass('fade-out');
             setTimeout(() => toast.remove(), 300);

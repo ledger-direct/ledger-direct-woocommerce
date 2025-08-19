@@ -1,10 +1,9 @@
 === LedgerDirect - Direct Payments ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, eurc, ledger, cryptocurrency, payments, woocommerce
-Stable tag: 12.7
 Requires at least: 6.3
-Requires PHP: 8.2
 Tested up to: 6.8
+Requires PHP: 8.1
 
 Accept XRP, EUR, USD directly on the XRP Ledger, using LedgerDirect!
 
@@ -40,5 +39,15 @@ The best way is to configure the plugion to use the testnet and make a test paym
 3. Activate the plugin.
 4. Go to WooCommerce -> Settings -> Payments and enable the LedgerDirect gateway to manage the plugin settings.
 5. Configure the plugin settings, including your XRP Ledger account details and the currencies you want to accept.
+
+== Test Payments ==
+
+To test the plugin, you can configure it to use the XRP Ledger Testnet. This allows you to simulate transactions without using real funds. Follow these steps:
+1. Go to the plugin settings in WooCommerce.
+2. Enable the Testnet mode.
+3. Use a test XRP Ledger account to make test payments.
+5. You can create test account from https://xrpl.org/xrp-testnet-faucet.html for XRP or https://tryrlusd.com/ for RLUSD.
+
+== Frequently Asked Questions ==
 
 == Changelog ==
