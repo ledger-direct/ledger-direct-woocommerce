@@ -367,16 +367,16 @@ class LedgerDirect
 
 
     /**
-     * Load translations
+     * Load translations - obsolete, kept for compatibility
      *
      * @return void
      */
     public function load_translations(): void {
-        load_plugin_textdomain(
-            'ledger-direct',
-            false,
-            dirname(dirname(plugin_basename( __FILE__ ))) . '/languages/'
-        );
+        // load_plugin_textdomain(
+        //    'ledger-direct',
+        //    false,
+        //    dirname(dirname(plugin_basename( __FILE__ ))) . '/languages/'
+        // );
     }
 
     /**
