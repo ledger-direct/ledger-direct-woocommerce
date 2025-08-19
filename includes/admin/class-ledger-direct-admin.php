@@ -8,8 +8,8 @@ class LedgerDirectAdmin
 {
     public function init_form_fields($context): void {
         $context->form_fields = [
-            'xrpl_network' => [
-                'title'       => __("XRPL Network", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_NETWORK => [
+                'title'       => __("XRPL Network", 'ledger-direct'),
                 'description' => __("Choose the XRPL Network", 'ledger-direct'),
                 'type'        => 'select',
                 'options'     => [
@@ -19,45 +19,45 @@ class LedgerDirectAdmin
                 'default'     => 'mainnet',
                 'desc_tip'    => true
             ],
-            'xrpl_testnet_destination_account' => [
-                'title'       => __("Merchant Account - TESTNET", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_TESTNET_ACCOUNT => [
+                'title'       => __("Merchant Account - TESTNET", 'ledger-direct'),
                 'type'        => 'text',
-                'description' => __('Merchant Account address (TESTNET) - receiving account', ConfigurationService::CONFIG_DOMAIN),
+                'description' => __('Merchant Account address (TESTNET) - receiving account', 'ledger-direct'),
                 'default'     => '',
                 'desc_tip'    => true
             ],
-            'xrpl_testnet_rlusd_enabled' => [
-                'title'       => __("Enable RLUSD - TESTNET", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED => [
+                'title'       => __("Enable RLUSD - TESTNET", 'ledger-direct'),
                 'type'        => 'checkbox',
-                'label'       => __('Enable RLUSD payments on TESTNET', ConfigurationService::CONFIG_DOMAIN),
+                'label'       => __('Enable RLUSD payments on TESTNET', 'ledger-direct'),
                 'default'     => 'no',
                 'desc_tip'    => true
             ],
-            'xrpl_mainnet_destination_account' => [
-                'title'       => __("Merchant Account - MAINNET", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_MAINNET_ACCOUNT => [
+                'title'       => __("Merchant Account - MAINNET", 'ledger-direct'),
                 'type'        => 'text',
-                'description' => __('Merchant Account address (MAINNET) - receiving account', ConfigurationService::CONFIG_DOMAIN),
+                'description' => __('Merchant Account address (MAINNET) - receiving account', 'ledger-direct'),
                 'default'     => '',
                 'desc_tip'    => true
             ],
-            'xrpl_mainnet_rlusd_enabled' => [
-                'title'       => __("Enable RLUSD - MAINNET", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED => [
+                'title'       => __("Enable RLUSD - MAINNET", 'ledger-direct'),
                 'type'        => 'checkbox',
-                'label'       => __('Enable RLUSD payments on MAINNET', ConfigurationService::CONFIG_DOMAIN),
+                'label'       => __('Enable RLUSD payments on MAINNET', 'ledger-direct'),
                 'default'     => 'no',
                 'desc_tip'    => true
             ],
-            'xrpl_payment_page_title' => [
-                'title'       => __("LedgerDirect Payment Page Title", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_PAYMENT_PAGE_TITLE => [
+                'title'       => __("LedgerDirect Payment Page Title", 'ledger-direct'),
                 'type'        => 'text',
-                'description' => __('Title for LedgerDirect Payment Page', ConfigurationService::CONFIG_DOMAIN),
+                'description' => __('Title for LedgerDirect Payment Page', 'ledger-direct'),
                 'default'     => 'LedgerDirect PaymentPage',
                 'desc_tip'    => true
             ],
-            'xrpl_quote_expiry' => [
-                'title'       => __("XRP quote expiry", ConfigurationService::CONFIG_DOMAIN),
+            ConfigurationService::CONFIG_KEY_EXPIRY => [
+                'title'       => __("XRP quote expiry", 'ledger-direct'),
                 'type'        => 'text',
-                'description' => __('Validity of the quote in minutes', ConfigurationService::CONFIG_DOMAIN),
+                'description' => __('Validity of the quote in minutes', 'ledger-direct'),
                 'default'     => 0,
                 'desc_tip'    => true
             ]
