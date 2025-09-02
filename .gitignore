@@ -22,6 +22,6 @@ node_modules/
 .phpunit.cache
 
 # Project specific
+bin/
 _scripts/
 TODO.md
-bin/install-wp-tests-local.sh

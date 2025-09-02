@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+
+.distignore
+.gitattributes
+.gitignore
+
+/.phpunit.cache
+/_scripts
+/bin
+
+/vendor/simplito/bigint-wrapper-php/tests
+/vendor/simplito/bn-php/tests
+/vendor/simplito/elliptic-php/tests

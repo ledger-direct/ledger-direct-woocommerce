@@ -65,6 +65,6 @@ class LedgerDirectAdmin
     }
 
     public function render_plugin_settings($context): void {
-        require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/admin/views/settings_html.php';
+        require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/admin/views/settings_html.php';
     }
 }

@@ -51,6 +51,18 @@ To test the plugin, you can configure it to use the XRP Ledger Testnet. This all
 3. Use a test XRP Ledger account to make test payments.
 5. You can create test account from https://xrpl.org/xrp-testnet-faucet.html for XRP or https://tryrlusd.com/ for RLUSD.
 
+== External services ==
+
+LedgerDirect uses public APIs from Coinbase, Coingecko, Binance, and Kraken to retrieve current cryptocurrency exchange rates. These rates are needed to correctly calculate and display payments.
+
+No personal or payment data is sent to these services. Only requests for current rates are made when a payment is processed or displayed.
+
+For more information about each service, see:
+- Coinbase API: [Terms of Service](https://www.coinbase.com/legal/user_agreement), [Privacy Policy](https://www.coinbase.com/legal/privacy)
+- Coingecko API: [Terms of Service](https://www.coingecko.com/en/terms), [Privacy Policy](https://www.coingecko.com/en/privacy)
+- Binance API: [Terms of Use](https://www.binance.com/en/terms), [Privacy Policy](https://www.binance.com/en/privacy)
+- Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
+
 == Frequently Asked Questions ==
 
 == Changelog ==

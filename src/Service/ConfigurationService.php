@@ -62,7 +62,7 @@ class ConfigurationService
             if (!is_null($default)) {
                 return $default;
             }
-            throw new Exception('LedgerDirect: Config value "' . $configIdentifier . '" not found.');
+            throw new Exception('LedgerDirect: Config value "' . esc_html($configIdentifier) . '" not found.');
         }
 
         return $value;

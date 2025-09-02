@@ -65,7 +65,7 @@ class OrderTransactionService
                 ld_round_stable_coin($orderTotal / $exchangeRate)
             );
         } else {
-            throw new Exception('Unsupported crypto code: ' . $cryptoCode);
+            throw new Exception('Unsupported crypto code: ' . esc_html($cryptoCode));
         }
 
         return [

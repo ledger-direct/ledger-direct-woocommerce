@@ -163,10 +163,11 @@ class XrplTxService
             return $hashes;
         };
         $hashes = array_reduce($transactions, $reducerFn, []);
-        $filler = implode(array_fill(0, count($hashes), '%s,'));
+        $hashes = array_map('esc_sql', $hashes);
+        $placeholders = implode(',', array_fill(0, count($hashes), '%s'));
 
         $statement = $wpdb->prepare(
-            "SELECT hash FROM {$wpdb->prefix}xrpl_tx WHERE hash IN (" . substr($filler, 0, -1) . ")",
+            "SELECT hash FROM {$wpdb->prefix}xrpl_tx WHERE hash IN (" . $placeholders . ")",
             $hashes
         );
         $matches = $wpdb->get_results($statement, ARRAY_A);

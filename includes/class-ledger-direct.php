@@ -2,6 +2,7 @@
 
 defined( 'ABSPATH' ) || exit();
 
+use GuzzleHttp\Exception\ConnectException;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
@@ -74,7 +75,7 @@ class LedgerDirect
      * @return void
      */
     public function load_dependencies(): void {
-        require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/admin/class-ledger-direct-admin.php';
+        require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/admin/class-ledger-direct-admin.php';
 
         if (class_exists('WooCommerce')) {
             LedgerDirectPaymentGateway::instance();
@@ -291,10 +292,27 @@ class LedgerDirect
             }
 
             $gateway = LedgerDirectPaymentGateway::instance();
-            $is_paid = $gateway->sync_and_check_payment($order);
+            if (!$gateway->is_available()) {
+                wc_add_notice(__('Payment gateway is not available.', 'ledger-direct'), 'error');
+                wp_redirect(wc_get_checkout_url());
+                exit;
+            }
+
+            try {
+                $is_paid = $gateway->sync_and_check_payment($order);
+            } catch (ConnectException $e) {
+                wc_add_notice(__('Could not connect to the XRPL network. Please try again later.', 'ledger-direct'), 'error');
+                wp_redirect(wc_get_checkout_url());
+                exit;
+            } catch (Exception $e) {
+                wc_add_notice(__('An error occurred while processing your payment. Please contact support.', 'ledger-direct'), 'error');
+                error_log("Ledger Direct: Error syncing payment for order " . $order->get_id() . ": " . $e->getMessage());
+                wp_redirect(wc_get_checkout_url());
+                exit;
+            }
+
             if ($is_paid) {
                 wp_redirect($gateway->get_return_url($order));
-                //wp_redirect(wc_get_checkout_url());
                 exit;
             }
 
@@ -304,7 +322,7 @@ class LedgerDirect
             $this->enqueue_public_styles();
             $this->enqueue_public_scripts();
 
-            $template_path = WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
+            $template_path = LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
 
             if (!file_exists($template_path)) {
                 error_log("Ledger Direct: Template file not found: " . $template_path);

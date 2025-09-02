@@ -52,7 +52,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $this->id = self::ID;
         $this->method_title = 'LedgerDirect';
         $this->method_description = 'Accept payments via XRPL (XRP, Tokens, RLUSD)';
-        $this->title = __('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
+        $this->title = esc_html__('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
         $this->description = 'Choose your preferred XRPL payment method';
 
         $this->icon = ld_get_public_url('/public/images/checkout.png');
@@ -109,11 +109,11 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         }
 
         echo '<div id="ledger-direct-payment-methods">';
-        echo '<h4>' . __('Choose payment method', 'ledger-direct') . '</h4>';
+        echo '<h4>' . esc_html__('Choose payment method', 'ledger-direct') . '</h4>';
 
         echo '<label>';
         echo '<input type="radio" name="ledger_direct_payment_type" value="xrp" checked> ';
-        echo __('XRP', 'ledger-direct');
+        echo esc_html__('XRP', 'ledger-direct');
         echo '</label><br>';
 
         // echo '<label>';
@@ -123,7 +123,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         echo '<label>';
         echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';
-        echo __('RLUSD Stablecoin', 'ledger-direct');
+        echo esc_html__('RLUSD Stablecoin', 'ledger-direct');
         echo '</label>';
 
         echo '</div>';
@@ -180,7 +180,14 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function sync_and_check_payment(WC_Order $order): bool
     {
         $meta = $order->get_meta(LedgerDirect::META_KEY);
-        $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
+
+        try {
+            $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
+        } catch (\Exception $e) {
+
+        }
+
+
         if ($this->orderTransactionService->checkPayment($order)) {
             if ($meta['type'] === self::XRP_PAYMENT_ID ) {
                 return $this->is_xrp_payment_valid($meta);

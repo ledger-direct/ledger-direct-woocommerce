@@ -21,11 +21,11 @@ use \DI\Container;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
 
-define( 'WC_LEDGER_DIRECT_PLUGIN_FILE_PATH', plugin_dir_path( __FILE__ ) );
+define( 'LEDGER_DIRECT_PLUGIN_FILE_PATH', plugin_dir_path( __FILE__ ) );
 
-require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
-require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct-install.php';
-require_once WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.php';
+require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
+require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct-install.php';
+require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.php';
 
 /**
  * Plugin deactivation hook.
@@ -93,7 +93,7 @@ function ld_get_svg_html(string $icon, array $properties = []): string {
         'viewBox' => '0 0 24 24',
     ];
 
-    $svgContent = file_get_contents(WC_LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/partials/' . $icon . '_svg.html');
+    $svgContent = file_get_contents(LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/partials/' . $icon . '_svg.html');
 
     foreach ($defaultProperties as $key => $value) {
         if (isset($properties[$key])) {
