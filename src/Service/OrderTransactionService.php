@@ -16,7 +16,7 @@ use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
 
 class OrderTransactionService
 {
-    public const METADATA_VERSION = 1;
+    public const METADATA_VERSION = 1.0;
     public const DEFAULT_EXPIRY = 60 * 15; // 15 minutes
 
     public static self|null $_instance = null;
@@ -55,7 +55,10 @@ class OrderTransactionService
 
         if($cryptoCode === 'XRP') {
             $exchangeRate = $this->priceProvider->getCurrentExchangeRate($currency);
-            $amountRequested = round($orderTotal / $exchangeRate, 2);
+            if (!$exchangeRate || $exchangeRate <= 0) {
+                throw new Exception('Invalid exchange rate retrieved for currency: ' . esc_html($currency));
+            }
+            $amountRequested = round($orderTotal / $exchangeRate, 2, PHP_ROUND_HALF_UP);
         } elseif ($cryptoCode === 'RLUSD') {
             $container = ld_get_dependency_injection_container();
             $priceProvider = $container->get(RlusdPriceProvider::class);

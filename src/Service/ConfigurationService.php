@@ -3,6 +3,7 @@
 namespace Hardcastle\LedgerDirect\Service;
 
 use Exception;
+use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
 class ConfigurationService
 {
@@ -30,24 +31,16 @@ class ConfigurationService
 
     public const CONFIG_KEY_EXPIRY = 'xrpl_quote_expiry';
 
-    public const WP_OPTION_NAME = 'woocommerce_ledger-direct_settings';
+    private LedgerDirectPaymentGateway $gateway;
 
     protected array $config;
 
     public function __construct() {
-        global $wpdb;
 
-        $statement = $wpdb->prepare(
-            "SELECT option_value AS settings FROM {$wpdb->prefix}options WHERE option_name = %s",
-            [self::WP_OPTION_NAME]
-        );
-        $settings_raw = $wpdb->get_col($statement)[0] ?? null;
-
-        $this->config = unserialize($settings_raw);
     }
 
     /**
-     *
+     * Get config value using the WooCommerce gateway method.
      *
      * @param string $configIdentifier
      * @param mixed|null $default
@@ -56,12 +49,10 @@ class ConfigurationService
      */
     public function get(string $configIdentifier, mixed $default = null): mixed
     {
-        $value = $this->config[$configIdentifier] ?? null;
+        $this->gateway = LedgerDirectPaymentGateway::instance();
+        $value = $this->gateway->get_option($configIdentifier, $default);
 
         if (empty($value)) {
-            if (!is_null($default)) {
-                return $default;
-            }
             throw new Exception('LedgerDirect: Config value "' . esc_html($configIdentifier) . '" not found.');
         }
 

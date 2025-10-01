@@ -25,7 +25,6 @@ class XrplClientService
     public function __construct(ConfigurationService $configurationService)
     {
         $this->configurationService = $configurationService;
-        $this->_initClient();
     }
 
     /**
@@ -35,9 +34,12 @@ class XrplClientService
      * @param int|null $lastLedgerIndex
      * @return array
      * @throws GuzzleException
+     * @throws Exception
      */
     public function fetchAccountTransactions(string $address, ?int $lastLedgerIndex): array
     {
+        $this->initClient();
+
         $req = new AccountTxRequest($address, $lastLedgerIndex);
         $res = $this->client->syncRequest($req);
 
@@ -50,7 +52,7 @@ class XrplClientService
     }
 
     /**
-     *
+     * Determines the XRPL network configuration based on the current environment.
      *
      * @return array
      * @throws Exception
@@ -65,14 +67,16 @@ class XrplClientService
     }
 
     /**
-     *
+     * Initializes the JSON-RPC client with the appropriate network URL.
      *
      * @return void
      * @throws Exception
      */
-    private function _initClient(): void
+    private function initClient(): void
     {
-        $jsonRpcUrl = $this->getNetwork()['jsonRpcUrl'];
-        $this->client = new JsonRpcClient($jsonRpcUrl);
+        if (!isset($this->client)) {
+            $jsonRpcUrl = $this->getNetwork()['jsonRpcUrl'];
+            $this->client = new JsonRpcClient($jsonRpcUrl);
+        }
     }
 }

@@ -3,7 +3,7 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://www.ledger-direct.com
  * Description: A XRP Ledger integration.
- * Version: 0.7.0
+ * Version: 0.8.0
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://hardcastle.technology
  * Text Domain: ledger-direct
@@ -112,28 +112,15 @@ function ld_get_svg_html(string $icon, array $properties = []): string {
     return $svgContent;
 }
 
-function calculate_token_order_total(WC_Order $order): float
+/**
+ * Round stablecoin values to 2 decimal places.
+ *
+ * @param float|int $value
+ * @return float
+ */
+function ld_round_stable_coin(float|int $value): float
 {
-    $total = 0.0;
-    foreach ($order->get_items() as $item_id => $item) {
-        $product_id = $item->get_product_id();
-        $product = wc_get_product($product_id);
-        $lpt_price = $product->get_meta('_ledger_direct_lpt_price');
-
-        // Get the product quantity
-        $quantity = $item->get_quantity();
-
-        // Do something with these values...
-        $total += $lpt_price * $quantity;
-    }
-
-    return $total;
-}
-
-function ld_round_stable_coin(float $value): float
-{
-    // Round to 2 decimal places for stable coins
-    return round($value, 2);
+    return round($value, 2, PHP_ROUND_HALF_UP);
 }
 
 LedgerDirect::instance();

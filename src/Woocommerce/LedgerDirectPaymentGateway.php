@@ -5,7 +5,6 @@ namespace Hardcastle\LedgerDirect\Woocommerce;
 use DI\DependencyException;
 use DI\NotFoundException;
 use GuzzleHttp\Exception\GuzzleException;
-use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use LedgerDirect;
 use WC_Order;
@@ -33,8 +32,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
 
     public string $xrpl_network;
-
-    protected ConfigurationService $configurationService;
 
     protected OrderTransactionService $orderTransactionService;
 
@@ -72,7 +69,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
 
         $container = ld_get_dependency_injection_container();
-        $this->configurationService = $container->get(ConfigurationService::class);
         $this->orderTransactionService = $container->get(OrderTransactionService::class);
     }
 
