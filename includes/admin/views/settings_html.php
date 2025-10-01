@@ -14,4 +14,4 @@
         /** @var LedgerDirectPaymentGateway $context */
         $context->generate_settings_html();
     ?>
-</table><table class="form-table">
+</table>
