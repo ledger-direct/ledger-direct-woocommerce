@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Provider;
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 interface CryptoPriceProviderInterface
 {
     public function getCurrentExchangeRate(string $code, ?bool $round = false): float|false;

@@ -1,6 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Hardcastle\LedgerDirect\Service;
+
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;

@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Provider\Oracle;
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 use GuzzleHttp\Client;
 
 class RippleOracle implements OracleInterface

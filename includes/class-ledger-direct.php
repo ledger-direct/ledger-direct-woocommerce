@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-defined( 'ABSPATH' ) || exit();
+defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
 use GuzzleHttp\Exception\ConnectException;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
@@ -423,7 +423,7 @@ class LedgerDirect
     public function enqueue_public_scripts(): void {
         wp_enqueue_script(
             'bignumber',
-            plugin_dir_url( __FILE__ ) . '../public/js/bignumber-9.1.2.min.js',
+            plugin_dir_url( __FILE__ ) . '../public/js/bignumber-9.3.1.js',
             []
         );
         wp_enqueue_script(
@@ -436,15 +436,16 @@ class LedgerDirect
         //     plugin_dir_url( __FILE__ ) . '../public/js/crossmark-3.5.min.js',
         //    []
         // );
+
         wp_enqueue_script(
-            'qr-bundle',
-            plugin_dir_url( __FILE__ ) . '../public/js/qr-bundle.min.js',
-            ['jquery']
+            'jquery-qrcode',
+            plugin_dir_url( __FILE__ ) . '../public/js/jquery-qrcode.min.js',
+            ['jquery', ]
         );
         wp_enqueue_script(
             'ledger-direct',
             plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
-            ['jquery', 'qr-bundle', 'bignumber', 'gemwallet']
+            ['jquery', 'jquery-qrcode', 'bignumber', 'gemwallet']
         );
     }
 

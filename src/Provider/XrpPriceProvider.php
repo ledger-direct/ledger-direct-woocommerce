@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Provider;
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 use Exception;
 use GuzzleHttp\Client;
 use Hardcastle\LedgerDirect\Provider\Oracle\BinanceOracle;
@@ -94,6 +96,6 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
      */
     private function roundPrice(float $price): float
     {
-        return round($price, self::XRP_ROUND_PLACES);
+        return round($price, self::XRP_ROUND_PLACES, PHP_ROUND_HALF_UP);
     }
 }

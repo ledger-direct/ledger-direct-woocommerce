@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Service;
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\XRPL_PHP\Client\JsonRpcClient;

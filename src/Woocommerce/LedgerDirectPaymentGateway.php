@@ -2,6 +2,8 @@
 
 namespace Hardcastle\LedgerDirect\Woocommerce;
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 use DI\DependencyException;
 use DI\NotFoundException;
 use GuzzleHttp\Exception\GuzzleException;

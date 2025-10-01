@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
 require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
