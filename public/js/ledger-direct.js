@@ -75,6 +75,7 @@
      * Copies the value of the given element to the clipboard.
      *
      * @param element
+     * @param icon
      * @param event
      */
     function copyToClipboard(element, icon, event) {
