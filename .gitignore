@@ -16,6 +16,7 @@ project.properties
 # Dependencies
 vendor/
 node_modules/
+package-lock.json
 
 # Test and Caches
 .phpunit.result.cache

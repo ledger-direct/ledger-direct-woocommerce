@@ -102,10 +102,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      */
     public function payment_fields(): void
     {
-        if ($this->description) {
-            // echo wpautop(wptexturize($this->description));
-        }
-
         echo '<div id="ledger-direct-payment-methods">';
         echo '<h4>' . esc_html__('Choose payment method', 'ledger-direct') . '</h4>';
 
@@ -177,15 +173,13 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      */
     public function sync_and_check_payment(WC_Order $order): bool
     {
-        $meta = $order->get_meta(LedgerDirect::META_KEY);
-
         try {
             $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
         } catch (\Exception $e) {
 
         }
 
-
+        $meta = $order->get_meta(LedgerDirect::META_KEY);
         if ($this->orderTransactionService->checkPayment($order)) {
             if ($meta['type'] === self::XRP_PAYMENT_ID ) {
                 return $this->is_xrp_payment_valid($meta);
@@ -210,9 +204,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         // Payment is settled, let's check whether the paid amount is enough
         $requestedXrpAmount = (float) $meta['amount_requested'];
         $paidXrpAmount = (float) $meta['delivered_amount'];
-        $slippage = 0.0015; // TODO: Make this configurable
-        $slipped = 1.0 - $paidXrpAmount / $requestedXrpAmount;
-        return $slipped < $slippage;
+        return $requestedXrpAmount >= $paidXrpAmount;
     }
 
     /**
@@ -246,4 +238,5 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         return false;
     }
+
 }

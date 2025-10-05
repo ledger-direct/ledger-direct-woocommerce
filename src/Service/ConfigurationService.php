@@ -69,7 +69,7 @@ class ConfigurationService
      */
     public function isTest(): bool
     {
-        return $this->get(self::CONFIG_KEY_NETWORK) !== 'Testnet';
+        return $this->get(self::CONFIG_KEY_NETWORK, 'testnet') === 'testnet';
     }
 
     /**
@@ -152,9 +152,9 @@ class ConfigurationService
     {
         try {
             if ($this->isTest()) {
-                return $this->get(self::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED, false);
+                return $this->get(self::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED, 'no' ) === 'yes';
             }
-            return $this->get(self::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED, false);
+            return $this->get(self::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED, 'no' ) === 'yes';
         } catch (Exception $exception) {
             return false;
         }

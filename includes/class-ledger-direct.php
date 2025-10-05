@@ -3,6 +3,7 @@
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
@@ -88,18 +89,19 @@ class LedgerDirect
      * @return void
      */
     public function public_hooks(): void {
-        add_action('init', [$this, 'add_rewrite_endpoint']);
-        add_filter('woocommerce_payment_gateways', [$this, 'register_gateway']);
-        add_filter('woocommerce_get_price_html', [$this, 'custom_price_html']);
-        add_filter('woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2);
-        add_filter('template_include', [$this, 'render_payment_page']);
+        add_action( 'init', [$this, 'add_rewrite_endpoint'] );
+        add_filter( 'woocommerce_payment_gateways', [$this, 'register_gateway'] );
+        add_action( 'woocommerce_blocks_loaded', [$this, 'add_block_support_for_gateway'] );
+        //add_filter('woocommerce_get_price_html', [$this, 'custom_price_html']);
+        add_filter( 'woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2 );
+        add_filter( 'template_include', [$this, 'render_payment_page'] );
 
         add_action( 'plugins_loaded', [$this, 'load_translations'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_scripts'] );
 
-        add_action('wp_ajax_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method']);
-        add_action('wp_ajax_nopriv_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method']);
+        add_action( 'wp_ajax_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method'] );
+        add_action( 'wp_ajax_nopriv_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method'] );
     }
 
     /**
@@ -186,6 +188,12 @@ class LedgerDirect
     }
 
 
+    /**
+     * Display custom price HTML for arbitrary token
+     *
+     * @param $price
+     * @return string
+     */
     public function custom_price_html($price): string {
         global $product;
 
@@ -256,6 +264,41 @@ class LedgerDirect
     }
 
     /**
+     * Add support for LedgerDirect in WooCommerce Blocks
+     *
+     * @return void
+     */
+    public function add_block_support_for_gateway(): void {
+        if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+            require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/blocks/class-ledger-direct-blocks.php';
+            add_action(
+                'woocommerce_blocks_payment_method_type_registration',
+                function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+                    $payment_method_registry->register(new LedgerDirectBlocks());
+                }
+            );
+        }
+    }
+
+    /**
+     * Plugin url.
+     *
+     * @return string
+     */
+    public static function plugin_url() {
+        return untrailingslashit( plugins_url( '/', __FILE__ ) );
+    }
+
+    /**
+     * Plugin url.
+     *
+     * @return string
+     */
+    public static function plugin_abspath() {
+        return trailingslashit(plugin_dir_path(__FILE__));
+    }
+
+    /**
      * Links payment instructions to an order
      *
      * @param WC_Order $order
@@ -272,6 +315,7 @@ class LedgerDirect
      *
      * @param $template
      * @return string
+     * @throws GuzzleException
      */
     public function render_payment_page($template): string {
         $order_key = get_query_var(self::PAYMENT_IDENTIFIER);
@@ -312,6 +356,8 @@ class LedgerDirect
             }
 
             if ($is_paid) {
+                $order->payment_complete();
+                WC()->cart->empty_cart();
                 wp_redirect($gateway->get_return_url($order));
                 exit;
             }
@@ -422,30 +468,14 @@ class LedgerDirect
      */
     public function enqueue_public_scripts(): void {
         wp_enqueue_script(
-            'bignumber',
-            plugin_dir_url( __FILE__ ) . '../public/js/bignumber-9.3.1.js',
-            []
-        );
-        wp_enqueue_script(
-            'gemwallet',
-            plugin_dir_url( __FILE__ ) . '../public/js/gemwallet-3.5.1.min.js',
-            []
-        );
-        // wp_enqueue_script(
-        //     'crossmark',
-        //     plugin_dir_url( __FILE__ ) . '../public/js/crossmark-3.5.min.js',
-        //    []
-        // );
-
-        wp_enqueue_script(
             'jquery-qrcode',
             plugin_dir_url( __FILE__ ) . '../public/js/jquery-qrcode.min.js',
-            ['jquery', ]
+            ['jquery']
         );
         wp_enqueue_script(
             'ledger-direct',
             plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
-            ['jquery', 'jquery-qrcode', 'bignumber', 'gemwallet']
+            ['jquery', 'jquery-qrcode']
         );
     }
 

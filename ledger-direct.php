@@ -5,7 +5,7 @@
  * Description: A XRP Ledger integration.
  * Version: 0.8.0
  * Author: Alexander Busse | Hardcastle Technologies
- * Author URI: https://hardcastle.technology
+ * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct
  * Domain Path: /languages
  * Requires at least: 6.2

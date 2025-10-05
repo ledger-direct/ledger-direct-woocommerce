@@ -18,7 +18,7 @@ use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
 
 class OrderTransactionService
 {
-    public const METADATA_VERSION = 1.0;
+    public const XRPL_METADATA_VERSION = 1.0;
     public const DEFAULT_EXPIRY = 60 * 15; // 15 minutes
 
     public static self|null $_instance = null;
@@ -67,7 +67,7 @@ class OrderTransactionService
             $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
             $amountRequested = RLUSD::getAmount(
                 $network,
-                ld_round_stable_coin($orderTotal / $exchangeRate)
+                (string)ld_round_stable_coin($orderTotal / $exchangeRate)
             );
         } else {
             throw new Exception('Unsupported crypto code: ' . esc_html($cryptoCode));
@@ -125,7 +125,7 @@ class OrderTransactionService
         $xrplData = [
             'chain' => 'XRPL',
             'network' => $network,
-            'version' => self::METADATA_VERSION,
+            'version' => self::XRPL_METADATA_VERSION,
             'destination_account' => $destination,
             'destination_tag' => $destinationTag,
             'expiry' => $this->getExpiryTimestamp()
