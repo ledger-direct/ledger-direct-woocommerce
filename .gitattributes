@@ -1,13 +1,22 @@
 # Exclude from git archive (builds)
 
 .github/ export-ignore
+.distignore export-ignore
 .gitignore export-ignore
 .gitattributes export-ignore
 
-composer.lock export-ignore
-
 bin/ export-ignore
-phpunit.xml export-ignore
-.phpunit.cache export-ignore
+node_modules/ export-ignore
 tests/ export-ignore
-_scripts/ export-ignore
+
+.phpunit.cache export-ignore
+composer.json export-ignore
+composer.lock export-ignore
+makefile export-ignore
+package.json export-ignore
+package-lock export-ignore
+phpunit.xml export-ignore
+TODO.md export-ignore
+webpack.config.js export-ignore
+
+# Exclude vendor specific files
