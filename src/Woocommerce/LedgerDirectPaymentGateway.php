@@ -54,7 +54,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $this->title = esc_html__('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
         $this->description = 'Choose your preferred XRPL payment method';
 
-        $this->icon = ld_get_public_url('/public/images/checkout.png');
+        $this->icon = ledger_direct_get_public_url('/public/images/checkout.png');
         $this->has_fields = true; // Important for payment_fields()
         $this->enabled = $this->get_option('enabled');
 
@@ -70,7 +70,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
 
-        $container = ld_get_dependency_injection_container();
+        $container = ledger_direct_get_dependency_injection_container();
         $this->orderTransactionService = $container->get(OrderTransactionService::class);
     }
 
@@ -152,7 +152,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        $container = ld_get_dependency_injection_container();
+        $container = ledger_direct_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
         $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
 

@@ -79,7 +79,7 @@ if ($payment_method !== LedgerDirectPaymentGateway::ID) {
     return;
 }
 
-$container = ld_get_dependency_injection_container();
+$container = ledger_direct_get_dependency_injection_container();
 $order_transaction_service = $container->get(OrderTransactionService::class);
 $configuration_service = $container->get(ConfigurationService::class);
 
@@ -141,10 +141,10 @@ $allowed_svg_html = [
                 'xlink:href' => true,
         ],
 ];
-$wallet_icon_svg = ld_get_svg_html('wallet', ['class' => 'inline-svg', 'height' => '16', 'width' => '16', 'viewBox' => '0 0 24 24']);
-$tag_icon_svg = ld_get_svg_html('tag', ['class' => 'inline-svg', 'height' => '16', 'width' => '16', 'viewBox' => '0 0 24 24']);
-$copy_icon_svg = ld_get_svg_html('copy', ['class' => 'action-svg']);
-$qr_icon_svg = ld_get_svg_html('qr', ['class' => 'action-svg']);
+$wallet_icon_svg = ledger_direct_get_svg_html('wallet', ['class' => 'inline-svg', 'height' => '16', 'width' => '16', 'viewBox' => '0 0 24 24']);
+$tag_icon_svg = ledger_direct_get_svg_html('tag', ['class' => 'inline-svg', 'height' => '16', 'width' => '16', 'viewBox' => '0 0 24 24']);
+$copy_icon_svg = ledger_direct_get_svg_html('copy', ['class' => 'action-svg']);
+$qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
 
 ?>
 
@@ -297,7 +297,7 @@ $qr_icon_svg = ld_get_svg_html('qr', ['class' => 'action-svg']);
                     <br/>
                     <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
                 <?php } ?>
-                <img src="<?php echo esc_url(ld_get_public_url('/public/images/astronaut.png')); ?>" class="ld-astronaut" alt=""/>
+                <img src="<?php echo esc_url(ledger_direct_get_public_url('/public/images/astronaut.png')); ?>" class="ld-astronaut" alt=""/>
             </div>
 
         </div>

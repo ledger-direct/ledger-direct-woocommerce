@@ -30,33 +30,33 @@ require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.php'
 /**
  * Plugin deactivation hook.
  */
-function ld_activate(): void {
+function ledger_direct_activate(): void {
     LedgerDirectInstall::install();
 }
-register_activation_hook( __FILE__, 'ld_activate' );
+register_activation_hook( __FILE__, 'ledger_direct_activate');
 
 /**
  * Plugin deactivation hook.
  */
-function ld_deactivate(): void {
+function edger_direct_deactivate(): void {
     LedgerDirectInstall::deactivate();
 }
-register_deactivation_hook( __FILE__, 'ld_deactivate' );
+register_deactivation_hook( __FILE__, 'edger_direct_deactivate');
 
 /**
  * Plugin deactivation hook.
  */
-function ld_uninstall(): void {
-    // LedgerDirectInstall::uninstall();
+function ledger_direct_uninstall(): void {
+    LedgerDirectInstall::uninstall();
 }
-register_uninstall_hook(__FILE__, 'ld_uninstall');
+register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
 
 /**
  * Returns the DI container with interfaces wired up.
  *
  * @return Container
  */
-function ld_get_dependency_injection_container(): Container {
+function ledger_direct_get_dependency_injection_container(): Container {
     return new Container([
         CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
     ]);
@@ -68,7 +68,7 @@ function ld_get_dependency_injection_container(): Container {
  * @param string $url
  * @return string
  */
-function ld_get_public_url(string $url): string {
+function ledger_direct_get_public_url(string $url): string {
     $base = plugins_url( '/', __FILE__ );
     return untrailingslashit($base . $url);
 }
@@ -80,7 +80,7 @@ function ld_get_public_url(string $url): string {
  * @param array $properties
  * @return string
  */
-function ld_get_svg_html(string $icon, array $properties = []): string {
+function ledger_direct_get_svg_html(string $icon, array $properties = []): string {
     if (!ctype_alnum($icon)) {
         die('Forbidden!');
     }
@@ -118,7 +118,7 @@ function ld_get_svg_html(string $icon, array $properties = []): string {
  * @param float|int $value
  * @return float
  */
-function ld_round_stable_coin(float|int $value): float
+function ledger_direct_round_stable_coin(float|int $value): float
 {
     return round($value, 2, PHP_ROUND_HALF_UP);
 }

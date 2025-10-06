@@ -18,9 +18,11 @@ class LedgerDirectInstall {
 
         set_transient( self::TRANSIENT_INSTALLING, 'yes', MINUTE_IN_SECONDS * 10 );
 
-        self::add_rewrite_rules();
         self::create_tables();
         self::create_pages();
+
+        add_rewrite_endpoint('ledger-direct-payment', EP_ROOT);
+        flush_rewrite_rules();
 
         delete_transient( self::TRANSIENT_INSTALLING );
     }
@@ -57,20 +59,6 @@ class LedgerDirectInstall {
     }
 
     /**
-     * Add rewrite rules.
-     *
-     * @return void
-     */
-    private static function add_rewrite_rules(): void {
-        add_rewrite_rule(
-            'ledger-direct/payment/([a-z0-9-]+)[/]?$',
-            'index.php?pagename=ledger-direct-payment&' . LedgerDirect::ORDER_IDENTIFIER . '=$matches[1]',
-            'top'
-        );
-        flush_rewrite_rules();
-    }
-
-    /**
      * Set up the database tables which the plugin needs to function.
      *
      * @return array Strings containing the results of the various update queries as returned by dbDelta.
@@ -103,6 +91,7 @@ class LedgerDirectInstall {
             CREATE TABLE {$wpdb->prefix}xrpl_tx (
                 id int(10) unsigned NOT NULL AUTO_INCREMENT,
                 ledger_index varchar(64) NOT NULL,
+                ctid varchar(16) NOT NULL,
                 hash varchar(64) NOT NULL,
                 account varchar(35) NOT NULL,
                 destination varchar(35) NOT NULL,
@@ -129,9 +118,9 @@ class LedgerDirectInstall {
      */
     public static function create_pages() : void {
         $pages = [
-            'ledger-direct' => [
-                'name'    => 'ledger-direct',
-                'title'   => 'Ledger Direct Payments',
+            'ledger-direct-payment' => [
+                'name'    => 'ledger-direct-payment',
+                'title'   => 'Ledger Direct Payment',
                 'content' => '',
             ]
         ];

@@ -62,12 +62,12 @@ class OrderTransactionService
             }
             $amountRequested = round($orderTotal / $exchangeRate, 2, PHP_ROUND_HALF_UP);
         } elseif ($cryptoCode === 'RLUSD') {
-            $container = ld_get_dependency_injection_container();
+            $container = ledger_direct_get_dependency_injection_container();
             $priceProvider = $container->get(RlusdPriceProvider::class);
             $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
             $amountRequested = RLUSD::getAmount(
                 $network,
-                (string)ld_round_stable_coin($orderTotal / $exchangeRate)
+                (string)ledger_direct_round_stable_coin($orderTotal / $exchangeRate)
             );
         } else {
             throw new Exception('Unsupported crypto code: ' . esc_html($cryptoCode));

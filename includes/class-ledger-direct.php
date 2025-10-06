@@ -10,7 +10,7 @@ use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 class LedgerDirect
 {
     public const META_KEY = '_ledger_direct';
-    public const PAYMENT_IDENTIFIER = 'ledger-direct-payment';
+    public const ORDER_IDENTIFIER = 'ledger-direct-payment';
 
     public static self|null $_instance = null;
 
@@ -84,6 +84,14 @@ class LedgerDirect
     }
 
     /**
+     * Register custom query vars
+     */
+    public function add_query_vars($vars) {
+        $vars[] = 'ledger-direct-payment';
+        return $vars;
+    }
+
+    /**
      * Register public actions and filters
      *
      * @return void
@@ -102,6 +110,7 @@ class LedgerDirect
 
         add_action( 'wp_ajax_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method'] );
         add_action( 'wp_ajax_nopriv_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method'] );
+        add_filter('query_vars', [$this, 'add_query_vars']);
     }
 
     /**
@@ -115,7 +124,7 @@ class LedgerDirect
         add_action('plugins_loaded', [$this, 'plugins_loaded_callback'], 10);
         add_action('admin_menu', [$this, 'admin_menu_callback']);
 
-        add_action( 'woocommerce_product_options_general_product_data', [$this, 'add_product_custom_fields'] );
+        // add_action( 'woocommerce_product_options_general_product_data', [$this, 'add_product_custom_fields'] );
         add_action( 'woocommerce_process_product_meta', [$this, 'save_product_custom_fields'] );
 
         add_filter('ledger_direct_init_form_fields', [$classAdmin, 'init_form_fields'], 10, 1);
@@ -130,7 +139,6 @@ class LedgerDirect
     public function plugins_loaded_callback(): void
     {
         if (class_exists('WooCommerce')) {
-            // Initialize Ledger Direct Gateway
             LedgerDirectPaymentGateway::instance();
         }
     }
@@ -173,10 +181,10 @@ class LedgerDirect
             wp_send_json_error('Order not found');
         }
 
-        $order->update_meta_data('_ledger_direct_payment_type', $payment_type);
+        $order->update_meta_data("_ledger_direct_payment_type", $payment_type);
         $order->save();
 
-        $container = ld_get_dependency_injection_container();
+        $container = ledger_direct_get_dependency_injection_container();
         $orderTransactionService = $container->get(OrderTransactionService::class);
         $payment_data = $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
 
@@ -197,7 +205,7 @@ class LedgerDirect
     public function custom_price_html($price): string {
         global $product;
 
-        $lpt_price = $product->get_meta('_ledger_direct_lpt_price');
+        $lpt_price = $product->get_meta("_ledger_direct_lpt_price");
 
         if (!empty($lpt_price)) {
             $price = $price . ' | <span class="woocommerce-Price-amount amount">' . $lpt_price . ' LPT</span>';
@@ -318,7 +326,7 @@ class LedgerDirect
      * @throws GuzzleException
      */
     public function render_payment_page($template): string {
-        $order_key = get_query_var(self::PAYMENT_IDENTIFIER);
+        $order_key = get_query_var(self::ORDER_IDENTIFIER);
 
         if (!empty($order_key)) {
             $order = $this->get_order_by_order_key($order_key);
