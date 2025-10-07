@@ -7,6 +7,7 @@
 
 bin/ export-ignore
 node_modules/ export-ignore
+vendor/bin export-ignore
 tests/ export-ignore
 
 .phpunit.cache export-ignore
@@ -20,3 +21,8 @@ TODO.md export-ignore
 webpack.config.js export-ignore
 
 # Exclude vendor specific files
+
+*.cache export-ignore
+*.dev export-ignore
+*.ini export-ignore
+*.input export-ignore
