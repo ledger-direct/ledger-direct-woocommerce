@@ -217,8 +217,6 @@ class XrplTxService
                 'meta' => json_encode($transaction['meta']),
                 'tx' => json_encode($transaction['tx'])
             ];
-
-            //TODO: Check ctid adoption, see XLS-37d
         }
 
         return $rows;

@@ -16,7 +16,7 @@ class LedgerDirectAdmin
                     'mainnet' => 'Mainnet',
                     'testnet' => 'Testnet',
                 ],
-                'default'     => 'mainnet',
+                'default'     => 'testnet',
                 'desc_tip'    => true
             ],
             ConfigurationService::CONFIG_KEY_TESTNET_ACCOUNT => [
@@ -58,7 +58,7 @@ class LedgerDirectAdmin
                 'title'       => __("XRP quote expiry", 'ledger-direct'),
                 'type'        => 'text',
                 'description' => __('Validity of the quote in minutes', 'ledger-direct'),
-                'default'     => 0,
+                'default'     => 15,
                 'desc_tip'    => true
             ]
         ];

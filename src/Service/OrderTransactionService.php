@@ -90,6 +90,10 @@ class OrderTransactionService
     {
         $minutes = $this->configurationService->get('xrpl_quote_expiry', self::DEFAULT_EXPIRY);
 
+        if ($minutes <= 0) {
+            $minutes = self::DEFAULT_EXPIRY;
+        }
+
         return time() + (60 * $minutes);
     }
 

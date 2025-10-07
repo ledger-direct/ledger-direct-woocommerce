@@ -54,7 +54,7 @@ class ConfigurationService
         $this->gateway = LedgerDirectPaymentGateway::instance();
         $value = $this->gateway->get_option($configIdentifier, $default);
 
-        if (empty($value)) {
+        if (is_null($value)) {
             throw new Exception('LedgerDirect: Config value "' . esc_html($configIdentifier) . '" not found.');
         }
 
