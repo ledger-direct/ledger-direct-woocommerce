@@ -3,8 +3,8 @@
 build:
 	composer install --no-dev --no-scripts --optimize-autoloader
 	git archive --prefix=ledger-direct/ --format=zip --output ledger-direct-`git rev-parse HEAD`.zip `git rev-parse --abbrev-ref HEAD`
-	mkdir ledger-direct-woocommerce
-	cp -r vendor ledger-direct-woocommerce/.
+	mkdir ledger-direct
+	cp -r vendor ledger-direct/.
 	zip -r ledger-direct-`git rev-parse HEAD`.zip ledger-direct/vendor
 	rm -rf ledger-direct
 
