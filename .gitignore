@@ -23,6 +23,5 @@ package-lock.json
 .phpunit.cache
 
 # Project specific
-bin/
 tests/manual
 TODO.md

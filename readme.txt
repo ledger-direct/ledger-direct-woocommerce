@@ -48,7 +48,7 @@ The best way is to configure the plugin to use the testnet and make a test payme
 To test the plugin, you can configure it to use the XRP Ledger Testnet. This allows you to simulate transactions without using real funds. Follow these steps:
 1. Go to the plugin settings in WooCommerce.
 2. Enable the Testnet mode.
-3. Use a test XRP Ledger account to make test payments.
+3. Use a XRP Ledger test account to make test payments.
 5. You can create test account from https://xrpl.org/xrp-testnet-faucet.html for XRP or https://tryrlusd.com/ for RLUSD.
 
 == External services ==
@@ -62,6 +62,11 @@ For more information about each service, see:
 - Coingecko API: [Terms of Service](https://www.coingecko.com/en/terms), [Privacy Policy](https://www.coingecko.com/en/privacy)
 - Binance API: [Terms of Use](https://www.binance.com/en/terms), [Privacy Policy](https://www.binance.com/en/privacy)
 - Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
+
+== Source Code of minified assets ==
+LedgerDirect uses minified assets for the WooCommerce blocks checkout. The source for includes/assets/js/frontend/blocks.asset.js is available at https://github.com/ledger-direct/ledger-direct-woocommerce/blob/main/resources/js/frontend/index.js.
+
+LedgerDirect uses minified assets from third party libraries. The source for the QR code library (jquery-qrcode.min.js) is available at https://github.com/jeromeetienne/jquery-qrcode.
 
 == Frequently Asked Questions ==
 
