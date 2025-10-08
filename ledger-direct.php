@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * Plugin Name: Ledger Direct
- * Plugin URI: https://www.ledger-direct.com
+ * Plugin URI: https://github.com/ledger-direct/ledger-direct-woocommerce
  * Description: A XRP Ledger integration.
  * Version: 0.9.1
  * Author: Alexander Busse | Hardcastle Technologies
