@@ -69,9 +69,9 @@ class XrplTxService
     {
         global $wpdb;
 
-        // TODO: Use NetworkId or CTID!
+        $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
         $statement = $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}xrpl_tx WHERE destination = %s AND destination_tag = %d",
+            "SELECT * FROM {$table} WHERE destination = %s AND destination_tag = %d",
             [$destination, $destinationTag]
         );
         $matches = $wpdb->get_results($statement, ARRAY_A);
@@ -95,7 +95,8 @@ class XrplTxService
     public function syncTransactions(string $address): void {
         global $wpdb;
 
-        $statement = $wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$wpdb->prefix}xrpl_tx");
+        $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
+        $statement = $wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$table}");
         $lastLedgerIndex = (int) $wpdb->get_col($statement)[0] ?? -1;
 
         while (true) {
@@ -128,7 +129,7 @@ class XrplTxService
         $rows = $this->hydrateRows($transactions);
 
         foreach ($rows as $row) {
-            $table = $wpdb->prefix . 'xrpl_tx';
+            $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
             $format = ['%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s'];
             $wpdb->insert($table, $row, $format);
         }
@@ -171,8 +172,9 @@ class XrplTxService
         $hashes = array_map('esc_sql', $hashes);
         $placeholders = implode(',', array_fill(0, count($hashes), '%s'));
 
+        $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
         $statement = $wpdb->prepare(
-            "SELECT hash FROM {$wpdb->prefix}xrpl_tx WHERE hash IN (" . $placeholders . ")",
+            "SELECT hash FROM {$table} WHERE hash IN (" . $placeholders . ")",
             $hashes
         );
         $matches = $wpdb->get_results($statement, ARRAY_A);

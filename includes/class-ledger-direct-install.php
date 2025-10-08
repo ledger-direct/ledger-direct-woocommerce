@@ -44,8 +44,10 @@ class LedgerDirectInstall {
     public static function uninstall(): void {
         global $wpdb;
 
-        $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}xrpl_tx" );
-        $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}xrpl_destination_tag" );
+        $tx_table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
+        $wpdb->query( "DROP TABLE IF EXISTS {$tx_table}" );
+        $dest_tag_table = 'ledger_direct_destination_tag';
+        $wpdb->query( "DROP TABLE IF EXISTS {$dest_tag_table}" );
     }
 
 
@@ -87,8 +89,10 @@ class LedgerDirectInstall {
             $collate = $wpdb->get_charset_collate();
         }
 
+        $tx_table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
+        $dest_tag_table = $wpdb->prefix . 'ledger_direct_destination_tag';
         $tables = "
-            CREATE TABLE {$wpdb->prefix}xrpl_tx (
+            CREATE TABLE {$tx_table} (
                 id int(10) unsigned NOT NULL AUTO_INCREMENT,
                 ledger_index varchar(64) NOT NULL,
                 ctid varchar(16) NOT NULL,
@@ -101,7 +105,7 @@ class LedgerDirectInstall {
                 tx text not null,
                 PRIMARY KEY  (id)
             ) $collate;
-            CREATE TABLE {$wpdb->prefix}xrpl_destination_tag (
+            CREATE TABLE {$dest_tag_table} (
                 destination_tag int(10) unsigned NOT NULL,
                 account varchar(35) NOT NULL,
                 PRIMARY KEY  (destination_tag)
