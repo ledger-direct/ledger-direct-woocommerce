@@ -34,15 +34,20 @@ class XrplClientService
      *
      * @param string $address
      * @param int|null $lastLedgerIndex
+     * @param mixed|null $marker
      * @return array
      * @throws GuzzleException
      * @throws Exception
      */
-    public function fetchAccountTransactions(string $address, ?int $lastLedgerIndex): array
+    public function fetchAccountTransactions(string $address, ?int $lastLedgerIndex, mixed $marker = null): array
     {
         $this->initClient();
 
-        $req = new AccountTxRequest($address, $lastLedgerIndex);
+        $req = new AccountTxRequest(
+            account: $address,
+            ledgerIndexMin: $lastLedgerIndex,
+            marker: $marker
+        );
         $res = $this->client->syncRequest($req);
 
         if ($res->getStatus() === 'error') {
@@ -50,7 +55,7 @@ class XrplClientService
             return []; // Return an empty array on error
         }
 
-        return $res->getResult()['transactions'];
+        return $res->getResult();
     }
 
     /**

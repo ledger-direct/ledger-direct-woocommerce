@@ -98,13 +98,16 @@ class XrplTxService
         $statement = $wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$wpdb->prefix}xrpl_tx");
         $lastLedgerIndex = (int) $wpdb->get_col($statement)[0] ?? -1;
 
-        $transactions = $this->clientService->fetchAccountTransactions($address, $lastLedgerIndex);
-
-        if (count($transactions)) {
-            $this->txToDb($transactions, $address);
+        while (true) {
+            $result = $this->clientService->fetchAccountTransactions($address, $lastLedgerIndex);
+            $transactions = $result['transactions'] ?? [];
+            if (count($transactions)) {
+                $this->txToDb($transactions, $address);
+            }
+            if (!isset($result['marker'])) {
+                break;
+            }
         }
-
-        // TODO: If marker is present, loop
     }
 
     /**
