@@ -156,7 +156,13 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $orderTransactionService = $container->get(OrderTransactionService::class);
         $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
 
-        $payment_url = home_url('/ledger-direct-payment/' . $order->get_order_key());
+        // Generate the payment URL, depending on whether permalinks are enabled or not
+        global $wp_rewrite;
+        if ($wp_rewrite->using_permalinks()) {
+            $payment_url = home_url('/ledger-direct-payment/' . $order->get_order_key() . '/');
+        } else {
+            $payment_url = home_url('/?ledger-direct-payment=' . $order->get_order_key());
+        }
 
         return [
             'result' => 'success',

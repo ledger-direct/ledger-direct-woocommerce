@@ -23,19 +23,14 @@ const Content = (props) => {
     const { onPaymentSetup } = eventRegistration;
     useEffect( () => {
         const unsubscribe = onPaymentSetup( async () => {
-            // Here we can do any processing we need, and then emit a response.
-            // For example, we might validate a custom field, or perform an AJAX request, and then emit a response indicating it is valid or not.
-            const myGatewayCustomData = '12345';
-
-                return {
-                    type: emitResponse.responseTypes.SUCCESS,
-                    meta: {
-                        paymentMethodData: {
-                            ledger_direct_payment_type: selected
-                        },
+            return {
+                type: emitResponse.responseTypes.SUCCESS,
+                meta: {
+                    paymentMethodData: {
+                        ledger_direct_payment_type: selected
                     },
-                };
-
+                },
+            };
         } );
         // Unsubscribes when this component is unmounted.
         return () => {
