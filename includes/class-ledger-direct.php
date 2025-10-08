@@ -100,7 +100,6 @@ class LedgerDirect
         add_action( 'init', [$this, 'add_rewrite_endpoint'] );
         add_filter( 'woocommerce_payment_gateways', [$this, 'register_gateway'] );
         add_action( 'woocommerce_blocks_loaded', [$this, 'add_block_support_for_gateway'] );
-        //add_filter('woocommerce_get_price_html', [$this, 'custom_price_html']);
         add_filter( 'woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2 );
         add_filter( 'template_include', [$this, 'render_payment_page'] );
 
@@ -193,59 +192,6 @@ class LedgerDirect
             'payment_data' => $payment_data,
             'message' => __('Payment method updated successfully', 'ledger-direct')
         ]);
-    }
-
-
-    /**
-     * Display custom price HTML for arbitrary token
-     *
-     * @param $price
-     * @return string
-     */
-    public function custom_price_html($price): string {
-        global $product;
-
-        $lpt_price = $product->get_meta("_ledger_direct_lpt_price");
-
-        if (!empty($lpt_price)) {
-            $price = $price . ' | <span class="woocommerce-Price-amount amount">' . $lpt_price . ' LPT</span>';
-        }
-
-        return $price;
-    }
-
-    /**
-     * Add custom fields to the checkout page
-     *
-     * @return void
-     */
-    public function add_product_custom_fields(): void
-    {
-        echo '<div class="options_group">';
-        woocommerce_wp_text_input(
-            array(
-                'id' => '_ledger_direct_lpt_price',
-                'label' => __('LPT Price', 'ledger-direct'),
-                'desc_tip' => 'true',
-                'description' => __('Enter the Loyalty Point price here.', 'ledger-direct'),
-            )
-        );
-        echo '</div>';
-    }
-
-    /**
-     * Save custom fields to the database
-     *
-     * @param $post_id
-     * @return void
-     */
-    public function save_product_custom_fields($post_id): void
-    {
-        if (!current_user_can('edit_product', $post_id)) {
-            return;
-        }
-        $custom_field_value = isset($_POST['_ledger_direct_lpt_price']) ? sanitize_text_field($_POST['_ledger_direct_lpt_price']) : '';
-        update_post_meta($post_id, '_ledger_direct_lpt_price', $custom_field_value);
     }
 
     /**
