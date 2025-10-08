@@ -3,7 +3,7 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://www.ledger-direct.com
  * Description: A XRP Ledger integration.
- * Version: 0.9.0
+ * Version: 0.9.1
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct

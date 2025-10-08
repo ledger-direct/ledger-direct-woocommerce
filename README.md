@@ -11,15 +11,15 @@ GitHub: https://github.com/ledger-direct/ledger-direct-woocommerce
 
 ## Install & setup instructions
 
-### 1. Install the plugin
-- Download the plugin from the [WordPress Plugin Store](https://wordpress.org/plugins/ledger-direct/) or the [GitHub releases page](https://github.com/ledger-direct/ledger-direct-woocommerce).
-- Upload the plugin to your WordPress installation:
-  - Go to your WordPress admin panel
-  - Navigate to "Plugins" > "Add New"
-  - Click on "Upload Plugin"
-  - Select the downloaded ZIP file and click "Install Now"
-  - Activate the plugin after installation
-  - Alternatively, you can install the plugin directly from the WordPress Plugin Store by searching for "LedgerDirect" in the "Add New" plugins section.
+### 1. Install the plugin from WordPress.org
+- Download the plugin from the [WordPress Plugin Store](https://wordpress.org/plugins/ledger-direct/)
+- Copy the contents of the ZIP file to the `/wp-content/plugins` directory of your WordPress installation.
+- Alternatively, you can install the plugin directly from the WordPress Plugin Store by searching for "LedgerDirect" in the "Add New" plugins section.
+- Activate the plugin through the 'Plugins' menu in WordPress admin.
+
+### Manual installation
+- Clone the [GitHub repo](https://github.com/ledger-direct/ledger-direct-woocommerce) to the `/wp-content/plugins` directory of your WordPress installation.
+- Activate the plugin through the 'Plugins' menu in WordPress admin.
 
 ### 2. Configure the plugin
 - Go to "WooCommerce" > "Settings" > "Payments"
