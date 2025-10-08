@@ -1,7 +1,7 @@
-=== LedgerDirect ===
+=== Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, eurc, cryptocurrency, woocommerce
-Stable tag: 0.7.0
+Stable tag: 0.9.1
 Requires at least: 6.2
 Tested up to: 6.8
 Requires PHP: 8.1
