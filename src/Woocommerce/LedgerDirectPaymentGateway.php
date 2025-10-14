@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 use DI\DependencyException;
 use DI\NotFoundException;
 use GuzzleHttp\Exception\GuzzleException;
+use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use LedgerDirect;
 use WC_Order;
@@ -102,6 +103,10 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      */
     public function payment_fields(): void
     {
+        $configService = ledger_direct_get_dependency_injection_container()->get(ConfigurationService::class);
+        $is_rlusd_enabled = $configService->isRlusdEnabled();
+        $is_usdc_enabled = $configService->isUsdcEnabled();
+
         echo '<div id="ledger-direct-payment-methods">';
         echo '<h4>' . esc_html__('Choose payment method', 'ledger-direct') . '</h4>';
 
@@ -110,15 +115,19 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         echo esc_html__('XRP', 'ledger-direct');
         echo '</label><br>';
 
-        // echo '<label>';
-        // echo '<input type="radio" name="ledger_direct_payment_type" value="token"> ';
-        // echo __('XRPL Token', 'ledger-direct');
-        // echo '</label><br>';
+        if ($is_rlusd_enabled) {
+            echo '<label>';
+            echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';
+            echo esc_html__('RLUSD Stablecoin (XRPL)', 'ledger-direct');
+            echo '</label><br>';
+        }
 
-        echo '<label>';
-        echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';
-        echo esc_html__('RLUSD Stablecoin', 'ledger-direct');
-        echo '</label>';
+        if ($is_usdc_enabled) {
+            echo '<label>';
+            echo '<input type="radio" name="ledger_direct_payment_type" value="usdc"> ';
+            echo esc_html__('USDC Stablecoin (XRPL)', 'ledger-direct');
+            echo '</label>';
+        }
 
         echo '</div>';
     }
@@ -126,12 +135,14 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     /**
      * Validates the fields submitted by the user on the checkout page. This method is called by
      * WooCommerce to ensure that the selected payment method is valid.
+     *
+     * @return bool True if the fields are valid, false otherwise.
      */
     public function validate_fields(): bool
     {
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        if (!in_array($payment_type, ['xrp', 'token', 'rlusd'])) {
+        if (!in_array($payment_type, ['xrp', 'rlusd', 'usdc'])) {
             wc_add_notice(__('Please select a valid payment method.', 'ledger-direct'), 'error');
             return false;
         }
@@ -189,10 +200,8 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         if ($this->orderTransactionService->checkPayment($order)) {
             if ($meta['type'] === self::XRP_PAYMENT_ID ) {
                 return $this->is_xrp_payment_valid($meta);
-            } elseif ($meta['type'] === self::TOKEN_PAYMENT_ID) {
+            } elseif ($meta['type'] === self::RLUSD_PAYMENT_ID || $meta['type'] === self::USDC_PAYMENT_ID) {
                 return $this->is_token_payment_valid($meta);
-            } elseif ($meta['type'] === self::RLUSD_PAYMENT_ID) {
-                return $this->is_rlusd_payment_valid($meta);
             }
         }
 
@@ -214,31 +223,20 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     }
 
     /**
-     * Checks if the token payment is valid based on the delivered amount and requested amount.
+     * Checks if the token (RLUSD/USDC) payment is valid based on the delivered amount and requested amount.
      *
      * @param array $meta
      * @return bool
      */
     private function is_token_payment_valid(array $meta): bool
     {
-        return false;
-    }
-
-    /**
-     * Checks if the RLUSD payment is valid based on the delivered amount and requested amount.
-     *
-     * @param array $meta
-     * @return bool
-     */
-    private function is_rlusd_payment_valid(array $meta): bool
-    {
         if (!isset($meta['delivered_amount']) || !isset($meta['amount_requested'])) {
             return false;
         }
-        $requestedRlusdAmount = $meta['amount_requested'];
-        $deliveredRlusdAmount = $meta['delivered_amount'];
+        $requestedAmount = $meta['amount_requested'];
+        $deliveredAmount = $meta['delivered_amount'];
 
-        if ($deliveredRlusdAmount === $requestedRlusdAmount) {
+        if ($deliveredAmount === $requestedAmount) {
             return true;
         }
 

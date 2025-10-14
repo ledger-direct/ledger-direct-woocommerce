@@ -92,8 +92,10 @@ $payment_type = $meta['type'] ?: 'xrp';
 $supported_payment_types = [
     LedgerDirectPaymentGateway::XRP_PAYMENT_ID,
     LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID,
-    LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID
+    LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID,
+    LedgerDirectPaymentGateway::USDC_PAYMENT_ID
 ];
+
 if (!in_array($payment_type, $supported_payment_types)) {
     echo '<div class="woocommerce-error">';
     echo '<h2>' . esc_html__('Invalid Payment Method', 'ledger-direct') . '</h2>';
@@ -150,7 +152,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
 
 <div class="ld-header">
     <h3>
-        <?php $page_title = 'LedgerDirect - pay with ' . strtoupper($payment_type) . ' directly on ' . $chain; ?>
+        <?php $page_title = 'LedgerDirect - pay with ' . strtoupper($payment_type) . ' directly on ' . $chain .' ' .$network_name ; ?>
         <?php echo esc_html($page_title); ?>
     </h3>
 </div>
@@ -177,6 +179,23 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                     <input id="rlusd-amount"
                            type="text"
                            name="rlusd-amount"
+                           value="<?php echo esc_attr($amount_requested); ?>"
+                           readonly
+                           style="display: none;"
+                    />
+                    <input id="pairing"
+                           type="text"
+                           name="pairing"
+                           value="<?php echo esc_attr($pairing); ?>"
+                           readonly
+                           style="display: none;"
+                    />
+                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::USDC_PAYMENT_ID) { ?>
+                    <?php $instructions = sprintf(__('Please send <strong>%s</strong> <strong>%s</strong> to the following address:', 'ledger-direct'), $amount_requested['value'], 'USDC'); ?>
+                    <p><?php echo esc_html($instructions); ?></p>
+                    <input id="usdc-amount"
+                           type="text"
+                           name="usdc-amount"
                            value="<?php echo esc_attr($amount_requested); ?>"
                            readonly
                            style="display: none;"
@@ -287,6 +306,15 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                     <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($total); ?> <?php echo esc_html($wp_currency); ?></span>
                     <br/>
                     <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($amount_requested['value']); ?> RLUSD</span><br/>
+                    <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html($exchange_rate); ?> <?php echo esc_html($pairing); ?></span>
+                    <br/>
+                    <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
+                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::USDC_PAYMENT_ID) { ?>
+                    <div class="ld-sum"><?php echo esc_html($total); ?><?php echo esc_html($currency_symbol); ?></div>
+                    <span><?php esc_html_e('Order ID', 'ledger-direct'); ?>: <?php echo esc_html($order_id); ?></span><br/>
+                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($total); ?> <?php echo esc_html($wp_currency); ?></span>
+                    <br/>
+                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($amount_requested['value']); ?> USDC</span><br/>
                     <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html($exchange_rate); ?> <?php echo esc_html($pairing); ?></span>
                     <br/>
                     <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>

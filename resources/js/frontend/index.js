@@ -46,6 +46,7 @@ const Content = (props) => {
     return (
         <div id="ledger-direct-payment-methods-block">
             <h4>{__('Choose payment method', 'ledger-direct')}</h4>
+
             <label>
                 <input
                     type="radio"
@@ -57,6 +58,7 @@ const Content = (props) => {
                 {__('Pay with XRP', 'ledger-direct')}
             </label>
             <br />
+
             <label>
                 <input
                     type="radio"
@@ -66,6 +68,18 @@ const Content = (props) => {
                     onChange={() => setSelected('rlusd')}
                 />
                 {__('Pay with RLUSD', 'ledger-direct')}
+            </label>
+            <br />
+
+            <label>
+                <input
+                    type="radio"
+                    name="ledger_direct_payment_type"
+                    value="usdc"
+                    checked={selected === 'usdc'}
+                    onChange={() => setSelected('usdc')}
+                />
+                {__('Pay with USDC', 'ledger-direct')}
             </label>
         </div>
     );

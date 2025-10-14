@@ -39,7 +39,7 @@ To test the plugin, you can configure it to use the XRP Ledger Testnet. This all
 1. Go to the extension settings in WordPress admin (").
 2. Enable the Testnet mode.
 3. Use a test XRP Ledger account to make test payments.
-4. You can create test accounts from https://xrpl.org/xrp-testnet-faucet.html for XRP or https://tryrlusd.com/ for RLUSD.
+4. You can create test accounts from the [XRP Testnet faucet](https://xrpl.org/xrp-testnet-faucet.html) for XRP, [RLUSD Testnet faucet](https://tryrlusd.com/) for RLUSD or [Circle Testnet faucet](https://faucet.circle.com/) for USDC.
 
 ## External Services
 LedgerDirect uses public APIs from Coinbase, Coingecko, Binance, and Kraken to retrieve current cryptocurrency exchange rates. These rates are needed to correctly calculate and display payments.
