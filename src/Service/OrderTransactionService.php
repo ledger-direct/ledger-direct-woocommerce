@@ -10,8 +10,10 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Provider\RlusdPriceProvider;
+use Hardcastle\LedgerDirect\Provider\UsdcPriceProvider;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use Hardcastle\XRPL_PHP\Core\Stablecoin\RLUSD;
+use Hardcastle\XRPL_PHP\Core\Stablecoin\USDC;
 use LedgerDirect;
 use WC_Order;
 use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
@@ -66,6 +68,14 @@ class OrderTransactionService
             $priceProvider = $container->get(RlusdPriceProvider::class);
             $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
             $amountRequested = RLUSD::getAmount(
+                $network,
+                (string)ledger_direct_round_stable_coin($orderTotal / $exchangeRate)
+            );
+        } elseif ($cryptoCode === 'USDC') {
+            $container = ledger_direct_get_dependency_injection_container();
+            $priceProvider = $container->get(UsdcPriceProvider::class);
+            $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
+            $amountRequested = USDC::getAmount(
                 $network,
                 (string)ledger_direct_round_stable_coin($orderTotal / $exchangeRate)
             );
@@ -139,8 +149,8 @@ class OrderTransactionService
 
         match ($paymentMethod) {
             LedgerDirectPaymentGateway::XRP_PAYMENT_ID => $this->prepareXrpPayment($order),
-            //LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID => $this->prepareTokenPayment($order),
             LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID => $this->prepareRlusdPayment($order, $network),
+            LedgerDirectPaymentGateway::USDC_PAYMENT_ID => $this->prepareUsdcPayment($order, $network),
         };
     }
 
@@ -180,24 +190,21 @@ class OrderTransactionService
     }
 
     /**
-     * Prepare token payment data for the order
+     * Prepare USDC payment data for the order
      *
      * @param WC_Order $order
+     * @param string $network
      * @return void
      * @throws Exception
      */
-    private function prepareTokenPayment(WC_Order $order): void
+    private function prepareUsdcPayment(WC_Order $order, $network): void
     {
-        $issuer = $this->configurationService->getIssuer();
-        $tokenName = $this->configurationService->getTokenName();
-        $total = calculate_token_order_total($order, $tokenName);
-
-        $additionalData = [
-            'type' => LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID,
-            'issuer' => $issuer,
-            'currency' => $tokenName,
-            'value' => $total // $order->get_total(),
-        ];
+        if (!$this->configurationService->isRlusdEnabled()) {
+            throw new Exception('USDC payments are not enabled in the configuration.');
+        }
+        $additionalData = $this->getCryptoPriceForOrder($order, 'USDC', $network);
+        $additionalData['type'] = LedgerDirectPaymentGateway::USDC_PAYMENT_ID;
+        $additionalData['currency'] = 'USDC';
 
         $this->addAdditionalDataToPayment($order, $additionalData);
     }

@@ -15,19 +15,11 @@ class ConfigurationService
 
     public const CONFIG_KEY_MAINNET_ACCOUNT = 'xrpl_mainnet_destination_account';
 
-    public const CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED = 'xrpl_mainnet_rlusd_enabled';
-
-    public const CONFIG_KEY_MAINNET_TOKEN_NAME = 'xrpl_mainnet_token_name';
-
-    public const CONFIG_KEY_MAINNET_TOKEN_ISSUER = 'xrpl_mainnet_token_issuer';
-
     public const CONFIG_KEY_TESTNET_ACCOUNT = 'xrpl_testnet_destination_account';
 
-    public const CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED = 'xrpl_testnet_rlusd_enabled';
+    public const CONFIG_KEY_IS_RLUSD_ENABLED = 'xrpl_is_rlusd_enabled';
 
-    public const CONFIG_KEY_TESTNET_TOKEN_NAME = 'xrpl_testnet_token_name';
-
-    public const CONFIG_KEY_TESTNET_TOKEN_ISSUER = 'xrpl_testnet_token_issuer';
+    public const CONFIG_KEY_IS_USDC_ENABLED = 'xrpl_is_usdc_enabled';
 
     public const CONFIG_KEY_PAYMENT_PAGE_TITLE = 'xrpl_payment_page_title';
 
@@ -84,7 +76,7 @@ class ConfigurationService
     }
 
     /**
-     *
+     * Get the destination account based on the selected network.
      *
      * @return string
      * @throws Exception
@@ -97,37 +89,6 @@ class ConfigurationService
 
         return $this->get(self::CONFIG_KEY_MAINNET_ACCOUNT);
     }
-
-    /**
-     *
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getTokenName(): string
-    {
-        if ($this->isTest()) {
-            return $this->get(self::CONFIG_KEY_TESTNET_TOKEN_NAME);
-        }
-
-        return $this->get(self::CONFIG_KEY_MAINNET_TOKEN_NAME);
-    }
-
-    /**
-     *
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getIssuer(): string
-    {
-        if ($this->isTest()) {
-            return $this->get(self::CONFIG_KEY_TESTNET_TOKEN_ISSUER);
-        }
-
-        return $this->get(self::CONFIG_KEY_MAINNET_TOKEN_ISSUER);
-    }
-
 
     /**
      * Get the custom title for the payment page.
@@ -147,17 +108,30 @@ class ConfigurationService
      * Check if RLUSD payment is enabled.
      *
      * @return bool
+     * @throws Exception
      */
     public function isRlusdEnabled(): bool
     {
-        try {
-            if ($this->isTest()) {
-                return $this->get(self::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED, 'no' ) === 'yes';
-            }
-            return $this->get(self::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED, 'no' ) === 'yes';
-        } catch (Exception $exception) {
-            return false;
+        if (!empty($this->getDestinationAccount())) {
+            return $this->get(self::CONFIG_KEY_IS_RLUSD_ENABLED, 'no' ) === 'yes';
         }
+
+        return false;
+    }
+
+    /**
+     * Check if RLUSD payment is enabled. If no destination account is set, it will always return false.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function isUsdcEnabled(): bool
+    {
+        if (!empty($this->getDestinationAccount())) {
+            return $this->get(self::CONFIG_KEY_IS_USDC_ENABLED, 'no' ) === 'yes';
+        }
+
+        return false;
     }
 
 }

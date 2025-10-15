@@ -19,20 +19,6 @@ class LedgerDirectAdmin
                 'default'     => 'testnet',
                 'desc_tip'    => true
             ],
-            ConfigurationService::CONFIG_KEY_TESTNET_ACCOUNT => [
-                'title'       => __("Merchant Account - TESTNET", 'ledger-direct'),
-                'type'        => 'text',
-                'description' => __('Merchant Account address (TESTNET) - receiving account', 'ledger-direct'),
-                'default'     => '',
-                'desc_tip'    => true
-            ],
-            ConfigurationService::CONFIG_KEY_TESTNET_IS_RLUSD_ENABLED => [
-                'title'       => __("Enable RLUSD - TESTNET", 'ledger-direct'),
-                'type'        => 'checkbox',
-                'label'       => __('Enable RLUSD payments on TESTNET', 'ledger-direct'),
-                'default'     => 'no',
-                'desc_tip'    => true
-            ],
             ConfigurationService::CONFIG_KEY_MAINNET_ACCOUNT => [
                 'title'       => __("Merchant Account - MAINNET", 'ledger-direct'),
                 'type'        => 'text',
@@ -40,10 +26,24 @@ class LedgerDirectAdmin
                 'default'     => '',
                 'desc_tip'    => true
             ],
-            ConfigurationService::CONFIG_KEY_MAINNET_IS_RLUSD_ENABLED => [
-                'title'       => __("Enable RLUSD - MAINNET", 'ledger-direct'),
+            ConfigurationService::CONFIG_KEY_TESTNET_ACCOUNT => [
+                'title'       => __("Merchant Account - TESTNET", 'ledger-direct'),
+                'type'        => 'text',
+                'description' => __('Merchant Account address (TESTNET) - receiving account', 'ledger-direct'),
+                'default'     => '',
+                'desc_tip'    => true
+            ],
+            ConfigurationService::CONFIG_KEY_IS_RLUSD_ENABLED => [
+                'title'       => __("Enable RLUSD payments title", 'ledger-direct'),
                 'type'        => 'checkbox',
-                'label'       => __('Enable RLUSD payments on MAINNET', 'ledger-direct'),
+                'label'       => __('Enable RLUSD payments', 'ledger-direct'),
+                'default'     => 'no',
+                'desc_tip'    => true
+            ],
+            ConfigurationService::CONFIG_KEY_IS_USDC_ENABLED => [
+                'title'       => __("Enable USDC payments title", 'ledger-direct'),
+                'type'        => 'checkbox',
+                'label'       => __('Enable USDC payments', 'ledger-direct'),
                 'default'     => 'no',
                 'desc_tip'    => true
             ],

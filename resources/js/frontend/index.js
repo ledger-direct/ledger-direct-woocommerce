@@ -43,9 +43,41 @@ const Content = (props) => {
         selected
     ] );
 
+    let rlusdRadio = null
+    let usdcRadio = null;
+    if ( settings.rlusd_available ) {
+        rlusdRadio = (
+            <label>
+                <input
+                    type="radio"
+                    name="ledger_direct_payment_type"
+                    value="rlusd"
+                    checked={selected === 'rlusd'}
+                    onChange={() => setSelected('rlusd')}
+                />
+                {__('Pay with RLUSD', 'ledger-direct')}
+            </label>
+        );
+    }
+    if ( settings.usdc_available ) {
+        usdcRadio = (
+            <label>
+                <input
+                    type="radio"
+                    name="ledger_direct_payment_type"
+                    value="usdc"
+                    checked={selected === 'usdc'}
+                    onChange={() => setSelected('usdc')}
+                />
+                {__('Pay with USDC', 'ledger-direct')}
+            </label>
+        );
+    }
+
     return (
         <div id="ledger-direct-payment-methods-block">
             <h4>{__('Choose payment method', 'ledger-direct')}</h4>
+
             <label>
                 <input
                     type="radio"
@@ -57,16 +89,11 @@ const Content = (props) => {
                 {__('Pay with XRP', 'ledger-direct')}
             </label>
             <br />
-            <label>
-                <input
-                    type="radio"
-                    name="ledger_direct_payment_type"
-                    value="rlusd"
-                    checked={selected === 'rlusd'}
-                    onChange={() => setSelected('rlusd')}
-                />
-                {__('Pay with RLUSD', 'ledger-direct')}
-            </label>
+
+            {rlusdRadio}
+            <br/>
+            {usdcRadio}
+
         </div>
     );
 };

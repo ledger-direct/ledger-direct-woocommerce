@@ -3,7 +3,7 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://github.com/ledger-direct/ledger-direct-woocommerce
  * Description: A XRP Ledger integration.
- * Version: 0.9.1
+ * Version: 0.10.0
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct
@@ -50,6 +50,51 @@ function ledger_direct_uninstall(): void {
     LedgerDirectInstall::uninstall();
 }
 register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
+
+function ledger_direct_get_configuration(): array {
+    $settings = get_option('woocommerce_ledger-direct_settings', []);
+
+    $preparedSettings = [
+        'enabled' => $settings['enabled'] ?? 'no',
+    ];
+
+    $xrpl_network = in_array($settings['xrpl_network'], ['mainnet', 'testnet']) ? $settings['xrpl_network'] : 'testnet';
+
+    $xrpl_testnet_destination_account = $settings['xrpl_testnet_destination_account'] ?? '';
+    $xrpl_mainnet_destination_account = $settings['xrpl_mainnet_destination_account'] ?? '';
+
+    $xrpl_account_regex = '/^r[1-9A-HJ-NP-Za-km-z]{25,34}$/';
+    $testnet_wallet_available = !empty($xrpl_testnet_destination_account) && preg_match($xrpl_account_regex, $xrpl_testnet_destination_account);
+    $mainnet_wallet_available = !empty($xrpl_mainnet_destination_account) && preg_match($xrpl_account_regex, $xrpl_mainnet_destination_account);
+
+    $rlusd_available = isset($settings['xrpl_is_rlusd_enabled']) && $settings['xrpl_is_rlusd_enabled'] === 'yes';
+    $usdc_available = isset($settings['xrpl_is_usdc_enabled']) && $settings['xrpl_is_usdc_enabled'] === 'yes';
+
+    $testnet_rlusd_available = $rlusd_available && $testnet_wallet_available;
+    $mainnet_rlusd_available = $usdc_available && $mainnet_wallet_available;
+    $testnet_usdc_available = $rlusd_available && $testnet_wallet_available;
+    $mainnet_usdc_available = $usdc_available && $mainnet_wallet_available;
+
+    $order_expiry = isset($settings['xrpl_quote_expiry']) && is_numeric($settings['xrpl_quote_expiry']) ? (int)$settings['xrpl_quote_expiry'] : 15;
+
+    if ($xrpl_network === 'mainnet') {
+        $preparedSettings['xrpl_network'] = 'mainnet';
+        $preparedSettings['wallet_available'] = $mainnet_wallet_available;
+        $preparedSettings['destination_account'] = $xrpl_mainnet_destination_account;
+        $preparedSettings['rlusd_available'] = $mainnet_rlusd_available;
+        $preparedSettings['usdc_available'] = $mainnet_usdc_available;
+        $preparedSettings['order_expiry'] = $order_expiry;
+    } else {
+        $preparedSettings['xrpl_network'] = 'testnet';
+        $preparedSettings['wallet_available'] = $testnet_wallet_available;
+        $preparedSettings['destination_account'] = $xrpl_testnet_destination_account;
+        $preparedSettings['rlusd_available'] = $testnet_rlusd_available;
+        $preparedSettings['usdc_available'] = $testnet_usdc_available;
+        $preparedSettings['order_expiry'] = $order_expiry;
+    }
+
+    return $preparedSettings;
+}
 
 /**
  * Returns the DI container with interfaces wired up.
