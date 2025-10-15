@@ -33,7 +33,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     public string $xrpl_mainnet_destination_account;
 
-
     public string $xrpl_network;
 
     protected OrderTransactionService $orderTransactionService;
@@ -100,12 +99,11 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      * WooCommerce to render the payment options.
      *
      * @return void
+     * @throws DependencyException|NotFoundException
      */
     public function payment_fields(): void
     {
-        $configService = ledger_direct_get_dependency_injection_container()->get(ConfigurationService::class);
-        $is_rlusd_enabled = $configService->isRlusdEnabled();
-        $is_usdc_enabled = $configService->isUsdcEnabled();
+        $config = ledger_direct_get_configuration();
 
         echo '<div id="ledger-direct-payment-methods">';
         echo '<h4>' . esc_html__('Choose payment method', 'ledger-direct') . '</h4>';
@@ -115,14 +113,14 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         echo esc_html__('XRP', 'ledger-direct');
         echo '</label><br>';
 
-        if ($is_rlusd_enabled) {
+        if ($config['rlusd_available']) {
             echo '<label>';
             echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';
             echo esc_html__('RLUSD Stablecoin (XRPL)', 'ledger-direct');
             echo '</label><br>';
         }
 
-        if ($is_usdc_enabled) {
+        if ($config['usdc_available']) {
             echo '<label>';
             echo '<input type="radio" name="ledger_direct_payment_type" value="usdc"> ';
             echo esc_html__('USDC Stablecoin (XRPL)', 'ledger-direct');

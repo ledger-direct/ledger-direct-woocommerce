@@ -3,20 +3,27 @@
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway as LedgerDirectPaymentGateway;
 
 final class LedgerDirectBlocks extends AbstractPaymentMethodType {
 
-    private $gateway;
+    private LedgerDirectPaymentGateway $gateway;
 
     protected $name = 'ledger-direct';
 
     public function initialize()
     {
         $this->settings = get_option('woocommerce_ledger-direct_settings', []);
-        $gateways       = WC()->payment_gateways->payment_gateways();
-        $this->gateway  = $gateways[ $this->name ];
+
+        $gateways = WC()->payment_gateways->payment_gateways();
+        $this->gateway = $gateways[ $this->name ];
     }
 
+    /**
+     * Determines if the payment method is active and should be made available to customers.
+     *
+     * @return bool
+     */
     public function is_active() {
         return $this->gateway->is_available();
     }
@@ -58,10 +65,13 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
      * @return array
      */
     public function get_payment_method_data() {
+        $configuration = ledger_direct_get_configuration();
         return [
             'title'       => $this->get_setting( 'title' ),
             'description' => $this->get_setting( 'description' ),
-            'supports'    => array_filter( $this->gateway->supports, [ $this->gateway, 'supports' ] )
+            'supports'    => array_filter( $this->gateway->supports, [ $this->gateway, 'supports' ] ),
+            'rlusd_available' => $configuration['rlusd_available'] ?? false,
+            'usdc_available' => $configuration['usdc_available'] ?? false
         ];
     }
 
