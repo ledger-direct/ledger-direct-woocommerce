@@ -11,11 +11,11 @@ vendor/bin export-ignore
 tests/ export-ignore
 
 .phpunit.cache export-ignore
-composer.json export-ignore
+.phpunit.result.cache export-ignore
 composer.lock export-ignore
 makefile export-ignore
 package.json export-ignore
-package-lock export-ignore
+package-lock.json export-ignore
 phpunit.xml export-ignore
 TODO.md export-ignore
 webpack.config.js export-ignore
@@ -26,3 +26,9 @@ webpack.config.js export-ignore
 *.dev export-ignore
 *.ini export-ignore
 *.input export-ignore
+vendor/**/test/** export-ignore
+vendor/**/tests/** export-ignore
+vendor/**/doc/** export-ignore
+vendor/**/docs/** export-ignore
+vendor/**/example/** export-ignore
+vendor/**/examples/** export-ignore

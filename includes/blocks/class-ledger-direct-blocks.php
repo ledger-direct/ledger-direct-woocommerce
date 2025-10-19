@@ -14,9 +14,8 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
     public function initialize()
     {
         $this->settings = get_option('woocommerce_ledger-direct_settings', []);
-
-        $gateways = WC()->payment_gateways->payment_gateways();
-        $this->gateway = $gateways[ $this->name ];
+        $gateways       = WC()->payment_gateways->payment_gateways();
+        $this->gateway  = $gateways[ $this->name ];
     }
 
     /**
@@ -45,7 +44,7 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
         $script_url        = LedgerDirect::plugin_url() . $script_path;
 
         wp_register_script(
-            'wc-ledger-direct-payments-blocks',
+            'ledger-direct-payments-blocks',
             $script_url,
             $script_asset[ 'dependencies' ],
             $script_asset[ 'version' ],
@@ -53,10 +52,10 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
         );
 
         if ( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations( 'wc-ledger-direct-blocks', 'woocommerce-gateway-ledger-direct', LedgerDirect::plugin_abspath() . 'languages/' );
+            wp_set_script_translations( 'ledger-direct-blocks', 'woocommerce-gateway-ledger-direct', LedgerDirect::plugin_abspath() . 'languages/' );
         }
 
-        return [ 'wc-ledger-direct-payments-blocks' ];
+        return [ 'ledger-direct-payments-blocks' ];
     }
 
     /**
@@ -70,8 +69,8 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
             'title'       => $this->get_setting( 'title' ),
             'description' => $this->get_setting( 'description' ),
             'supports'    => array_filter( $this->gateway->supports, [ $this->gateway, 'supports' ] ),
-            'rlusd_available' => $configuration['rlusd_available'] ?? false,
-            'usdc_available' => $configuration['usdc_available'] ?? false
+            'rlusd_available' => $configuration[ 'rlusd_available' ] ?? false,
+            'usdc_available' => $configuration[ 'usdc_available' ] ?? false
         ];
     }
 
