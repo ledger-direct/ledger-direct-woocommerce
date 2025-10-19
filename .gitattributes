@@ -24,8 +24,12 @@ webpack.config.js export-ignore
 
 *.cache export-ignore
 *.dev export-ignore
+*.dist export-ignore
+*.example export-ignore
+*.log export-ignore
 *.ini export-ignore
 *.input export-ignore
+
 vendor/**/test/** export-ignore
 vendor/**/tests/** export-ignore
 vendor/**/doc/** export-ignore
