@@ -97,7 +97,8 @@ class XrplTxService
 
         $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
         $statement = $wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$table}");
-        $lastLedgerIndex = (int) $wpdb->get_col($statement)[0] ?? -1;
+        $result = $wpdb->get_col($statement);
+        $lastLedgerIndex = isset($result[0]) ? (int) $result[0] : -1;
 
         while (true) {
             $result = $this->clientService->fetchAccountTransactions($address, $lastLedgerIndex);
