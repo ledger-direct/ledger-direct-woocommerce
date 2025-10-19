@@ -123,9 +123,6 @@ class LedgerDirect
         add_action('plugins_loaded', [$this, 'plugins_loaded_callback'], 10);
         add_action('admin_menu', [$this, 'admin_menu_callback']);
 
-        // add_action( 'woocommerce_product_options_general_product_data', [$this, 'add_product_custom_fields'] );
-        add_action( 'woocommerce_process_product_meta', [$this, 'save_product_custom_fields'] );
-
         add_filter('ledger_direct_init_form_fields', [$classAdmin, 'init_form_fields'], 10, 1);
         add_filter('ledger_direct_render_plugin_settings', [$classAdmin, 'render_plugin_settings'], 10, 1);
     }
