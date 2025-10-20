@@ -152,7 +152,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
 
 <div class="ld-header">
     <h3>
-        <?php $page_title = 'LedgerDirect - pay with ' . strtoupper($payment_type) . ' directly on ' . $chain .' ' .$network_name ; ?>
+        <?php $page_title = 'LedgerDirect - pay with ' . strtoupper($payment_type) . ' directly on ' .$network_name ; ?>
         <?php echo esc_html($page_title); ?>
     </h3>
 </div>
@@ -164,7 +164,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
 
             <div class="ld-card-left">
                 <?php if ($payment_type === LedgerDirectPaymentGateway::XRP_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send <strong>%s</strong> XRP to the following address:', 'ledger-direct'), $amount_requested); ?>
+                    <?php $instructions = sprintf(__('Please send %s XRP to the following address:', 'ledger-direct'), $amount_requested); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="xrp-amount"
                            type="text"
@@ -174,7 +174,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            style="display: none;"
                     />
                 <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send <strong>%s</strong> <strong>%s</strong> to the following address:', 'ledger-direct'), $amount_requested['value'], 'RLUSD'); ?>
+                    <?php $instructions = sprintf(__('Please send %s %s to the following address:', 'ledger-direct'), $amount_requested['value'], 'RLUSD'); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="rlusd-amount"
                            type="text"
@@ -191,7 +191,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            style="display: none;"
                     />
                 <?php } elseif ($payment_type === LedgerDirectPaymentGateway::USDC_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send <strong>%s</strong> <strong>%s</strong> to the following address:', 'ledger-direct'), $amount_requested['value'], 'USDC'); ?>
+                    <?php $instructions = sprintf(__('Please send %s %s to the following address:', 'ledger-direct'), $amount_requested['value'], 'USDC'); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="usdc-amount"
                            type="text"
@@ -208,7 +208,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            style="display: none;"
                     />
                 <?php } elseif ($payment_type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send <strong>%s</strong> <strong>%s</strong> to the following address:', 'ledger-direct'), $token_amount, $wp_currency); ?>
+                    <?php $instructions = sprintf(__('Please send %s %s to the following address:', 'ledger-direct'), $token_amount, $wp_currency); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="token-amount"
                            type="text"

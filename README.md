@@ -1,7 +1,7 @@
 # LedgerDirect Payment plugin for WooCommerce
 
-LedgerDirect is a payment plugin for WooCommerce. Receive crypto and stablecoin payments directly – without middlemen, 
-intermediary wallets, extra servers or external payment providers. Maximum control, minimal detours!
+    LedgerDirect is a payment plugin for WooCommerce. Receive crypto and stablecoin payments directly – without middlemen, 
+    intermediary wallets, extra servers or external payment providers. Maximum control, minimal detours!
 
 Project Website: https://www.ledger-direct.com
 
