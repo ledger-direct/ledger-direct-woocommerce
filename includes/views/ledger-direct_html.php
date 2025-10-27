@@ -4,13 +4,13 @@ defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
 require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
-use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use Hardcastle\XRPL_PHP\Core\Networks;
 
 global $ledger_direct_order;
 
+$plugin_configuration = ledger_direct_get_configuration();
 $current_user = wp_get_current_user();
 
 // Check if user is owner of the order, otherwise redirect to shop page
@@ -81,9 +81,7 @@ if ($payment_method !== LedgerDirectPaymentGateway::ID) {
 
 $container = ledger_direct_get_dependency_injection_container();
 $order_transaction_service = $container->get(OrderTransactionService::class);
-$configuration_service = $container->get(ConfigurationService::class);
 
-$payment_page_title = $configuration_service->getPaymentPageTitle();
 $meta = $ledger_direct_order->get_meta(LedgerDirect::META_KEY, true);
 $network = $meta['network'] ?: 'mainnet';
 $network_name = Networks::getNetwork($network)['label'];

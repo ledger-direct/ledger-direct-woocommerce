@@ -7,7 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 use DI\DependencyException;
 use DI\NotFoundException;
 use GuzzleHttp\Exception\GuzzleException;
-use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use LedgerDirect;
 use WC_Order;
@@ -26,12 +25,9 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     public const USDC_PAYMENT_ID = 'usdc';
 
-
     public static self|null $_instance = null;
 
-    public string $xrpl_testnet_destination_account;
-
-    public string $xrpl_mainnet_destination_account;
+    public string $account;
 
     public string $xrpl_network;
 
@@ -50,21 +46,21 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     {
         $this->id = self::ID;
         $this->method_title = 'LedgerDirect';
-        $this->method_description = 'Accept payments via XRPL (XRP, Tokens, RLUSD)';
+        $this->method_description = 'Accept payments (XRP, RLUSD, USDC) on your XRPL wallet';
         $this->title = esc_html__('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
         $this->description = 'Choose your preferred XRPL payment method';
-
         $this->icon = ledger_direct_get_public_url('/public/images/checkout.png');
-        $this->has_fields = true; // Important for payment_fields()
-        $this->enabled = $this->get_option('enabled');
 
-        $this->xrpl_network = $this->get_option('xrpl_network', 'testnet');
-        $this->xrpl_testnet_destination_account = $this->get_option('xrpl_testnet_destination_account');
-        $this->xrpl_mainnet_destination_account = $this->get_option('xrpl_mainnet_destination_account');
+        $config = ledger_direct_get_configuration();
+
+        $this->has_fields = true;
+        $this->enabled = $config['enabled'];
+
+        $this->xrpl_network = $config['xrpl_network'];
+        $this->account = $config['destination_account'];
 
         $this->supports = ['products'];
 
-        // Load the settings.
         $this->init_form_fields();
         $this->init_settings();
 
@@ -99,11 +95,15 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      * WooCommerce to render the payment options.
      *
      * @return void
-     * @throws DependencyException|NotFoundException
      */
     public function payment_fields(): void
     {
         $config = ledger_direct_get_configuration();
+
+        if (!$config['wallet_available']) {
+            echo '<p>' . esc_html__('The XRPL wallet is not configured. Please contact the site administrator.', 'ledger-direct') . '</p>';
+            return;
+        }
 
         echo '<div id="ledger-direct-payment-methods">';
         echo '<h4>' . esc_html__('Choose payment method', 'ledger-direct') . '</h4>';
@@ -217,6 +217,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         // Payment is settled, let's check whether the paid amount is enough
         $requestedXrpAmount = (float) $meta['amount_requested'];
         $paidXrpAmount = (float) $meta['delivered_amount'];
+
         return $requestedXrpAmount >= $paidXrpAmount;
     }
 
