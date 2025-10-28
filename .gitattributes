@@ -30,9 +30,9 @@ webpack.config.js export-ignore
 *.ini export-ignore
 *.input export-ignore
 
-vendor/**/test export-ignore
-vendor/**/tests export-ignore
-vendor/**/doc export-ignore
-vendor/**/docs export-ignore
-vendor/**/example export-ignore
-vendor/**/examples export-ignore
+vendor/**/test/** export-ignore
+vendor/**/tests/** export-ignore
+vendor/**/doc/** export-ignore
+vendor/**/docs/** export-ignore
+vendor/**/example/** export-ignore
+vendor/**/examples/** export-ignore

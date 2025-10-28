@@ -25,21 +25,17 @@ class OrderTransactionService
 
     public static self|null $_instance = null;
 
-    private ConfigurationService $configurationService;
-
     private XrplTxService $xrplTxService;
 
     private CryptoPriceProviderInterface $priceProvider;
 
-    public function __construct(
-        ConfigurationService         $configurationService,
-        XrplTxService                $xrplTxService,
-        CryptoPriceProviderInterface $priceProvider
-    )
+    private array $pluginConfig;
+
+    public function __construct(XrplTxService $xrplTxService, CryptoPriceProviderInterface $priceProvider)
     {
-        $this->configurationService = $configurationService;
         $this->xrplTxService = $xrplTxService;
         $this->priceProvider = $priceProvider;
+        $this->pluginConfig = ledger_direct_get_configuration();
     }
 
     /**
@@ -98,7 +94,7 @@ class OrderTransactionService
      */
     public function getExpiryTimestamp(): int
     {
-        $minutes = $this->configurationService->get('xrpl_quote_expiry', self::DEFAULT_EXPIRY);
+        $minutes = $this->pluginConfig['xrpl_quote_expiry'] ?? self::DEFAULT_EXPIRY;
 
         if ($minutes <= 0) {
             $minutes = self::DEFAULT_EXPIRY;
@@ -132,15 +128,15 @@ class OrderTransactionService
      */
     public function prepareOrderForXrpl(WC_Order $order, string $paymentMethod): void
     {
-        $network = $this->configurationService->get('xrpl_network');
-        $destination = ($network === 'mainnet') ? $this->configurationService->get('xrpl_mainnet_destination_account') : $this->configurationService->get('xrpl_testnet_destination_account');
-        $destinationTag = $this->xrplTxService->generateDestinationTag($destination);
+        $network = $this->pluginConfig['xrpl_network'];
+        $destinationAccount = $this->pluginConfig['destination_account'];
+        $destinationTag = $this->xrplTxService->generateDestinationTag($destinationAccount);
 
         $xrplData = [
             'chain' => 'XRPL',
             'network' => $network,
             'version' => self::XRPL_METADATA_VERSION,
-            'destination_account' => $destination,
+            'destination_account' => $destinationAccount,
             'destination_tag' => $destinationTag,
             'expiry' => $this->getExpiryTimestamp()
         ];
@@ -179,7 +175,7 @@ class OrderTransactionService
      */
     private function prepareRlusdPayment(WC_Order $order, $network): void
     {
-        if (!$this->configurationService->isRlusdEnabled()) {
+        if (!$this->pluginConfig['rlusd_available']) {
             throw new Exception('RLUSD payments are not enabled in the configuration.');
         }
         $additionalData = $this->getCryptoPriceForOrder($order, 'RLUSD', $network);
@@ -199,7 +195,7 @@ class OrderTransactionService
      */
     private function prepareUsdcPayment(WC_Order $order, $network): void
     {
-        if (!$this->configurationService->isRlusdEnabled()) {
+        if (!$this->pluginConfig['usdc_available']) {
             throw new Exception('USDC payments are not enabled in the configuration.');
         }
         $additionalData = $this->getCryptoPriceForOrder($order, 'USDC', $network);
