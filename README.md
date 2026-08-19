@@ -1,11 +1,24 @@
 # LedgerDirect Payment plugin for WooCommerce
 
+[![CI](https://github.com/ledger-direct/ledger-direct-woocommerce/actions/workflows/ci.yml/badge.svg)](https://github.com/ledger-direct/ledger-direct-woocommerce/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![WordPress Plugin Version](https://img.shields.io/wordpress/plugin/v/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/)
+[![WordPress Plugin Downloads](https://img.shields.io/wordpress/plugin/dt/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/)
+[![WordPress Plugin Rating](https://img.shields.io/wordpress/plugin/stars/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/#reviews)
+[![Tested up to WordPress](https://img.shields.io/wordpress/plugin/tested/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/)
+[![Requires PHP](https://img.shields.io/wordpress/plugin/required-php/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/)
+
     LedgerDirect is a payment plugin for WooCommerce. Receive crypto and stablecoin payments directly – without middlemen, 
     intermediary wallets, extra servers or external payment providers. Maximum control, minimal detours!
 
 Project Website: https://www.ledger-direct.com
 
 GitHub: https://github.com/ledger-direct/ledger-direct-woocommerce
+
+## Compatibility
+- WordPress 6.7 or newer (tested up to 6.8)
+- WooCommerce (latest stable recommended)
+- PHP 8.1 or newer
 
 ![Payment Page](payment_page.png)
 
@@ -53,5 +66,5 @@ For more information about each service, see:
 - Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
 
 ## License
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 

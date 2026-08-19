@@ -11,7 +11,7 @@ License URI: https://opensource.org/license/mit/
 Accept XRP, EUR, USD directly on the XRP Ledger, using LedgerDirect!
 
 == Description ==
-LedgerDirect is a WordPress plugin that allows you to accept direct payments in XRP, EURC, USDC, and RLUSD on the XRP Ledger. It provides a seamless integration with WooCommerce, enabling merchants to receive payments directly in their XRP Ledger accounts without the need for intermediaries.
+LedgerDirect is a WordPress plugin that allows you to accept direct payments in XRP, USDC, and RLUSD on the XRP Ledger. It provides a seamless integration with WooCommerce, enabling merchants to receive payments directly in their XRP Ledger accounts without the need for intermediaries.
 
 == Features ==
 - Accept payments in XRP, USDC and RLUSD.
