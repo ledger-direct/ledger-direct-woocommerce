@@ -42,13 +42,13 @@ class XrplTxService
             $destinationTag = random_int(self::DESTINATION_TAG_RANGE_MIN, self::DESTINATION_TAG_RANGE_MAX);
 
             $statement = $wpdb->prepare(
-                "SELECT destination_tag FROM {$wpdb->prefix}xrpl_destination_tag WHERE destination_tag = %d",
+                "SELECT destination_tag FROM {$wpdb->prefix}ledger_direct_xrpl_destination_tag WHERE destination_tag = %d",
                 [$destinationTag]
             );
             $matches = $wpdb->get_results($statement);
 
             if (empty($matches)) {
-                $table = $wpdb->prefix . 'xrpl_destination_tag';
+                $table = $wpdb->prefix . 'ledger_direct_xrpl_destination_tag';
                 $data = ['destination_tag' => $destinationTag, 'account' => $account];
                 $format = ['%d','%s'];
                 $wpdb->insert($table,$data,$format);

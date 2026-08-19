@@ -36,6 +36,15 @@ function ledger_direct_activate(): void {
 register_activation_hook( __FILE__, 'ledger_direct_activate');
 
 /**
+ * Run outstanding DB migrations on already-active installs.
+ *
+ * WordPress does not re-fire the activation hook on a routine plugin
+ * update, so this is the only reliable place to migrate sites that were
+ * already live before a schema change ships.
+ */
+add_action( 'plugins_loaded', ['LedgerDirectInstall', 'maybe_upgrade'] );
+
+/**
  * Plugin deactivation hook.
  */
 function edger_direct_deactivate(): void {
