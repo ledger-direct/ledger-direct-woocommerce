@@ -80,6 +80,8 @@ class OrderTransactionService
         }
 
         return [
+            'base_asset' => $cryptoCode,
+            'quote_currency' => $currency,
             'pairing' => $cryptoCode . '/' . $currency,
             'exchange_rate' => $exchangeRate,
             'amount_requested' => $amountRequested
