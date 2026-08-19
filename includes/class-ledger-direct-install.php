@@ -31,7 +31,11 @@ class LedgerDirectInstall {
         set_transient( self::TRANSIENT_INSTALLING, 'yes', MINUTE_IN_SECONDS * 10 );
 
         self::create_tables();
-        self::create_pages();
+
+        if ( function_exists( 'wc_create_page' ) ) {
+            self::create_pages();
+        }
+
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
 
         add_rewrite_endpoint('ledger-direct-payment', EP_ROOT);
