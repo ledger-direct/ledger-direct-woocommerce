@@ -50,7 +50,13 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
                     $oracleResults[] = $price;
                 }
             } catch (Exception $exception) {
-                // TODO: Log error
+                wc_get_logger()->warning('LedgerDirect: price oracle failed', [
+                    'source'    => 'ledger-direct',
+                    'oracle'    => $oracle::class,
+                    'base'      => self::CRYPTO_CODE,
+                    'quote'     => $code,
+                    'exception' => $exception->getMessage(),
+                ]);
             }
         }
 
