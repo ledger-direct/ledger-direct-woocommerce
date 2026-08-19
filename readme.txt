@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, cryptocurrency, woocommerce
-Stable tag: 0.10.1
+Stable tag: 0.11.0
 Requires at least: 6.7
 Tested up to: 6.8
 Requires PHP: 8.1
@@ -71,3 +71,13 @@ LedgerDirect uses minified assets from third party libraries. The source for the
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 0.11.0 =
+* Fix: the destination-tag table existed under three different names across install.php and XrplTxService, so reserved destination tags were silently never persisted on fresh installs. Unified to `ledger_direct_xrpl_destination_tag`, with an automatic upgrade routine for existing installs.
+* Fix: add a unique constraint on the transactions table's `hash` column to enforce deduplication at the database level.
+* Fix: KrakenOracle only ever returned a price for the XRP/USD pair (it read a hardcoded response key); it now reads any pair generically.
+* Fix: price oracle failures are now logged instead of silently discarded, to make pricing issues diagnosable.
+* Fix: the "change payment method" AJAX action always failed due to a typo reading the wrong POST field.
+* Add: order pricing metadata now includes `base_asset` and `quote_currency` fields alongside the existing `pairing`/`exchange_rate`/`amount_requested`.
+* Remove: the unused, always-returns-zero RippleOracle.
+* Internal: added automated tests, a CI pipeline (lint, coding standards, static analysis, PHPUnit, WordPress Plugin Check), and a WordPress.org SVN release workflow.
