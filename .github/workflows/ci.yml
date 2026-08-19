@@ -112,15 +112,22 @@ jobs:
     name: WordPress Plugin Check
     runs-on: ubuntu-latest
     steps:
+      # Checked out under the plugin's actual WordPress.org slug (ledger-direct) rather
+      # than the GitHub repo name (ledger-direct-woocommerce) - Plugin Check derives the
+      # expected text domain from the directory name it scans, and it must match the
+      # `Text Domain: ledger-direct` header used throughout the codebase.
       - uses: actions/checkout@v4
+        with:
+          path: ledger-direct
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
           extensions: gmp, mbstring, mysqli
           coverage: none
       - name: Install composer dependencies (production only)
+        working-directory: ledger-direct
         run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
       - name: Run WordPress Plugin Check
         uses: WordPress/plugin-check-action@v1
         with:
-          build-dir: '.'
+          build-dir: 'ledger-direct'
