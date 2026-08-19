@@ -146,3 +146,8 @@ jobs:
         uses: WordPress/plugin-check-action@v1
         with:
           build-dir: '/tmp/plugin-build/ledger-direct'
+          # .wp-env.json has to be physically present in build-dir for the wp-env-based
+          # WooCommerce dependency setup above to work, but Plugin Check's own file-type
+          # check then flags that same file as a disallowed hidden file. Exclude it from
+          # the check results specifically (not from the scanned directory).
+          exclude-files: '.wp-env.json'
