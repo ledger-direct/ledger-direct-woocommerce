@@ -127,7 +127,18 @@ jobs:
       - name: Install composer dependencies (production only)
         working-directory: ledger-direct
         run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+
+      # Plugin Check scans build-dir as-is - it does not know this is a raw git checkout,
+      # so without this it also flags .git, .github, tests/, dev tooling configs etc. as
+      # if they shipped in the plugin. Reuse .distignore (the same exclude list the
+      # WordPress.org SVN release build in scripts/deploy-wp-org.sh uses) to produce a
+      # clean copy and point Plugin Check at that instead of the raw checkout.
+      - name: Build a clean plugin copy for Plugin Check
+        run: |
+          mkdir -p /tmp/plugin-build/ledger-direct
+          rsync -a --exclude-from=ledger-direct/.distignore ledger-direct/ /tmp/plugin-build/ledger-direct/
+
       - name: Run WordPress Plugin Check
         uses: WordPress/plugin-check-action@v1
         with:
-          build-dir: 'ledger-direct'
+          build-dir: '/tmp/plugin-build/ledger-direct'
