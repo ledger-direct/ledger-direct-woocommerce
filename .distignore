@@ -5,9 +5,34 @@ Thumbs.db
 .gitattributes
 .gitignore
 
+# VCS and build metadata
+/.git
+/.github
+/.svn
+/.build
+
 /.phpunit.cache
-/_scripts
+/scripts
 /bin
+
+# Test and CI artifacts
+/.phpunit.result.cache
+/phpunit.xml
+/tests
+/test
+
+# Node/tooling
+/node_modules
+/package.json
+/package-lock.json
+/webpack.*
+
+# Composer lock (keep vendor/ but not the lock file)
+/composer.lock
+
+# Dev docs (keep readme.txt for wp.org)
+/README.md
+/TODO.md
 
 /vendor/simplito/bigint-wrapper-php/tests
 /vendor/simplito/bn-php/tests
