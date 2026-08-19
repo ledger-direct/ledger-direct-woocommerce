@@ -84,6 +84,11 @@ jobs:
       - name: Install composer dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: Install subversion
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq subversion
+
       - name: Install WP test suite
         env:
           WP_TESTS_DIR: /tmp/wordpress-tests-lib
