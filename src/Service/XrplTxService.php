@@ -41,11 +41,12 @@ class XrplTxService
         while (true) {
             $destinationTag = random_int(self::DESTINATION_TAG_RANGE_MIN, self::DESTINATION_TAG_RANGE_MAX);
 
-            $statement = $wpdb->prepare(
-                "SELECT destination_tag FROM {$wpdb->prefix}ledger_direct_xrpl_destination_tag WHERE destination_tag = %d",
-                [$destinationTag]
+            $matches = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT destination_tag FROM {$wpdb->prefix}ledger_direct_xrpl_destination_tag WHERE destination_tag = %d",
+                    [$destinationTag]
+                )
             );
-            $matches = $wpdb->get_results($statement);
 
             if (empty($matches)) {
                 $table = $wpdb->prefix . 'ledger_direct_xrpl_destination_tag';
@@ -70,11 +71,13 @@ class XrplTxService
         global $wpdb;
 
         $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
-        $statement = $wpdb->prepare(
-            "SELECT * FROM {$table} WHERE destination = %s AND destination_tag = %d",
-            [$destination, $destinationTag]
+        $matches = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$table} WHERE destination = %s AND destination_tag = %d",
+                [$destination, $destinationTag]
+            ),
+            ARRAY_A
         );
-        $matches = $wpdb->get_results($statement, ARRAY_A);
 
         if (!empty($matches)) {
             return $matches[0];
@@ -96,8 +99,7 @@ class XrplTxService
         global $wpdb;
 
         $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
-        $statement = $wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$table}");
-        $result = $wpdb->get_col($statement);
+        $result = $wpdb->get_col($wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$table}"));
         $lastLedgerIndex = isset($result[0]) ? (int) $result[0] : -1;
 
         while (true) {
@@ -174,11 +176,16 @@ class XrplTxService
         $placeholders = implode(',', array_fill(0, count($hashes), '%s'));
 
         $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
-        $statement = $wpdb->prepare(
-            "SELECT hash FROM {$table} WHERE hash IN (" . $placeholders . ")",
-            $hashes
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $placeholders is always a
+        // fixed number of literal '%s' tokens (one per $hashes entry, matched 1:1 as the
+        // prepare() args below); it never contains external/unescaped data.
+        $matches = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT hash FROM {$table} WHERE hash IN (" . $placeholders . ")",
+                $hashes
+            ),
+            ARRAY_A
         );
-        $matches = $wpdb->get_results($statement, ARRAY_A);
 
         $lookup = [];
         foreach ($matches as $match) {
