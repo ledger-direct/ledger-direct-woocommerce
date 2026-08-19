@@ -137,6 +137,10 @@ jobs:
         run: |
           mkdir -p /tmp/plugin-build/ledger-direct
           rsync -a --exclude-from=ledger-direct/.distignore ledger-direct/ /tmp/plugin-build/ledger-direct/
+          # .distignore deliberately excludes .wp-env.json from the real WP.org release
+          # build (it has no purpose there), but Plugin Check's own environment needs it
+          # to know to install WooCommerce - copy it back in for this build only.
+          cp ledger-direct/.wp-env.json /tmp/plugin-build/ledger-direct/.wp-env.json
 
       - name: Run WordPress Plugin Check
         uses: WordPress/plugin-check-action@v1
