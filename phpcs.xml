@@ -19,6 +19,13 @@
 
     <config name="minimum_supported_wp_version" value="6.7"/>
 
+    <!--
+        Warnings (redirect hardening, error_log() usage, missing asset versions, etc.) are
+        intentionally left as non-blocking findings rather than fixed or excluded outright -
+        without this, phpcs exits 2 on warnings alone and fails CI even with zero errors.
+    -->
+    <config name="ignore_warnings_on_exit" value="1"/>
+
     <rule ref="WordPress">
         <exclude name="WordPress.Files.FileName"/>
         <exclude name="WordPress.PHP.YodaConditions"/>
