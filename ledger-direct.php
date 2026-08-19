@@ -48,10 +48,10 @@ add_action( 'plugins_loaded', ['LedgerDirectInstall', 'maybe_upgrade'] );
 /**
  * Plugin deactivation hook.
  */
-function edger_direct_deactivate(): void {
+function ledger_direct_deactivate(): void {
     LedgerDirectInstall::deactivate();
 }
-register_deactivation_hook( __FILE__, 'edger_direct_deactivate');
+register_deactivation_hook( __FILE__, 'ledger_direct_deactivate');
 
 /**
  * Plugin deactivation hook.

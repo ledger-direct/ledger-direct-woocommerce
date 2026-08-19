@@ -16,7 +16,7 @@ Project Website: https://www.ledger-direct.com
 GitHub: https://github.com/ledger-direct/ledger-direct-woocommerce
 
 ## Compatibility
-- WordPress 6.7 or newer (tested up to 6.8)
+- WordPress 6.7 or newer (tested up to 7.0)
 - WooCommerce (latest stable recommended)
 - PHP 8.1 or newer
 
