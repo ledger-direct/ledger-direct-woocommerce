@@ -100,7 +100,7 @@ class LedgerDirect
         add_action( 'init', [$this, 'add_rewrite_endpoint'] );
         add_filter( 'woocommerce_payment_gateways', [$this, 'register_gateway'] );
         add_action( 'woocommerce_blocks_loaded', [$this, 'add_block_support_for_gateway'] );
-        add_filter( 'woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2 );
+        add_action( 'woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2 );
         add_filter( 'template_include', [$this, 'render_payment_page'] );
 
         add_action( 'plugins_loaded', [$this, 'load_translations'] );
@@ -161,14 +161,13 @@ class LedgerDirect
     public function ajax_change_payment_method(): void {
         $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
         $order_id = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
-        $payment_type = isset($_POST['payment_type']) ? sanitize_text_field(wp_unslash($_POST['text'])) : '';
-
+        $payment_type = isset($_POST['payment_type']) ? sanitize_text_field(wp_unslash($_POST['payment_type'])) : '';
 
         if (!wp_verify_nonce($nonce, 'ledger_direct_nonce')) {
             wp_die('Security check failed');
         }
 
-        if (!in_array($payment_type, ['xrp', 'token', 'rlusd'])) {
+        if (!in_array($payment_type, ['xrp', 'token', 'rlusd'], true)) {
             wp_send_json_error('Invalid payment type');
         }
 

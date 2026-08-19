@@ -11,10 +11,10 @@ use Hardcastle\XRPL_PHP\Core\Networks;
 global $ledger_direct_order;
 
 $plugin_configuration = ledger_direct_get_configuration();
-$current_user = wp_get_current_user();
+$ledger_direct_current_user = wp_get_current_user();
 
 // Check if user is owner of the order, otherwise redirect to shop page
-if ($current_user->ID !== $ledger_direct_order->get_user_id()) {
+if ($ledger_direct_current_user->ID !== $ledger_direct_order->get_user_id()) {
     global $wp_query;
     $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
     wp_redirect($shop_page_url);
@@ -43,24 +43,14 @@ if (!$ledger_direct_order || !is_a($ledger_direct_order, 'WC_Order')) {
     return;
 }
 
-/*
-if (!$ledger_direct_order->get_meta('_ledger_direct_order', true)) {
-    echo '<div class="woocommerce-error">';
-    echo '<h2>' . __('Invalid Order', 'ledger-direct') . '</h2>';
-    echo '<p>' . __('This order is not a valid Ledger Direct order.', 'ledger-direct') . '</p>';
-    echo '<a href="' . home_url() . '" class="button">' . __('Return to homepage', 'ledger-direct') . '</a>';
-    echo '</div>';
-    return;
-}
-*/
-
 $order_id = $ledger_direct_order->get_id();
 $order_key = $ledger_direct_order->get_order_key();
 $order_status = $ledger_direct_order->get_status();
 
 $valid_statuses = ['pending', 'on-hold', 'processing'];
-if (!in_array($order_status, $valid_statuses)) {
-    $order_status_info_text = sprintf(__('Order #%d is already %s.', 'ledger-direct'), $order_id, wc_get_order_status_name($order_status)) ;
+if (!in_array($order_status, $valid_statuses, true)) {
+    /* translators: 1: order number, 2: order status label */
+    $order_status_info_text = sprintf(__('Order #%1$d is already %2$s.', 'ledger-direct'), $order_id, wc_get_order_status_name($order_status));
     echo '<div class="woocommerce-info">';
     echo '<h2>' . esc_html__('Payment not required', 'ledger-direct') . '</h2>';
     echo '<p>' . esc_html($order_status_info_text) . '</p>';
@@ -94,7 +84,7 @@ $supported_payment_types = [
     LedgerDirectPaymentGateway::USDC_PAYMENT_ID
 ];
 
-if (!in_array($payment_type, $supported_payment_types)) {
+if (!in_array($payment_type, $supported_payment_types, true)) {
     echo '<div class="woocommerce-error">';
     echo '<h2>' . esc_html__('Invalid Payment Method', 'ledger-direct') . '</h2>';
     echo '<p>' . esc_html__('This order was not paid with Ledger Direct.', 'ledger-direct') . '</p>';
@@ -162,6 +152,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
 
             <div class="ld-card-left">
                 <?php if ($payment_type === LedgerDirectPaymentGateway::XRP_PAYMENT_ID) { ?>
+                    <?php /* translators: %s: XRP amount to send */ ?>
                     <?php $instructions = sprintf(__('Please send %s XRP to the following address:', 'ledger-direct'), $amount_requested); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="xrp-amount"
@@ -172,7 +163,8 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            style="display: none;"
                     />
                 <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send %s %s to the following address:', 'ledger-direct'), $amount_requested['value'], 'RLUSD'); ?>
+                    <?php /* translators: 1: token amount, 2: token symbol (RLUSD) */ ?>
+                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $amount_requested['value'], 'RLUSD'); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="rlusd-amount"
                            type="text"
@@ -189,7 +181,8 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            style="display: none;"
                     />
                 <?php } elseif ($payment_type === LedgerDirectPaymentGateway::USDC_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send %s %s to the following address:', 'ledger-direct'), $amount_requested['value'], 'USDC'); ?>
+                    <?php /* translators: 1: token amount, 2: token symbol (USDC) */ ?>
+                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $amount_requested['value'], 'USDC'); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="usdc-amount"
                            type="text"
@@ -206,7 +199,8 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            style="display: none;"
                     />
                 <?php } elseif ($payment_type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID) { ?>
-                    <?php $instructions = sprintf(__('Please send %s %s to the following address:', 'ledger-direct'), $token_amount, $wp_currency); ?>
+                    <?php /* translators: 1: token amount, 2: currency code */ ?>
+                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $token_amount, $wp_currency); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="token-amount"
                            type="text"

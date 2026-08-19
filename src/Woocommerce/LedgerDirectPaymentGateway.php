@@ -35,7 +35,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     public static function instance(): self
     {
-        if (self::$_instance == null) {
+        if (self::$_instance === null) {
             self::$_instance = new self();
         }
 
@@ -138,9 +138,10 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      */
     public function validate_fields(): bool
     {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling this gateway method.
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        if (!in_array($payment_type, ['xrp', 'rlusd', 'usdc'])) {
+        if (!in_array($payment_type, ['xrp', 'rlusd', 'usdc'], true)) {
             wc_add_notice(__('Please select a valid payment method.', 'ledger-direct'), 'error');
             return false;
         }
@@ -159,6 +160,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function process_payment($order_id): array
     {
         $order = wc_get_order($order_id);
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling this gateway method.
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
         $container = ledger_direct_get_dependency_injection_container();
@@ -191,7 +193,11 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         try {
             $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
         } catch (\Exception $e) {
-
+            wc_get_logger()->warning('LedgerDirect: failed to sync order transaction with XRPL', [
+                'source'   => 'ledger-direct',
+                'order_id' => $order->get_id(),
+                'exception' => $e->getMessage(),
+            ]);
         }
 
         $meta = $order->get_meta(LedgerDirect::META_KEY);

@@ -51,7 +51,7 @@ class XrplTxService
                 $table = $wpdb->prefix . 'ledger_direct_xrpl_destination_tag';
                 $data = ['destination_tag' => $destinationTag, 'account' => $account];
                 $format = ['%d','%s'];
-                $wpdb->insert($table,$data,$format);
+                $wpdb->insert($table, $data, $format);
 
                 return $destinationTag;
             }
@@ -220,8 +220,8 @@ class XrplTxService
                 'destination' => $transaction['tx']['Destination'],
                 'destination_tag' => $transaction['tx']['DestinationTag'] ?? null,
                 'date' => $transaction['tx']['date'],
-                'meta' => json_encode($transaction['meta']),
-                'tx' => json_encode($transaction['tx'])
+                'meta' => wp_json_encode($transaction['meta']),
+                'tx' => wp_json_encode($transaction['tx'])
             ];
         }
 
