@@ -176,11 +176,12 @@ class XrplTxService
         $placeholders = implode(',', array_fill(0, count($hashes), '%s'));
 
         $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $placeholders is always a
-        // fixed number of literal '%s' tokens (one per $hashes entry, matched 1:1 as the
-        // prepare() args below); it never contains external/unescaped data.
         $matches = $wpdb->get_results(
             $wpdb->prepare(
+                // $placeholders is always a fixed number of literal '%s' tokens (one per
+                // $hashes entry, matched 1:1 as the prepare() args below) - never external
+                // or unescaped data.
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 "SELECT hash FROM {$table} WHERE hash IN (" . $placeholders . ")",
                 $hashes
             ),
