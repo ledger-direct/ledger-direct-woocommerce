@@ -2,31 +2,57 @@
 
 namespace Hardcastle\LedgerDirect\Tests\Unit\Provider;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Stream;
 use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
-use Mockery;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
+use WP_Error;
 
 class XrpPriceProviderTest extends TestCase
 {
     private XrpPriceProvider $xrpPriceProvider;
 
-    private Client $client;
-
     protected function setUp(): void
     {
-        $response = Mockery::mock(ResponseInterface::class);
-        $response->shouldReceive('getBody')
-            ->andReturn(new Stream(fopen('data://text/plain,' . '{"price": 0.5}','r')));
+        $this->stubHttpResponsesByHost([
+            'binance.com' => '{"price": 0.5}',
+            'coingecko.com' => '{"ripple":{"usd":0.5}}',
+            'kraken.com' => '{"result":{"XXRPZUSD":{"c":["0.5"]}}}',
+        ]);
 
-        $this->client = Mockery::mock(Client::class);
-        $this->client->shouldReceive('get')
-            ->andReturn($response);
-
-        $this->xrpPriceProvider = new XrpPriceProvider($this->client);
+        $this->xrpPriceProvider = new XrpPriceProvider();
     }
+
+    protected function tearDown(): void
+    {
+        remove_all_filters('pre_http_request');
+        parent::tearDown();
+    }
+
+    /**
+     * @param array<string, string|WP_Error> $responsesByHost Maps a substring of the
+     *        request URL's host to either a fake response body or a WP_Error to
+     *        simulate that host's request failing.
+     */
+    private function stubHttpResponsesByHost(array $responsesByHost): void
+    {
+        add_filter('pre_http_request', function ($preempt, $parsedArgs, $url) use ($responsesByHost) {
+            foreach ($responsesByHost as $host => $response) {
+                if (str_contains($url, $host)) {
+                    if ($response instanceof WP_Error) {
+                        return $response;
+                    }
+
+                    return [
+                        'body' => $response,
+                        'response' => ['code' => 200, 'message' => 'OK'],
+                        'headers' => [],
+                    ];
+                }
+            }
+
+            return $preempt;
+        }, 10, 3);
+    }
+
     public function testGetCurrentExchangeRate(): void
     {
         $this->assertEquals(0.5, $this->xrpPriceProvider->getCurrentExchangeRate('USD'));
@@ -46,18 +72,12 @@ class XrpPriceProviderTest extends TestCase
      */
     public function testDivergentOracleIsExcludedFromTheAverage(): void
     {
-        $client = Mockery::mock(Client::class);
-        $client->shouldReceive('get')
-            ->with(Mockery::on(fn ($url) => str_contains($url, 'binance.com')))
-            ->andReturn($this->jsonResponse('{"price":"0.50"}'));
-        $client->shouldReceive('get')
-            ->with(Mockery::on(fn ($url) => str_contains($url, 'coingecko.com')))
-            ->andReturn($this->jsonResponse('{"ripple":{"usd":0.50}}'));
-        $client->shouldReceive('get')
-            ->with(Mockery::on(fn ($url) => str_contains($url, 'kraken.com')))
-            ->andReturn($this->jsonResponse('{"result":{"XXRPZUSD":{"c":["0.55"]}}}'));
-
-        $provider = new XrpPriceProvider($client);
+        $this->stubHttpResponsesByHost([
+            'binance.com' => '{"price": 0.50}',
+            'coingecko.com' => '{"ripple":{"usd":0.50}}',
+            'kraken.com' => '{"result":{"XXRPZUSD":{"c":["0.55"]}}}',
+        ]);
+        $provider = new XrpPriceProvider();
 
         // Kraken's 0.55 diverges >5% from the 3-oracle average and is
         // dropped; the remaining Binance/Coingecko prices (0.50, 0.50) average to 0.50.
@@ -70,28 +90,13 @@ class XrpPriceProviderTest extends TestCase
      */
     public function testOracleExceptionIsLoggedAndDoesNotAbortTheAverage(): void
     {
-        $client = Mockery::mock(Client::class);
-        $client->shouldReceive('get')
-            ->with(Mockery::on(fn ($url) => str_contains($url, 'binance.com')))
-            ->andThrow(new \Exception('connection failed'));
-        $client->shouldReceive('get')
-            ->with(Mockery::on(fn ($url) => str_contains($url, 'coingecko.com')))
-            ->andReturn($this->jsonResponse('{"ripple":{"usd":0.50}}'));
-        $client->shouldReceive('get')
-            ->with(Mockery::on(fn ($url) => str_contains($url, 'kraken.com')))
-            ->andReturn($this->jsonResponse('{"result":{"XXRPZUSD":{"c":["0.50"]}}}'));
-
-        $provider = new XrpPriceProvider($client);
+        $this->stubHttpResponsesByHost([
+            'binance.com' => new WP_Error('http_request_failed', 'connection failed'),
+            'coingecko.com' => '{"ripple":{"usd":0.50}}',
+            'kraken.com' => '{"result":{"XXRPZUSD":{"c":["0.50"]}}}',
+        ]);
+        $provider = new XrpPriceProvider();
 
         $this->assertSame(0.5, $provider->getCurrentExchangeRate('USD'));
-    }
-
-    private function jsonResponse(string $json): ResponseInterface
-    {
-        $response = Mockery::mock(ResponseInterface::class);
-        $response->shouldReceive('getBody')
-            ->andReturn(new Stream(fopen('data://text/plain,' . $json, 'r')));
-
-        return $response;
     }
 }

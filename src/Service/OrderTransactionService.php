@@ -7,16 +7,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 use DI\DependencyException;
 use DI\NotFoundException;
 use Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Provider\RlusdPriceProvider;
 use Hardcastle\LedgerDirect\Provider\UsdcPriceProvider;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use Hardcastle\XRPL_PHP\Core\Stablecoin\RLUSD;
-use Hardcastle\XRPL_PHP\Core\Stablecoin\USDC;
+use Hardcastle\LedgerDirect\Xrpl\Stablecoin\RLUSD;
+use Hardcastle\LedgerDirect\Xrpl\Stablecoin\USDC;
+use Hardcastle\LedgerDirect\Xrpl\XrpAmount;
 use LedgerDirect;
 use WC_Order;
-use function Hardcastle\XRPL_PHP\Sugar\dropsToXrp;
 
 class OrderTransactionService
 {
@@ -240,7 +239,7 @@ class OrderTransactionService
      *
      * @param WC_Order $order
      * @return array|null
-     * @throws Exception|GuzzleException
+     * @throws Exception
      */
     public function syncOrderTransactionWithXrpl(WC_Order $order): array|null
     {
@@ -260,7 +259,7 @@ class OrderTransactionService
                 if (is_array($txMeta['delivered_amount'])) {
                     $amount = $txMeta['delivered_amount'];
                 } else {
-                    $amount = dropsToXrp($txMeta['delivered_amount']);
+                    $amount = XrpAmount::dropsToXrp($txMeta['delivered_amount']);
                 }
 
                 $tx_order_meta = [

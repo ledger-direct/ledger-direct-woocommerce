@@ -6,7 +6,7 @@ require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use Hardcastle\XRPL_PHP\Core\Networks;
+use Hardcastle\LedgerDirect\Xrpl\Networks;
 
 global $ledger_direct_order;
 
@@ -74,7 +74,7 @@ $order_transaction_service = $container->get(OrderTransactionService::class);
 
 $meta = $ledger_direct_order->get_meta(LedgerDirect::META_KEY, true);
 $network = $meta['network'] ?: 'mainnet';
-$network_name = Networks::getNetwork($network)['label'];
+$network_name = Networks::get($network)['label'];
 $payment_type = $meta['type'] ?: 'xrp';
 
 $supported_payment_types = [

@@ -2,8 +2,6 @@
 
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
@@ -265,7 +263,6 @@ class LedgerDirect
      *
      * @param $template
      * @return string
-     * @throws GuzzleException
      */
     public function render_payment_page($template): string {
         $order_key = get_query_var(self::ORDER_IDENTIFIER);
@@ -294,10 +291,6 @@ class LedgerDirect
 
             try {
                 $is_paid = $gateway->sync_and_check_payment($order);
-            } catch (ConnectException $e) {
-                wc_add_notice(__('Could not connect to the XRPL network. Please try again later.', 'ledger-direct'), 'error');
-                wp_redirect(wc_get_checkout_url());
-                exit;
             } catch (Exception $e) {
                 wc_add_notice(__('An error occurred while processing your payment. Please contact support.', 'ledger-direct'), 'error');
                 error_log("Ledger Direct: Error syncing payment for order " . $order->get_id() . ": " . $e->getMessage());

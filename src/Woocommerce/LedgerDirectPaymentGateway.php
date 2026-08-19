@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use DI\DependencyException;
 use DI\NotFoundException;
-use GuzzleHttp\Exception\GuzzleException;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use LedgerDirect;
 use WC_Order;
@@ -186,7 +185,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      *
      * @param WC_Order $order
      * @return bool
-     * @throws GuzzleException
      */
     public function sync_and_check_payment(WC_Order $order): bool
     {

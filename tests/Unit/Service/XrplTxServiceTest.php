@@ -64,4 +64,32 @@ class XrplTxServiceTest extends TestCase
             $this->assertNotSame($reservedTag, $destinationTag);
         }
     }
+
+    /**
+     * Regression test: syncTransactions() used to call fetchAccountTransactions()
+     * without ever passing the marker back in, so an account with more
+     * transactions than fit in one account_tx page would refetch the same
+     * first page forever instead of paginating.
+     */
+    public function testSyncTransactionsThreadsThePaginationMarkerThroughSubsequentFetches(): void
+    {
+        $capturedMarkers = [];
+
+        $this->clientService->method('fetchAccountTransactions')
+            ->willReturnCallback(function (string $address, ?int $lastLedgerIndex, ?array $marker = null) use (&$capturedMarkers) {
+                $capturedMarkers[] = $marker;
+
+                if (count($capturedMarkers) === 1) {
+                    return ['transactions' => [], 'marker' => ['page' => 2]];
+                }
+
+                return ['transactions' => []];
+            });
+
+        $this->xrplTxService->syncTransactions('rSomeAccount');
+
+        $this->assertCount(2, $capturedMarkers);
+        $this->assertNull($capturedMarkers[0]);
+        $this->assertSame(['page' => 2], $capturedMarkers[1]);
+    }
 }

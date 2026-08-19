@@ -5,8 +5,7 @@ namespace Hardcastle\LedgerDirect\Service;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Exception;
-use GuzzleHttp\Exception\GuzzleException;
-use Hardcastle\XRPL_PHP\Core\Ctid;
+use Hardcastle\LedgerDirect\Xrpl\Ctid;
 
 class XrplTxService
 {
@@ -93,17 +92,19 @@ class XrplTxService
      *
      * @param string $address
      * @return void
-     * @throws GuzzleException
      */
     public function syncTransactions(string $address): void {
         global $wpdb;
 
         $table = $wpdb->prefix . 'ledger_direct_xrpl_tx';
-        $result = $wpdb->get_col($wpdb->prepare("SELECT MAX(ledger_index) AS ledger_index FROM {$table}"));
+        // No $wpdb->prepare() here - there are no placeholders to bind, $table is
+        // always an internal $wpdb->prefix + literal name, never user input.
+        $result = $wpdb->get_col("SELECT MAX(ledger_index) AS ledger_index FROM {$table}");
         $lastLedgerIndex = isset($result[0]) ? (int) $result[0] : -1;
 
+        $marker = null;
         while (true) {
-            $result = $this->clientService->fetchAccountTransactions($address, $lastLedgerIndex);
+            $result = $this->clientService->fetchAccountTransactions($address, $lastLedgerIndex, $marker);
             $transactions = $result['transactions'] ?? [];
             if (count($transactions)) {
                 $this->txToDb($transactions, $address);
@@ -111,6 +112,10 @@ class XrplTxService
             if (!isset($result['marker'])) {
                 break;
             }
+            // Without threading the marker back in, this loop would refetch the same
+            // first page forever for any account with more transactions than fit in a
+            // single account_tx response.
+            $marker = $result['marker'];
         }
     }
 
@@ -218,7 +223,7 @@ class XrplTxService
             $ledgerIndex = (int) $transaction['tx']['ledger_index'];
             $transactionIndex = (int) $transaction['meta']['TransactionIndex'];
             $networkId = $this->clientService->getNetwork()['networkId'];
-            $ctid = Ctid::fromRawValues($ledgerIndex, $transactionIndex, $networkId)->getHex();
+            $ctid = Ctid::toHex($ledgerIndex, $transactionIndex, $networkId);
 
             $rows[] = [
                 'ledger_index' => $transaction['tx']['ledger_index'],

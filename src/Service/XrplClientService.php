@@ -5,10 +5,8 @@ namespace Hardcastle\LedgerDirect\Service;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Exception;
-use GuzzleHttp\Exception\GuzzleException;
-use Hardcastle\XRPL_PHP\Client\JsonRpcClient;
-use Hardcastle\XRPL_PHP\Core\Networks;
-use Hardcastle\XRPL_PHP\Models\Account\AccountTxRequest;
+use Hardcastle\LedgerDirect\Xrpl\Networks;
+use Hardcastle\LedgerDirect\Xrpl\XrplJsonRpcClient;
 use LedgerDirect;
 
 class XrplClientService
@@ -17,7 +15,7 @@ class XrplClientService
 
     private ConfigurationService $configurationService;
 
-    private JsonRpcClient $client;
+    private XrplJsonRpcClient $client;
 
     /**
      * Constructor.
@@ -34,28 +32,20 @@ class XrplClientService
      *
      * @param string $address
      * @param int|null $lastLedgerIndex
-     * @param mixed|null $marker
+     * @param array|null $marker
      * @return array
-     * @throws GuzzleException
      * @throws Exception
      */
-    public function fetchAccountTransactions(string $address, ?int $lastLedgerIndex, mixed $marker = null): array
+    public function fetchAccountTransactions(string $address, ?int $lastLedgerIndex, ?array $marker = null): array
     {
         $this->initClient();
 
-        $req = new AccountTxRequest(
-            account: $address,
-            ledgerIndexMin: $lastLedgerIndex,
-            marker: $marker
-        );
-        $res = $this->client->syncRequest($req);
-
-        if ($res->getStatus() === 'error') {
-            LedgerDirect::log('Error fetching account transactions: ' . $res->getError(), 'error');
+        try {
+            return $this->client->accountTx($address, $lastLedgerIndex, $marker);
+        } catch (Exception $exception) {
+            LedgerDirect::log('Error fetching account transactions: ' . $exception->getMessage(), 'error');
             return []; // Return an empty array on error
         }
-
-        return $res->getResult();
     }
 
     /**
@@ -67,10 +57,10 @@ class XrplClientService
     public function getNetwork(): array
     {
         if(!$this->configurationService->isTest()) {
-            return Networks::getNetwork('mainnet');
+            return Networks::get('mainnet');
         }
 
-        return Networks::getNetwork('testnet');
+        return Networks::get('testnet');
     }
 
     /**
@@ -83,7 +73,7 @@ class XrplClientService
     {
         if (!isset($this->client)) {
             $jsonRpcUrl = $this->getNetwork()['jsonRpcUrl'];
-            $this->client = new JsonRpcClient($jsonRpcUrl);
+            $this->client = new XrplJsonRpcClient($jsonRpcUrl);
         }
     }
 }

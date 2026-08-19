@@ -2,47 +2,49 @@
 
 namespace Hardcastle\LedgerDirect\Tests\Unit\Provider;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Stream;
 use Hardcastle\LedgerDirect\Provider\RlusdPriceProvider;
-use Mockery;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 
 class RlusdPriceProviderTest extends TestCase
 {
-    private function providerWithClientBody(string $json): RlusdPriceProvider
+    protected function tearDown(): void
     {
-        $response = Mockery::mock(ResponseInterface::class);
-        $response->shouldReceive('getBody')
-            ->andReturn(new Stream(fopen('data://text/plain,' . $json, 'r')));
+        remove_all_filters('pre_http_request');
+        parent::tearDown();
+    }
 
-        $client = Mockery::mock(Client::class);
-        $client->shouldReceive('get')->andReturn($response);
-
-        return new RlusdPriceProvider($client);
+    private function stubHttpResponse(string $body): void
+    {
+        add_filter('pre_http_request', function () use ($body) {
+            return [
+                'body' => $body,
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'headers' => [],
+            ];
+        }, 10, 3);
     }
 
     public function testUsdIsPeggedWithoutCallingAnyOracle(): void
     {
-        // RLUSD is pegged 1:1 to USD; the client is never given a stubbed
-        // response, so a call to $client->get() here would blow up the test.
-        $client = Mockery::mock(Client::class);
-        $provider = new RlusdPriceProvider($client);
+        // RLUSD is pegged 1:1 to USD; no pre_http_request stub is registered, so
+        // a real HTTP call here would fail the test (blocked in the sandbox) or
+        // hang, proving no oracle is actually queried.
+        $provider = new RlusdPriceProvider();
 
         $this->assertSame(1.0, $provider->getCurrentExchangeRate('USD'));
     }
 
     public function testNonUsdCurrencyIsResolvedViaOracle(): void
     {
-        $provider = $this->providerWithClientBody('{"ripple-usd":{"eur":0.93}}');
+        $this->stubHttpResponse('{"ripple-usd":{"eur":0.93}}');
+        $provider = new RlusdPriceProvider();
 
         $this->assertSame(0.93, $provider->getCurrentExchangeRate('EUR'));
     }
 
     public function testCheckPricePlausibility(): void
     {
-        $provider = new RlusdPriceProvider(Mockery::mock(Client::class));
+        $provider = new RlusdPriceProvider();
 
         $this->assertTrue($provider->checkPricePlausibility(1.0));
         $this->assertFalse($provider->checkPricePlausibility(0.0));

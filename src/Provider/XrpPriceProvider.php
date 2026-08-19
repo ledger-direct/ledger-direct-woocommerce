@@ -5,7 +5,6 @@ namespace Hardcastle\LedgerDirect\Provider;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Exception;
-use GuzzleHttp\Client;
 use Hardcastle\LedgerDirect\Provider\Oracle\BinanceOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\CoingeckoOracle;
 use Hardcastle\LedgerDirect\Provider\Oracle\KrakenOracle;
@@ -17,13 +16,6 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
     public const DEFAULT_ALLOWED_DIVERGENCE = 0.05;
 
     public const XRP_ROUND_PLACES = 5;
-
-    private Client $client;
-
-    public function __construct(Client $client)
-    {
-        $this->client = $client;
-    }
 
     /**
      * Gets the current XRP price by querying averaging multiple oracles
@@ -45,7 +37,7 @@ class XrpPriceProvider implements CryptoPriceProviderInterface
 
         foreach ($oracles as $oracle) {
             try {
-                $price = $oracle->prepare($this->client)->getCurrentPriceForPair(self::CRYPTO_CODE, $code);
+                $price = $oracle->getCurrentPriceForPair(self::CRYPTO_CODE, $code);
                 if ($price > 0.0) {
                     $oracleResults[] = $price;
                 }
