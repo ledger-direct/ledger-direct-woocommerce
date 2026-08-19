@@ -67,7 +67,7 @@ function ledger_direct_get_configuration(): array {
         'enabled' => $settings['enabled'] ?? 'no',
     ];
 
-    $xrpl_network = in_array($settings['xrpl_network'], ['mainnet', 'testnet']) ? $settings['xrpl_network'] : 'testnet';
+    $xrpl_network = in_array($settings['xrpl_network'] ?? null, ['mainnet', 'testnet']) ? $settings['xrpl_network'] : 'testnet';
 
     $xrpl_testnet_destination_account = $settings['xrpl_testnet_destination_account'] ?? '';
     $xrpl_mainnet_destination_account = $settings['xrpl_mainnet_destination_account'] ?? '';

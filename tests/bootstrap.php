@@ -30,10 +30,20 @@ require_once "{$_tests_dir}/includes/functions.php";
  */
 function _manually_load_plugin() {
     require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
-	//require dirname( dirname( __FILE__ ) ) . '/ledger-direct.php';
+    require dirname( dirname( __FILE__ ) ) . '/ledger-direct.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+
+/**
+ * Create the plugin's tables once WordPress core (and dbDelta) is available.
+ * The activation hook does not fire just from requiring the plugin file above.
+ */
+function _create_ledger_direct_tables() {
+    LedgerDirectInstall::create_tables();
+}
+
+tests_add_filter( 'init', '_create_ledger_direct_tables' );
 
 // Start up the WP testing environment.
 require "{$_tests_dir}/includes/bootstrap.php";
