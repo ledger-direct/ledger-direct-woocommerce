@@ -18,6 +18,9 @@ Thumbs.db
 # Test and CI artifacts
 /.phpunit.result.cache
 /phpunit.xml
+/phpcs.xml
+/phpstan.neon
+/.wp-env.json
 /tests
 /test
 
