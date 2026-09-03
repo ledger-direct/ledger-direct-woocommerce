@@ -317,7 +317,6 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                     <br/>
                     <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
                 <?php } ?>
-                <img src="<?php echo esc_url(ledger_direct_get_public_url('/public/images/astronaut.png')); ?>" class="ld-astronaut" alt=""/>
             </div>
 
         </div>
