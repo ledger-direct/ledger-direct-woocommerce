@@ -26,25 +26,15 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     private const SEQUENCE_START_MAX = 2147483648;
 
     /**
-     * One atomic statement, not a select-then-update: two checkouts hitting
-     * the same account concurrently must never receive the same sequence
-     * number, or two orders share a destination tag and the second payment
-     * settles against the first order.
+     * See the port contract: one atomic statement (never select-then-update),
+     * a fresh counter starts at a random offset in [0, 2^31-1] and never at 0,
+     * and the counter table survives uninstall.
      *
      * LAST_INSERT_ID(expr) both stores and returns the new counter value,
      * per connection, so the value read back is this caller's own. $wpdb
-     * holds one connection for the whole request.
-     *
-     * A fresh counter starts at a random offset rather than at 0. The core
-     * derives tags from the sequence deterministically, so two databases
-     * counting from 0 for the same receiving account - a second shop
-     * platform on the same wallet, or a reinstall after uninstall - would
-     * issue the very same tags and match each other's payments. A random
-     * start in the lower half of the range leaves over two billion tags
-     * before the core's exhaustion guard.
-     *
-     * The counter is 1-based while the port contract is 0-based, hence
-     * the -1.
+     * holds one connection for the whole request. The stored counter is
+     * 1-based while the port contract is 0-based, hence the -1 (and why
+     * SEQUENCE_START_MAX is 2^31 rather than 2^31-1).
      */
     public function nextDestinationTagSequence(string $destinationAccount): int
     {
@@ -112,6 +102,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
             $inserted = $wpdb->insert(
                 $table,
                 [
+                    'network' => $transaction->network,
                     'ledger_index' => $transaction->ledgerIndex,
                     'hash' => $transaction->hash,
                     'ctid' => $transaction->ctid,
@@ -122,7 +113,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
                     'meta' => wp_json_encode($transaction->meta),
                     'tx' => wp_json_encode($transaction->tx),
                 ],
-                ['%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s']
+                ['%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s']
             );
 
             $wpdb->suppress_errors($suppress);
@@ -140,35 +131,15 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
         }
     }
 
-    public function findTransaction(string $destination, int $destinationTag): ?XrplTransaction
-    {
-        global $wpdb;
-
-        $table = self::table(self::TX_TABLE);
-
-        $row = $wpdb->get_row(
-            $wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT * FROM {$table} WHERE destination = %s AND destination_tag = %d ORDER BY id ASC LIMIT 1",
-                $destination,
-                $destinationTag
-            ),
-            ARRAY_A
-        );
-
-        return is_array($row) ? self::hydrate($row) : null;
-    }
-
     /**
-     * Every synced transaction addressed to this account and tag, newest
-     * ledger first. Not part of the core port: the port's findTransaction()
-     * answers "the" transaction for a tag, but a tag can carry more than
-     * one - a stray payment from before the order, a wrong-asset payment
-     * followed by the right one - and the order service needs to choose.
+     * Port method: every transaction on this account and tag, newest first
+     * (`ORDER BY ledger_index DESC`, tie-broken by primary key). Which of
+     * them fulfills an intent is the core's decision
+     * (SyncService::findTransactionFor()), so nothing else is filtered here.
      *
      * @return XrplTransaction[]
      */
-    public function findTransactionsByTag(string $destination, int $destinationTag): array
+    public function findTransactions(string $destination, int $destinationTag): array
     {
         global $wpdb;
 
@@ -187,14 +158,26 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
         return array_map([self::class, 'hydrate'], is_array($rows) ? $rows : []);
     }
 
-    public function getLastSyncedLedgerIndex(): ?string
+    /**
+     * Port method: the cursor is scoped per account and network; a global
+     * MAX() would let one mainnet row pin the testnet cursor forever. Rows
+     * whose network is unknown (empty, CTID unusable at migration time)
+     * never match and are simply re-synced once.
+     */
+    public function getLastSyncedLedgerIndex(string $destinationAccount, string $network): ?string
     {
         global $wpdb;
 
         $table = self::table(self::TX_TABLE);
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $max = $wpdb->get_var("SELECT MAX(ledger_index) FROM {$table}");
+        $max = $wpdb->get_var(
+            $wpdb->prepare(
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT MAX(ledger_index) FROM {$table} WHERE destination = %s AND network = %s",
+                $destinationAccount,
+                $network
+            )
+        );
 
         return $max === null ? null : (string) $max;
     }
@@ -215,6 +198,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     private static function hydrate(array $row): XrplTransaction
     {
         return new XrplTransaction(
+            network: (string) ($row['network'] ?? ''),
             ledgerIndex: (string) $row['ledger_index'],
             hash: (string) $row['hash'],
             ctid: (string) $row['ctid'],

@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -71,6 +71,11 @@ LedgerDirect uses minified assets from third party libraries. The source for the
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.1.0 =
+* Core 0.4: the sync cursor is now kept per receiving account and network. A mainnet transaction can no longer stall the testnet sync, and a testnet reset no longer requires cleaning the database - the plugin resyncs on its own.
+* Core 0.3: when several transactions carry the same destination tag, the newest one in the quoted asset is used. A stray payment in another asset no longer blocks settlement of the real one.
+* Database schema version 3: `network` column on the transactions table, backfilled from the CTID; migrates automatically on the first request after the update.
 
 = 1.0.0 =
 * The plugin is now an adapter over the shared `hardcastle/ledger-direct-core` library, so prices, exchange rates, destination tags, transaction sync and the settlement decision are identical across all LedgerDirect plugins.

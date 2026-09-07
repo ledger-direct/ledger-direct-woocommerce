@@ -5,7 +5,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.2",
-    "hardcastle/ledger-direct-core": "^0.2.0",
+    "hardcastle/ledger-direct-core": "^0.4",
     "nyholm/psr7": "^1.8"
   },
   "require-dev": {

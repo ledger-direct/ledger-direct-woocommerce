@@ -75,6 +75,44 @@ class LedgerDirectInstallTest extends TestCase
         $this->assertNull($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->prefix . 'xrpl_destination_tag')));
     }
 
+    /**
+     * Schema 2 -> 3: the network column is added and backfilled from the
+     * CTID (network id in the last four hex digits: 0 mainnet, 1 testnet);
+     * rows with an unusable CTID stay '' and are ignored by the cursor.
+     */
+    public function testUpgradeToSchema3BackfillsTheNetworkFromTheCtid(): void
+    {
+        global $wpdb;
+
+        $this->createSchema2();
+
+        $wpdb->query("INSERT INTO {$this->txTable} (ledger_index, ctid, hash, account, destination, destination_tag, date, meta, tx)
+            VALUES (20554421, 'C139B2B500020001', 'HASH-TESTNET', 'rA', 'rDest', 1, 1, '{}', '{}'),
+                   (106821063, 'C65DF9C700380000', 'HASH-MAINNET', 'rA', 'rDest', 2, 2, '{}', '{}'),
+                   (5, 'BROKEN', 'HASH-BROKEN', 'rA', 'rDest', 3, 3, '{}', '{}')");
+
+        update_option(LedgerDirectInstall::DB_VERSION_OPTION, '2');
+
+        LedgerDirectInstall::maybe_upgrade();
+
+        $this->assertSame('3', get_option(LedgerDirectInstall::DB_VERSION_OPTION));
+        $networks = $wpdb->get_results("SELECT hash, network FROM {$this->txTable} ORDER BY id", ARRAY_A);
+        $this->assertSame([
+            ['hash' => 'HASH-TESTNET', 'network' => 'testnet'],
+            ['hash' => 'HASH-MAINNET', 'network' => 'mainnet'],
+            ['hash' => 'HASH-BROKEN', 'network' => ''],
+        ], $networks);
+
+        $indexes = array_column($wpdb->get_results("SHOW INDEX FROM {$this->txTable}", ARRAY_A), 'Key_name');
+        $this->assertContains('destination_network', $indexes);
+
+        // Re-running does not touch the rows again.
+        update_option(LedgerDirectInstall::DB_VERSION_OPTION, '2');
+        LedgerDirectInstall::maybe_upgrade();
+        // ($wpdb->get_var()/get_col() map an empty string to null, hence get_results.)
+        $this->assertSame([['network' => '']], $wpdb->get_results("SELECT network FROM {$this->txTable} WHERE hash = 'HASH-BROKEN'", ARRAY_A));
+    }
+
     public function testUpgradeIsIdempotentAndNeverResetsACounter(): void
     {
         global $wpdb;
@@ -155,6 +193,37 @@ class LedgerDirectInstallTest extends TestCase
             destination_tag int(10) unsigned NOT NULL,
             account varchar(35) NOT NULL,
             PRIMARY KEY (destination_tag)
+        )");
+    }
+
+    /**
+     * The tables as created by 1.0.0 (schema 2): no network column yet.
+     */
+    private function createSchema2(): void
+    {
+        global $wpdb;
+
+        $this->dropAll();
+
+        $wpdb->query("CREATE TABLE {$this->txTable} (
+            id int(10) unsigned NOT NULL AUTO_INCREMENT,
+            ledger_index bigint(20) unsigned NOT NULL,
+            ctid varchar(16) NOT NULL,
+            hash varchar(64) NOT NULL,
+            account varchar(35) NOT NULL,
+            destination varchar(35) NOT NULL,
+            destination_tag int(10) unsigned NULL,
+            date int(10) unsigned NOT NULL,
+            meta text NOT NULL,
+            tx text NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY hash (hash),
+            KEY destination (destination,destination_tag)
+        )");
+        $wpdb->query("CREATE TABLE {$this->tagTable} (
+            destination_account varchar(64) NOT NULL,
+            sequence int(10) unsigned NOT NULL,
+            PRIMARY KEY (destination_account)
         )");
     }
 
