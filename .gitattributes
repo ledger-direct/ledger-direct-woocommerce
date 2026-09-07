@@ -36,3 +36,4 @@ vendor/**/doc/** export-ignore
 vendor/**/docs/** export-ignore
 vendor/**/example/** export-ignore
 vendor/**/examples/** export-ignore
+scoper.inc.php export-ignore
