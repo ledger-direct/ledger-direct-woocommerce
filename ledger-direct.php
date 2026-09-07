@@ -3,13 +3,13 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://github.com/ledger-direct/ledger-direct-woocommerce
  * Description: A XRP Ledger integration.
- * Version: 0.11.0
+ * Version: 1.0.0
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct
  * Domain Path: /languages
  * Requires at least: 6.7
- * Requires PHP: 8.1
+ * Requires PHP: 8.2
  * Requires Plugins: woocommerce
  * WC requires at least: 8.6.1
  * WC tested up to: 11.1
@@ -20,18 +20,34 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use \DI\Container;
-use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
-use Hardcastle\LedgerDirect\Provider\XrpPriceProvider;
+use Hardcastle\LedgerDirect\Cron\SettlePendingOrders;
+use Hardcastle\LedgerDirect\Port\WpConfigProvider;
+use Hardcastle\LedgerDirect\Service\ServiceFactory;
 
 define( 'LEDGER_DIRECT_PLUGIN_FILE_PATH', plugin_dir_path( __FILE__ ) );
+
+/**
+ * WordPress refuses to update or activate the plugin on an older PHP via
+ * the "Requires PHP" header, but a manual upload bypasses that - and the
+ * bundled dependencies would then fatal inside the autoloader. Bow out
+ * with a notice instead.
+ */
+if ( PHP_VERSION_ID < 80200 ) {
+    add_action( 'admin_notices', static function (): void {
+        echo '<div class="notice notice-error"><p>' .
+            esc_html__( 'Ledger Direct requires PHP 8.2 or newer and has been disabled on this site.', 'ledger-direct' ) .
+            '</p></div>';
+    } );
+
+    return;
+}
 
 require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
 require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct-install.php';
 require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/class-ledger-direct.php';
 
 /**
- * Plugin deactivation hook.
+ * Plugin activation hook.
  */
 function ledger_direct_activate(): void {
     LedgerDirectInstall::install();
@@ -56,67 +72,38 @@ function ledger_direct_deactivate(): void {
 register_deactivation_hook( __FILE__, 'ledger_direct_deactivate');
 
 /**
- * Plugin deactivation hook.
+ * Plugin uninstall hook.
  */
 function ledger_direct_uninstall(): void {
     LedgerDirectInstall::uninstall();
 }
 register_uninstall_hook(__FILE__, 'ledger_direct_uninstall');
 
-function ledger_direct_get_configuration(): array {
-    $settings = get_option('woocommerce_ledger-direct_settings', []);
-
-    $preparedSettings = [
-        'enabled' => $settings['enabled'] ?? 'no',
-    ];
-
-    $xrpl_network = in_array($settings['xrpl_network'] ?? null, ['mainnet', 'testnet']) ? $settings['xrpl_network'] : 'testnet';
-
-    $xrpl_testnet_destination_account = $settings['xrpl_testnet_destination_account'] ?? '';
-    $xrpl_mainnet_destination_account = $settings['xrpl_mainnet_destination_account'] ?? '';
-
-    $xrpl_account_regex = '/^r[1-9A-HJ-NP-Za-km-z]{25,34}$/';
-    $testnet_wallet_available = !empty($xrpl_testnet_destination_account) && preg_match($xrpl_account_regex, $xrpl_testnet_destination_account);
-    $mainnet_wallet_available = !empty($xrpl_mainnet_destination_account) && preg_match($xrpl_account_regex, $xrpl_mainnet_destination_account);
-
-    $rlusd_available = isset($settings['xrpl_is_rlusd_enabled']) && $settings['xrpl_is_rlusd_enabled'] === 'yes';
-    $usdc_available = isset($settings['xrpl_is_usdc_enabled']) && $settings['xrpl_is_usdc_enabled'] === 'yes';
-
-    $testnet_rlusd_available = $rlusd_available && $testnet_wallet_available;
-    $mainnet_rlusd_available = $usdc_available && $mainnet_wallet_available;
-    $testnet_usdc_available = $rlusd_available && $testnet_wallet_available;
-    $mainnet_usdc_available = $usdc_available && $mainnet_wallet_available;
-
-    $order_expiry = isset($settings['xrpl_quote_expiry']) && is_numeric($settings['xrpl_quote_expiry']) ? (int)$settings['xrpl_quote_expiry'] : 15;
-
-    if ($xrpl_network === 'mainnet') {
-        $preparedSettings['xrpl_network'] = 'mainnet';
-        $preparedSettings['wallet_available'] = $mainnet_wallet_available;
-        $preparedSettings['destination_account'] = $xrpl_mainnet_destination_account;
-        $preparedSettings['rlusd_available'] = $mainnet_rlusd_available;
-        $preparedSettings['usdc_available'] = $mainnet_usdc_available;
-        $preparedSettings['order_expiry'] = $order_expiry;
-    } else {
-        $preparedSettings['xrpl_network'] = 'testnet';
-        $preparedSettings['wallet_available'] = $testnet_wallet_available;
-        $preparedSettings['destination_account'] = $xrpl_testnet_destination_account;
-        $preparedSettings['rlusd_available'] = $testnet_rlusd_available;
-        $preparedSettings['usdc_available'] = $testnet_usdc_available;
-        $preparedSettings['order_expiry'] = $order_expiry;
-    }
-
-    return $preparedSettings;
-}
-
 /**
- * Returns the DI container with interfaces wired up.
+ * The merchant's configuration as the gateway and checkout need it.
  *
- * @return Container
+ * Network, receiving account, quote expiry and the per-asset switches are
+ * read through the core's config port (WpConfigProvider); this only adds
+ * the gateway's own "enabled" flag and the derived availability flags.
+ *
+ * @return array
  */
-function ledger_direct_get_dependency_injection_container(): Container {
-    return new Container([
-        CryptoPriceProviderInterface::class => \DI\autowire(XrpPriceProvider::class),
-    ]);
+function ledger_direct_get_configuration(): array {
+    $settings = get_option(WpConfigProvider::OPTION_NAME, []);
+    $settings = is_array($settings) ? $settings : [];
+
+    $config = ServiceFactory::getInstance()->getConfigProvider();
+    $wallet_available = $config->hasDestinationAccount();
+
+    return [
+        'enabled' => $settings['enabled'] ?? 'no',
+        'xrpl_network' => $config->getNetwork(WpConfigProvider::CHAIN),
+        'wallet_available' => $wallet_available,
+        'destination_account' => $config->getDestinationAccount(WpConfigProvider::CHAIN),
+        'rlusd_available' => $wallet_available && $config->isAssetEnabled(WpConfigProvider::CHAIN, 'RLUSD'),
+        'usdc_available' => $wallet_available && $config->isAssetEnabled(WpConfigProvider::CHAIN, 'USDC'),
+        'quote_expiry_seconds' => $config->getQuoteExpirySeconds(),
+    ];
 }
 
 /**
@@ -169,15 +156,6 @@ function ledger_direct_get_svg_html(string $icon, array $properties = []): strin
     return $svgContent;
 }
 
-/**
- * Round stablecoin values to 2 decimal places.
- *
- * @param float|int $value
- * @return float
- */
-function ledger_direct_round_stable_coin(float|int $value): float
-{
-    return round($value, 2, PHP_ROUND_HALF_UP);
-}
+SettlePendingOrders::register();
 
 LedgerDirect::instance();

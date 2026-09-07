@@ -2,22 +2,22 @@
 
 defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
-require_once LEDGER_DIRECT_PLUGIN_FILE_PATH . 'vendor/autoload.php';
-
-use Hardcastle\LedgerDirect\Service\OrderTransactionService;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use Hardcastle\LedgerDirect\Xrpl\Networks;
 
-global $ledger_direct_order;
+/**
+ * @var WC_Order|null $ledger_direct_order
+ * @var PaymentIntent|null $ledger_direct_intent
+ * @var string|null $ledger_direct_shortfall
+ */
+global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_shortfall;
 
-$plugin_configuration = ledger_direct_get_configuration();
 $ledger_direct_current_user = wp_get_current_user();
 
 // Check if user is owner of the order, otherwise redirect to shop page
-if ($ledger_direct_current_user->ID !== $ledger_direct_order->get_user_id()) {
-    global $wp_query;
-    $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
-    wp_redirect($shop_page_url);
+if ($ledger_direct_order && $ledger_direct_current_user->ID !== $ledger_direct_order->get_user_id()) {
+    wp_safe_redirect(get_permalink( wc_get_page_id( 'shop' ) ));
+    exit;
 }
 
 ?>
@@ -44,7 +44,6 @@ if (!$ledger_direct_order || !is_a($ledger_direct_order, 'WC_Order')) {
 }
 
 $order_id = $ledger_direct_order->get_id();
-$order_key = $ledger_direct_order->get_order_key();
 $order_status = $ledger_direct_order->get_status();
 
 $valid_statuses = ['pending', 'on-hold', 'processing'];
@@ -60,7 +59,7 @@ if (!in_array($order_status, $valid_statuses, true)) {
 }
 
 $payment_method = $ledger_direct_order->get_payment_method();
-if ($payment_method !== LedgerDirectPaymentGateway::ID) {
+if ($payment_method !== LedgerDirectPaymentGateway::ID || !$ledger_direct_intent instanceof PaymentIntent) {
     echo '<div class="woocommerce-error">';
     echo '<h2>' . esc_html__('Invalid payment method', 'ledger-direct') . '</h2>';
     echo '<p>' . esc_html__('This order was not paid with LedgerDirect.', 'ledger-direct') . '</p>';
@@ -69,48 +68,31 @@ if ($payment_method !== LedgerDirectPaymentGateway::ID) {
     return;
 }
 
-$container = ledger_direct_get_dependency_injection_container();
-$order_transaction_service = $container->get(OrderTransactionService::class);
+$intent = $ledger_direct_intent;
 
-$meta = $ledger_direct_order->get_meta(LedgerDirect::META_KEY, true);
-$network = $meta['network'] ?: 'mainnet';
-$network_name = Networks::get($network)['label'];
-$payment_type = $meta['type'] ?: 'xrp';
-
-$supported_payment_types = [
-    LedgerDirectPaymentGateway::XRP_PAYMENT_ID,
-    LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID,
-    LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID,
-    LedgerDirectPaymentGateway::USDC_PAYMENT_ID
-];
-
-if (!in_array($payment_type, $supported_payment_types, true)) {
-    echo '<div class="woocommerce-error">';
-    echo '<h2>' . esc_html__('Invalid Payment Method', 'ledger-direct') . '</h2>';
-    echo '<p>' . esc_html__('This order was not paid with Ledger Direct.', 'ledger-direct') . '</p>';
-    echo '<a href="' . esc_url(home_url()) . '" class="button">' . esc_html__('Return to homepage', 'ledger-direct') . '</a>';
-    echo '</div>';
-    return;
-}
-
-
-$chain = $meta['chain'];
-$destination_account = $meta['destination_account'];
-$destination_tag = $meta['destination_tag'];
+$base_asset = $intent->baseAsset;
+$network_name = $intent->network === 'mainnet' ? 'Mainnet' : 'Testnet';
+$destination_account = $intent->destinationAccount;
+$destination_tag = $intent->destinationTag;
 
 $total = $ledger_direct_order->get_total();
 $wp_currency = $ledger_direct_order->get_currency();
 $currency_symbol = get_woocommerce_currency_symbol($wp_currency);
 
-// XRP specific data
-$amount_requested = $meta['amount_requested'] ?? -1;
-$exchange_rate = $meta['exchange_rate'] ?? -1;
+// The amount the customer is asked to send, as a plain number, and the
+// issued-currency envelope for the stablecoins (what a wallet needs).
+$amount_requested = $intent->amountRequestedValue();
+$exchange_rate = $intent->exchangeRate;
+$pairing = $intent->pairing;
+$issued_amount = is_array($intent->amountRequested) ? $intent->amountRequested : null;
 
-// Custom token and stablecoin specific data
-$token_amount = $meta['token_amount'] ?? -1;
-$issuer = $meta['issuer'] ?? -1;
-$currency_code = $meta['currency_code'] ?? get_woocommerce_currency();
-$pairing = $meta['pairing'] ?? -1;
+$amount_paid = $intent->amountPaidValue();
+$shortfall = $ledger_direct_shortfall;
+// A same-named token from another issuer is a different asset and never settles.
+$paid_wrong_asset = is_array($intent->amountPaid) && is_array($intent->amountRequested)
+    && ($intent->amountPaid['issuer'] !== $intent->amountRequested['issuer']
+        || $intent->amountPaid['currency'] !== $intent->amountRequested['currency']);
+$expires_in = $intent->expiry !== null ? max(0, $intent->expiry - time()) : null;
 
 $allowed_svg_html = [
         'svg'   => [
@@ -140,7 +122,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
 
 <div class="ld-header">
     <h3>
-        <?php $page_title = 'LedgerDirect - pay with ' . strtoupper($payment_type) . ' directly on ' .$network_name ; ?>
+        <?php $page_title = 'LedgerDirect - pay with ' . $base_asset . ' directly on ' . $network_name; ?>
         <?php echo esc_html($page_title); ?>
     </h3>
 </div>
@@ -151,7 +133,7 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
         <div class="ld-card">
 
             <div class="ld-card-left">
-                <?php if ($payment_type === LedgerDirectPaymentGateway::XRP_PAYMENT_ID) { ?>
+                <?php if ($base_asset === 'XRP') { ?>
                     <?php /* translators: %s: XRP amount to send */ ?>
                     <?php $instructions = sprintf(__('Please send %s XRP to the following address:', 'ledger-direct'), $amount_requested); ?>
                     <p><?php echo esc_html($instructions); ?></p>
@@ -162,64 +144,35 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                            readonly
                            style="display: none;"
                     />
-                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
-                    <?php /* translators: 1: token amount, 2: token symbol (RLUSD) */ ?>
-                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $amount_requested['value'], 'RLUSD'); ?>
-                    <p><?php echo esc_html($instructions); ?></p>
-                    <input id="rlusd-amount"
-                           type="text"
-                           name="rlusd-amount"
-                           value="<?php echo esc_attr($amount_requested); ?>"
-                           readonly
-                           style="display: none;"
-                    />
-                    <input id="pairing"
-                           type="text"
-                           name="pairing"
-                           value="<?php echo esc_attr($pairing); ?>"
-                           readonly
-                           style="display: none;"
-                    />
-                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::USDC_PAYMENT_ID) { ?>
-                    <?php /* translators: 1: token amount, 2: token symbol (USDC) */ ?>
-                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $amount_requested['value'], 'USDC'); ?>
-                    <p><?php echo esc_html($instructions); ?></p>
-                    <input id="usdc-amount"
-                           type="text"
-                           name="usdc-amount"
-                           value="<?php echo esc_attr($amount_requested); ?>"
-                           readonly
-                           style="display: none;"
-                    />
-                    <input id="pairing"
-                           type="text"
-                           name="pairing"
-                           value="<?php echo esc_attr($pairing); ?>"
-                           readonly
-                           style="display: none;"
-                    />
-                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID) { ?>
-                    <?php /* translators: 1: token amount, 2: currency code */ ?>
-                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $token_amount, $wp_currency); ?>
+                <?php } else { ?>
+                    <?php /* translators: 1: token amount, 2: token symbol (RLUSD, USDC) */ ?>
+                    <?php $instructions = sprintf(__('Please send %1$s %2$s to the following address:', 'ledger-direct'), $amount_requested, $base_asset); ?>
                     <p><?php echo esc_html($instructions); ?></p>
                     <input id="token-amount"
                            type="text"
                            name="token-amount"
-                           value="<?php echo esc_attr($token_amount); ?>"
+                           value="<?php echo esc_attr($amount_requested); ?>"
                            readonly
                            style="display: none;"
                     />
                     <input id="issuer"
                            type="text"
-                           name="token-amount"
-                           value="<?php echo esc_attr($issuer); ?>"
+                           name="issuer"
+                           value="<?php echo esc_attr((string) ($issued_amount['issuer'] ?? '')); ?>"
                            readonly
                            style="display: none;"
                     />
                     <input id="currency"
                            type="text"
                            name="currency"
-                           value="<?php echo esc_attr($currency_code); ?>"
+                           value="<?php echo esc_attr((string) ($issued_amount['currency'] ?? '')); ?>"
+                           readonly
+                           style="display: none;"
+                    />
+                    <input id="pairing"
+                           type="text"
+                           name="pairing"
+                           value="<?php echo esc_attr($pairing); ?>"
                            readonly
                            style="display: none;"
                     />
@@ -247,8 +200,8 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                         <?php echo wp_kses($tag_icon_svg, $allowed_svg_html); ?>
                     </span>
                     <div class="ld-payment-info-text">
-                        <div id="destination-tag" class="" data-value="<?php echo esc_attr($destination_tag); ?>">
-                            <?php echo esc_html($destination_tag); ?>
+                        <div id="destination-tag" class="" data-value="<?php echo esc_attr((string) $destination_tag); ?>">
+                            <?php echo esc_html((string) $destination_tag); ?>
                         </div>
                         <div class="ld-payment-info-functions">
                             <?php echo wp_kses($copy_icon_svg, $allowed_svg_html); ?>
@@ -267,14 +220,26 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                     </div>
                 </div>
 
+                <?php if ($amount_paid !== null && $shortfall !== null) { ?>
+                    <div class="ld-warning">
+                        <div role="alert" class="alert alert-warning alert-has-icon">
+                            <div class="alert-content-container">
+                                <div class="alert-content">
+                                    <?php if ($paid_wrong_asset) { ?>
+                                        <?php /* translators: %s: token symbol (RLUSD, USDC) */ ?>
+                                        <?php echo esc_html(sprintf(__('A payment arrived, but not in the requested %s. Please send the amount below in the requested token.', 'ledger-direct'), $base_asset)); ?>
+                                    <?php } else { ?>
+                                        <?php /* translators: 1: amount received, 2: amount requested, 3: amount still missing, 4: asset symbol */ ?>
+                                        <?php echo esc_html(sprintf(__('Received %1$s of %2$s %4$s so far. Please send the remaining %3$s %4$s.', 'ledger-direct'), $amount_paid, $amount_requested, $shortfall, $base_asset)); ?>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+
                 <div class="ld-sync">
-                    <!-- Wallet buttons -->
-                    <!--
-                    <button id="gem-wallet-button" class="wallet-disabled">G</button>
-                    <button id="crossmark-wallet-button" class="wallet-disabled">C</button>
-                    <button id="xumm-wallet-button" class="wallet-disabled">X</button>
-                    -->
-                    <button id="check-payment-button" data-order-id="<?php echo esc_attr($order_id); ?>">
+                    <button id="check-payment-button" data-order-id="<?php echo esc_attr((string) $order_id); ?>">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none"></span>
                         <?php esc_html_e('Check payment processing', 'ledger-direct'); ?>
                     </button>
@@ -283,39 +248,17 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
             </div>
 
             <div class="ld-card-right">
-                <?php if ($payment_type === LedgerDirectPaymentGateway::XRP_PAYMENT_ID) { ?>
-                    <div class="ld-sum"><?php echo esc_html($total); ?><?php echo esc_html($currency_symbol); ?></div>
-                    <span><?php esc_html_e('Order ID', 'ledger-direct'); ?>: <?php echo esc_html($order_id); ?></span><br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($total); ?> <?php echo esc_html($wp_currency); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($amount_requested); ?> XRP</span><br/>
-                    <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html($exchange_rate); ?> XRP / <?php echo esc_html($currency_code); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
-                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID) { ?>
-                    <div class="ld-sum"><?php echo esc_html($total); ?><?php echo esc_html($currency_symbol); ?></div>
-                    <span><?php esc_html_e('Order ID', 'ledger-direct'); ?>: <?php echo esc_html($order_id); ?></span><br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($total); ?> <?php echo esc_html($wp_currency); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($amount_requested['value']); ?> RLUSD</span><br/>
-                    <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html($exchange_rate); ?> <?php echo esc_html($pairing); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
-                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::USDC_PAYMENT_ID) { ?>
-                    <div class="ld-sum"><?php echo esc_html($total); ?><?php echo esc_html($currency_symbol); ?></div>
-                    <span><?php esc_html_e('Order ID', 'ledger-direct'); ?>: <?php echo esc_html($order_id); ?></span><br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($total); ?> <?php echo esc_html($wp_currency); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($amount_requested['value']); ?> USDC</span><br/>
-                    <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html($exchange_rate); ?> <?php echo esc_html($pairing); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
-                <?php } elseif ($payment_type === LedgerDirectPaymentGateway::TOKEN_PAYMENT_ID) { ?>
-                    <div class="ld-sum"><?php echo esc_html($token_amount); ?> | <?php echo esc_html($currency_code); ?></div>
-                    <span><?php esc_html_e('Order ID', 'ledger-direct'); ?>: <?php echo esc_html($order_id); ?></span><br/>
-                    <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($token_amount); ?> <?php echo esc_html($currency_code); ?></span>
-                    <br/>
-                    <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
+                <div class="ld-sum"><?php echo esc_html($total); ?><?php echo esc_html($currency_symbol); ?></div>
+                <span><?php esc_html_e('Order ID', 'ledger-direct'); ?>: <?php echo esc_html((string) $order_id); ?></span><br/>
+                <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($total); ?> <?php echo esc_html($wp_currency); ?></span>
+                <br/>
+                <span><?php esc_html_e('Total', 'ledger-direct'); ?>: <?php echo esc_html($amount_requested); ?> <?php echo esc_html($base_asset); ?></span><br/>
+                <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html((string) $exchange_rate); ?> <?php echo esc_html($pairing); ?></span>
+                <br/>
+                <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
+                <?php if ($expires_in !== null && $amount_paid === null) { ?>
+                    <?php /* translators: %d: minutes */ ?>
+                    <span><?php echo esc_html(sprintf(__('Quote valid for %d more minutes', 'ledger-direct'), (int) ceil($expires_in / 60))); ?></span><br/>
                 <?php } ?>
             </div>
 

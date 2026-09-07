@@ -5,6 +5,12 @@
         stopOnFailure="false"
         displayDetailsOnTestsThatTriggerWarnings="true"
 >
+  <!-- Needs network access and the XRPL testnet faucet; run explicitly by passing the phpunit group option with external-http -->
+  <groups>
+    <exclude>
+      <group>external-http</group>
+    </exclude>
+  </groups>
   <testsuites>
     <testsuite name="tests">
       <directory>tests</directory>

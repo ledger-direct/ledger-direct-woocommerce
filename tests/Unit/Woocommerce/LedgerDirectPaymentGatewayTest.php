@@ -2,90 +2,21 @@
 
 namespace Hardcastle\LedgerDirect\Tests\Unit\Woocommerce;
 
+use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 
-/**
- * is_token_payment_valid() is private and the gateway's constructor pulls in
- * the full WooCommerce/DI wiring, so we build a bare instance via reflection
- * and invoke the validation logic directly.
- */
 class LedgerDirectPaymentGatewayTest extends TestCase
 {
-    private function invokeIsTokenPaymentValid(array $meta): bool
+    public function testCheckoutPaymentTypesMapToCoreBaseAssets(): void
     {
-        $reflection = new ReflectionClass(LedgerDirectPaymentGateway::class);
-        $gateway = $reflection->newInstanceWithoutConstructor();
-
-        $method = $reflection->getMethod('is_token_payment_valid');
-        $method->setAccessible(true);
-
-        return $method->invoke($gateway, $meta);
+        $this->assertSame('XRP', OrderTransactionService::BASE_ASSET_BY_PAYMENT_TYPE[LedgerDirectPaymentGateway::XRP_PAYMENT_ID]);
+        $this->assertSame('RLUSD', OrderTransactionService::BASE_ASSET_BY_PAYMENT_TYPE[LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID]);
+        $this->assertSame('USDC', OrderTransactionService::BASE_ASSET_BY_PAYMENT_TYPE[LedgerDirectPaymentGateway::USDC_PAYMENT_ID]);
     }
 
-    private function invokeIsXrpPaymentValid(array $meta): bool
+    public function testGatewayRegistersUnderItsStableId(): void
     {
-        $reflection = new ReflectionClass(LedgerDirectPaymentGateway::class);
-        $gateway = $reflection->newInstanceWithoutConstructor();
-
-        $method = $reflection->getMethod('is_xrp_payment_valid');
-        $method->setAccessible(true);
-
-        return $method->invoke($gateway, $meta);
-    }
-
-    public function testValidWhenDeliveredAmountMatchesRequestedAmount(): void
-    {
-        $this->assertTrue($this->invokeIsTokenPaymentValid([
-            'amount_requested' => '10.00',
-            'delivered_amount' => '10.00',
-        ]));
-    }
-
-    public function testInvalidWhenDeliveredAmountDiffersFromRequestedAmount(): void
-    {
-        $this->assertFalse($this->invokeIsTokenPaymentValid([
-            'amount_requested' => '10.00',
-            'delivered_amount' => '9.99',
-        ]));
-    }
-
-    public function testInvalidWhenDeliveredAmountIsMissing(): void
-    {
-        $this->assertFalse($this->invokeIsTokenPaymentValid([
-            'amount_requested' => '10.00',
-        ]));
-    }
-
-    public function testInvalidWhenRequestedAmountIsMissing(): void
-    {
-        $this->assertFalse($this->invokeIsTokenPaymentValid([
-            'delivered_amount' => '10.00',
-        ]));
-    }
-
-    public function testXrpValidWhenDeliveredEqualsRequested(): void
-    {
-        $this->assertTrue($this->invokeIsXrpPaymentValid([
-            'amount_requested' => 12.5,
-            'delivered_amount' => 12.5,
-        ]));
-    }
-
-    public function testXrpValidWhenOverpaid(): void
-    {
-        $this->assertTrue($this->invokeIsXrpPaymentValid([
-            'amount_requested' => 12.5,
-            'delivered_amount' => 13.0,
-        ]));
-    }
-
-    public function testXrpInvalidWhenUnderpaid(): void
-    {
-        $this->assertFalse($this->invokeIsXrpPaymentValid([
-            'amount_requested' => 12.5,
-            'delivered_amount' => 12.0,
-        ]));
+        $this->assertSame('ledger-direct', LedgerDirectPaymentGateway::ID);
     }
 }

@@ -37,6 +37,4 @@ Thumbs.db
 /README.md
 /TODO.md
 
-/vendor/simplito/bigint-wrapper-php/tests
-/vendor/simplito/bn-php/tests
-/vendor/simplito/elliptic-php/tests
+/vendor/psr/http-message/docs

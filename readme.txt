@@ -1,10 +1,10 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 0.11.0
+Stable tag: 1.0.0
 Requires at least: 6.7
 Tested up to: 7.1
-Requires PHP: 8.1
+Requires PHP: 8.2
 License: MIT
 License URI: https://opensource.org/license/mit/
 
@@ -25,7 +25,7 @@ The best way is to configure the plugin to use the testnet and make a test payme
 
 = Minimum Requirements =
 
-* PHP version 8.1 or greater
+* PHP version 8.2 or greater
 * WordPress 6.7 or greater
 * WooCommerce 8.6.1 or greater
 
@@ -71,6 +71,18 @@ LedgerDirect uses minified assets from third party libraries. The source for the
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.0.0 =
+* The plugin is now an adapter over the shared `hardcastle/ledger-direct-core` library, so prices, exchange rates, destination tags, transaction sync and the settlement decision are identical across all LedgerDirect plugins.
+* Fix: XRP payments were only accepted when the delivered amount was at or below the requested amount. Overpayment now settles, and a shortfall of up to 0.15 % is tolerated, as in every other LedgerDirect plugin.
+* Fix: stablecoin payments were compared as raw arrays; a payment from another issuer is now always rejected and an overpayment accepted.
+* Fix: the RLUSD and USDC switches were wired to the wrong asset depending on the network.
+* Fix: the quote expiry setting was ignored (every quote lasted 15 hours). Quotes now expire as configured and are refreshed in place on the payment page, keeping the same destination tag.
+* New: orders are settled in the background every five minutes via Action Scheduler, so a customer who closes the payment page still gets their order marked paid.
+* New: the payment page shows how much of the requested amount has arrived and what is still missing.
+* New: exchange rates are cached briefly (60 s) so a checkout render no longer waits for three price oracles.
+* Database schema version 2: numeric ledger index, per-account destination-tag counter; migrates automatically on the first request after the update.
+* Requires PHP 8.2.
 
 = 0.11.0 =
 * Fix: the destination-tag table existed under three different names across install.php and XrplTxService, so reserved destination tags were silently never persisted on fresh installs. Unified to `ledger_direct_xrpl_destination_tag`, with an automatic upgrade routine for existing installs.
