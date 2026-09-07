@@ -222,7 +222,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $requestedXrpAmount = (float) $meta['amount_requested'];
         $paidXrpAmount = (float) $meta['delivered_amount'];
 
-        return $requestedXrpAmount >= $paidXrpAmount;
+        return $paidXrpAmount >= $requestedXrpAmount;
     }
 
     /**

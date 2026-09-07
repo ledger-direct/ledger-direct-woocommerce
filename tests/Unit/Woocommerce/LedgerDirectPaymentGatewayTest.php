@@ -24,6 +24,17 @@ class LedgerDirectPaymentGatewayTest extends TestCase
         return $method->invoke($gateway, $meta);
     }
 
+    private function invokeIsXrpPaymentValid(array $meta): bool
+    {
+        $reflection = new ReflectionClass(LedgerDirectPaymentGateway::class);
+        $gateway = $reflection->newInstanceWithoutConstructor();
+
+        $method = $reflection->getMethod('is_xrp_payment_valid');
+        $method->setAccessible(true);
+
+        return $method->invoke($gateway, $meta);
+    }
+
     public function testValidWhenDeliveredAmountMatchesRequestedAmount(): void
     {
         $this->assertTrue($this->invokeIsTokenPaymentValid([
@@ -51,6 +62,30 @@ class LedgerDirectPaymentGatewayTest extends TestCase
     {
         $this->assertFalse($this->invokeIsTokenPaymentValid([
             'delivered_amount' => '10.00',
+        ]));
+    }
+
+    public function testXrpValidWhenDeliveredEqualsRequested(): void
+    {
+        $this->assertTrue($this->invokeIsXrpPaymentValid([
+            'amount_requested' => 12.5,
+            'delivered_amount' => 12.5,
+        ]));
+    }
+
+    public function testXrpValidWhenOverpaid(): void
+    {
+        $this->assertTrue($this->invokeIsXrpPaymentValid([
+            'amount_requested' => 12.5,
+            'delivered_amount' => 13.0,
+        ]));
+    }
+
+    public function testXrpInvalidWhenUnderpaid(): void
+    {
+        $this->assertFalse($this->invokeIsXrpPaymentValid([
+            'amount_requested' => 12.5,
+            'delivered_amount' => 12.0,
         ]));
     }
 }

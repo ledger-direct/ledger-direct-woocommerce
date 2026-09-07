@@ -3,7 +3,7 @@ Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
 Stable tag: 0.11.0
 Requires at least: 6.7
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.1
 License: MIT
 License URI: https://opensource.org/license/mit/
@@ -26,7 +26,7 @@ The best way is to configure the plugin to use the testnet and make a test payme
 = Minimum Requirements =
 
 * PHP version 8.1 or greater
-* WordPress 6.3 or greater
+* WordPress 6.7 or greater
 * WooCommerce 8.6.1 or greater
 
 = Automatic installation =

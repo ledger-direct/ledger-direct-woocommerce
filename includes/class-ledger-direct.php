@@ -272,9 +272,7 @@ class LedgerDirect
 
             if (!$order) {
                 // Order not found - show 404
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("Ledger Direct: Order not found for key: " . $order_key);
-                }
+                self::log('Order not found for key: ' . $order_key, 'debug');
 
                 global $wp_query;
                 $wp_query->set_404();
@@ -285,7 +283,7 @@ class LedgerDirect
             $gateway = LedgerDirectPaymentGateway::instance();
             if (!$gateway->is_available()) {
                 wc_add_notice(__('Payment gateway is not available.', 'ledger-direct'), 'error');
-                wp_redirect(wc_get_checkout_url());
+                wp_safe_redirect(wc_get_checkout_url());
                 exit;
             }
 
@@ -293,15 +291,15 @@ class LedgerDirect
                 $is_paid = $gateway->sync_and_check_payment($order);
             } catch (Exception $e) {
                 wc_add_notice(__('An error occurred while processing your payment. Please contact support.', 'ledger-direct'), 'error');
-                error_log("Ledger Direct: Error syncing payment for order " . $order->get_id() . ": " . $e->getMessage());
-                wp_redirect(wc_get_checkout_url());
+                self::log('Error syncing payment for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
+                wp_safe_redirect(wc_get_checkout_url());
                 exit;
             }
 
             if ($is_paid) {
                 $order->payment_complete();
                 WC()->cart->empty_cart();
-                wp_redirect($gateway->get_return_url($order));
+                wp_safe_redirect($gateway->get_return_url($order));
                 exit;
             }
 
@@ -314,7 +312,7 @@ class LedgerDirect
             $template_path = LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
 
             if (!file_exists($template_path)) {
-                error_log("Ledger Direct: Template file not found: " . $template_path);
+                self::log('Template file not found: ' . $template_path, 'error');
                 return $template;
             }
 
