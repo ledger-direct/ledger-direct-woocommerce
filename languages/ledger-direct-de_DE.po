@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LedgerDirect for WooCommerce 0.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledger-direct\n"
-"POT-Creation-Date: 2026-09-07T09:19:30+00:00\n"
+"POT-Creation-Date: 2026-09-07T09:31:11+00:00\n"
 "PO-Revision-Date: 2026-09-07 12:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -111,7 +111,9 @@ msgstr "Die Zahlungsmethode ist nicht verfügbar."
 #: includes/class-ledger-direct.php:269
 msgid ""
 "An error occurred while processing your payment. Please contact support."
-msgstr "Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte wenden Sie sich an den Support."
+msgstr ""
+"Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte wenden "
+"Sie sich an den Support."
 
 #: includes/views/ledger-direct_html.php:39
 msgid "Order not found"
@@ -182,13 +184,16 @@ msgstr ""
 msgid ""
 "A payment arrived, but not in the requested %s. Please send the amount below "
 "in the requested token."
-msgstr "Es ist eine Zahlung eingegangen, jedoch nicht in %s. Bitte senden Sie den unten stehenden Betrag im angeforderten Token."
+msgstr ""
+"Es ist eine Zahlung eingegangen, jedoch nicht in %s. Bitte senden Sie den "
+"unten stehenden Betrag im angeforderten Token."
 
 #. translators: 1: amount received, 2: amount requested, 3: amount still missing, 4: asset symbol
 #: includes/views/ledger-direct_html.php:233
 #, php-format
 msgid "Received %1$s of %2$s %4$s so far. Please send the remaining %3$s %4$s."
-msgstr "Bisher %1$s von %2$s %4$s erhalten. Bitte senden Sie die fehlenden %3$s %4$s."
+msgstr ""
+"Bisher %1$s von %2$s %4$s erhalten. Bitte senden Sie die fehlenden %3$s %4$s."
 
 #: includes/views/ledger-direct_html.php:244
 msgid "Check payment processing"
@@ -224,7 +229,9 @@ msgstr "Zurück"
 #: ledger-direct.php:38
 msgid ""
 "Ledger Direct requires PHP 8.2 or newer and has been disabled on this site."
-msgstr "Ledger Direct benötigt PHP 8.2 oder neuer und wurde auf dieser Website deaktiviert."
+msgstr ""
+"Ledger Direct benötigt PHP 8.2 oder neuer und wurde auf dieser Website "
+"deaktiviert."
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:47
 msgid "Pay directly on XRPL with LedgerDirect"
@@ -233,7 +240,9 @@ msgstr "Direkt auf dem XRPL mit LedgerDirect bezahlen"
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:100
 msgid ""
 "The XRPL wallet is not configured. Please contact the site administrator."
-msgstr "Das XRPL-Wallet ist nicht konfiguriert. Bitte wenden Sie sich an den Administrator der Website."
+msgstr ""
+"Das XRPL-Wallet ist nicht konfiguriert. Bitte wenden Sie sich an den "
+"Administrator der Website."
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:105
 #: includes/assets/js/frontend/blocks.js:1
@@ -260,7 +269,13 @@ msgstr "Bitte wählen Sie eine gültige Zahlungsmethode."
 msgid ""
 "This payment method is temporarily unavailable. Please try again or choose "
 "another payment method."
-msgstr "Diese Zahlungsmethode ist vorübergehend nicht verfügbar. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsmethode."
+msgstr ""
+"Diese Zahlungsmethode ist vorübergehend nicht verfügbar. Bitte versuchen Sie "
+"es erneut oder wählen Sie eine andere Zahlungsmethode."
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "LedgerDirect Payments"
+msgstr "LedgerDirect-Zahlungen"
 
 #: includes/assets/js/frontend/blocks.js:1
 msgid "Pay with RLUSD"

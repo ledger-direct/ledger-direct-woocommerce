@@ -1,4 +1,4 @@
-.PHONY: build clean release clean-build
+.PHONY: build clean release release-dry-run clean-build
 
 EXCLUDE_VENDOR_DIRS= test tests doc docs example examples bin
 
@@ -28,6 +28,15 @@ VERSION ?=
 
 clean-build:
 	rm -rf .build
+
+# Build and verify everything the release would ship, without touching SVN
+release-dry-run: clean-build
+	chmod +x scripts/deploy-wp-org.sh
+	DRY_RUN=1 \
+	PLUGIN_SLUG=$(PLUGIN_SLUG) \
+	PLUGIN_MAIN=$(PLUGIN_MAIN) \
+	VERSION=$(VERSION) \
+	./scripts/deploy-wp-org.sh
 
 release: clean-build
 	chmod +x scripts/deploy-wp-org.sh

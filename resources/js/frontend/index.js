@@ -6,10 +6,7 @@ import React, { useState, useEffect } from 'react';
 
 const settings = getSetting( 'ledger-direct_data', {} );
 
-const defaultLabel = __(
-    'LedgerDirect Payments',
-    'woo-gutenberg-products-block'
-);
+const defaultLabel = __( 'LedgerDirect Payments', 'ledger-direct' );
 
 const label = decodeEntities( settings.title ) || defaultLabel;
 
@@ -121,9 +118,6 @@ const LedgerDirect = {
     supports: {
         features: settings.supports,
     },
-    getPaymentMethodData: () => ({
-        ledger_direct_payment_type: 'rlusd',
-    }),
 };
 
 registerPaymentMethod( LedgerDirect );
