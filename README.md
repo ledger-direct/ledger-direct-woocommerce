@@ -18,7 +18,7 @@ GitHub: https://github.com/ledger-direct/ledger-direct-woocommerce
 ## Compatibility
 - WordPress 6.7 or newer (tested up to 7.1)
 - WooCommerce (latest stable recommended)
-- PHP 8.1 or newer
+- PHP 8.2 or newer
 
 ![Payment Page](payment_page.png)
 
