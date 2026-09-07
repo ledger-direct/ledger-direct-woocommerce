@@ -5,7 +5,7 @@
         stopOnFailure="false"
         displayDetailsOnTestsThatTriggerWarnings="true"
 >
-  <!-- Needs network access and the XRPL testnet faucet; run explicitly with: --group external-http -->
+  <!-- Needs network access and the XRPL testnet faucet; run explicitly by passing the phpunit group option with external-http -->
   <groups>
     <exclude>
       <group>external-http</group>
