@@ -201,6 +201,7 @@ class LedgerDirectInstall {
      * @return void
      */
     public static function deactivate(): void {
+        \Hardcastle\LedgerDirect\Cron\SettlePendingOrders::unschedule();
         flush_rewrite_rules();
     }
 
