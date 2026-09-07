@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LedgerDirect for WooCommerce 0.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledger-direct\n"
-"POT-Creation-Date: 2025-08-18T17:48:21+00:00\n"
-"PO-Revision-Date: 2023-11-28 16:13+0100\n"
+"POT-Creation-Date: 2026-09-07T09:31:11+00:00\n"
+"PO-Revision-Date: 2026-09-07 12:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -16,13 +16,13 @@ msgstr ""
 "X-Domain: ledger-direct\n"
 
 #. Plugin Name of the plugin
-#: ledger-direct.php includes/admin/views/settings_html.php:6
-msgid "LedgerDirect for WooCommerce"
-msgstr "LedgerDirect für WooCommerce"
+#: ledger-direct.php
+msgid "Ledger Direct"
+msgstr ""
 
 #. Plugin URI of the plugin
 #: ledger-direct.php
-msgid "https://www.ledger-direct.com"
+msgid "https://github.com/ledger-direct/ledger-direct-woocommerce"
 msgstr ""
 
 #. Description of the plugin
@@ -37,141 +37,268 @@ msgstr ""
 
 #. Author URI of the plugin
 #: ledger-direct.php
-msgid "https://hardcastle.technology"
+msgid "https://www.ledger-direct.com"
 msgstr ""
+
+#: includes/admin/class-ledger-direct-admin.php:12
+msgid "XRPL Network"
+msgstr "XRPL-Netzwerk"
 
 #: includes/admin/class-ledger-direct-admin.php:13
 msgid "Choose the XRPL Network"
 msgstr "XRPL Netzwerk wählen"
 
-#: includes/class-ledger-direct.php:184
-msgid "Payment method updated successfully"
-msgstr "Zahlungsmethode erfolgreich aktualisiert"
+#: includes/admin/class-ledger-direct-admin.php:23
+msgid "Merchant Account - MAINNET"
+msgstr "Händler-Konto – MAINNET"
 
-#: includes/views/ledger-direct_html.php:28
+#: includes/admin/class-ledger-direct-admin.php:25
+msgid "Merchant Account address (MAINNET) - receiving account"
+msgstr "Adresse des Händler-Kontos (MAINNET) – Empfangskonto"
+
+#: includes/admin/class-ledger-direct-admin.php:30
+msgid "Merchant Account - TESTNET"
+msgstr "Händler-Konto – TESTNET"
+
+#: includes/admin/class-ledger-direct-admin.php:32
+msgid "Merchant Account address (TESTNET) - receiving account"
+msgstr "Adresse des Händler-Kontos (TESTNET) – Empfangskonto"
+
+#: includes/admin/class-ledger-direct-admin.php:37
+msgid "Enable RLUSD payments title"
+msgstr "RLUSD-Zahlungen"
+
+#: includes/admin/class-ledger-direct-admin.php:39
+msgid "Enable RLUSD payments"
+msgstr "RLUSD-Zahlungen aktivieren"
+
+#: includes/admin/class-ledger-direct-admin.php:44
+msgid "Enable USDC payments title"
+msgstr "USDC-Zahlungen"
+
+#: includes/admin/class-ledger-direct-admin.php:46
+msgid "Enable USDC payments"
+msgstr "USDC-Zahlungen aktivieren"
+
+#: includes/admin/class-ledger-direct-admin.php:51
+msgid "LedgerDirect Payment Page Title"
+msgstr "Titel der LedgerDirect-Zahlungsseite"
+
+#: includes/admin/class-ledger-direct-admin.php:53
+msgid "Title for LedgerDirect Payment Page"
+msgstr "Titel für die LedgerDirect-Zahlungsseite"
+
+#: includes/admin/class-ledger-direct-admin.php:58
+msgid "XRP quote expiry"
+msgstr "Gültigkeit des Kurses"
+
+#: includes/admin/class-ledger-direct-admin.php:60
+msgid "Validity of the quote in minutes"
+msgstr "Gültigkeit des Kurses in Minuten"
+
+#: includes/admin/views/settings_html.php:9
+msgid "LedgerDirect for WooCommerce"
+msgstr "LedgerDirect für WooCommerce"
+
+#: includes/class-ledger-direct.php:147 includes/class-ledger-direct.php:148
+msgid "LedgerDirect"
+msgstr "LedgerDirect"
+
+#: includes/class-ledger-direct.php:249
+msgid "Payment gateway is not available."
+msgstr "Die Zahlungsmethode ist nicht verfügbar."
+
+#: includes/class-ledger-direct.php:269
+msgid ""
+"An error occurred while processing your payment. Please contact support."
+msgstr ""
+"Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte wenden "
+"Sie sich an den Support."
+
+#: includes/views/ledger-direct_html.php:39
 msgid "Order not found"
 msgstr "Bestellung nicht gefunden"
 
-#: includes/views/ledger-direct_html.php:29
+#: includes/views/ledger-direct_html.php:40
 msgid "The requested order could not be found."
 msgstr "Die angegebene Bestellung konnte nicht gefunden werden."
 
-#: includes/views/ledger-direct_html.php:30
-#: includes/views/ledger-direct_html.php:73
-#: includes/views/ledger-direct_html.php:97
+#: includes/views/ledger-direct_html.php:41
+#: includes/views/ledger-direct_html.php:66
 msgid "Return to homepage"
 msgstr "Zurück zur Startseite"
 
-#: includes/views/ledger-direct_html.php:61
+#. translators: 1: order number, 2: order status label
+#: includes/views/ledger-direct_html.php:52
+#, php-format
+msgid "Order #%1$d is already %2$s."
+msgstr "Die Bestellung #%1$d ist bereits %2$s."
+
+#: includes/views/ledger-direct_html.php:54
 msgid "Payment not required"
 msgstr "Bezahlung nicht erforderlich"
 
-#: includes/views/ledger-direct_html.php:62
-#, php-format
-msgid "Order #%d is already %s."
-msgstr "Die Bestellung #%d ist bereits %s."
-
-#: includes/views/ledger-direct_html.php:63
+#: includes/views/ledger-direct_html.php:56
 msgid "View Order"
 msgstr "Bestelldetails ansehen"
 
-#: includes/views/ledger-direct_html.php:71
+#: includes/views/ledger-direct_html.php:64
 msgid "Invalid payment method"
 msgstr "Ungültige Zahlungsmethode"
 
-#: includes/views/ledger-direct_html.php:72
+#: includes/views/ledger-direct_html.php:65
 msgid "This order was not paid with LedgerDirect."
 msgstr "Diese Bestellung wurde nicht mit LedgerDirect bezahlt."
 
-#: includes/views/ledger-direct_html.php:95
-#, fuzzy
-msgid "Invalid Payment Method"
-msgstr "Ungültige Zahlungsmethode"
-
-#: includes/views/ledger-direct_html.php:96
-#, fuzzy
-msgid "This order was not paid with Ledger Direct."
-msgstr "Diese Bestellung wurde nicht mit LedgerDirect bezahlt."
-
-#: includes/views/ledger-direct_html.php:137
+#. translators: %s: XRP amount to send
+#: includes/views/ledger-direct_html.php:138
 #, php-format
-msgid "Please send <strong>%s</strong> XRP to the following address:"
-msgstr "Bitte zahlen Sie %s XRP an folgende Adresse :"
+msgid "Please send %s XRP to the following address:"
+msgstr "Bitte senden Sie %s XRP an folgende Adresse:"
 
-#: includes/views/ledger-direct_html.php:146
-#: includes/views/ledger-direct_html.php:162
+#. translators: 1: token amount, 2: token symbol (RLUSD, USDC)
+#: includes/views/ledger-direct_html.php:149
 #, php-format
-msgid "Please send <strong>%s</strong> <strong>%s</strong> to the following address:"
-msgstr "Bitte zahlen Sie %s %s an folgende Adresse :"
+msgid "Please send %1$s %2$s to the following address:"
+msgstr "Bitte senden Sie %1$s %2$s an folgende Adresse:"
 
-#: includes/views/ledger-direct_html.php:188
+#: includes/views/ledger-direct_html.php:183
 msgid "Account"
 msgstr "Account"
 
-#: includes/views/ledger-direct_html.php:204
+#: includes/views/ledger-direct_html.php:199
 msgid "Destination Tag"
 msgstr "Destination Tag"
 
-#: includes/views/ledger-direct_html.php:222
-msgid "It is important to include the given destination tag when sending funds from your wallet."
-msgstr "Der Destination Tag muss für eine korrekte Zuordnung der Zahlung mit angegeben werden."
+#: includes/views/ledger-direct_html.php:217
+msgid ""
+"It is important to include the given destination tag when sending funds from "
+"your wallet."
+msgstr ""
+"Der Destination Tag muss für eine korrekte Zuordnung der Zahlung mit "
+"angegeben werden."
 
-#: includes/views/ledger-direct_html.php:237
+#. translators: %s: token symbol (RLUSD, USDC)
+#: includes/views/ledger-direct_html.php:230
+#, php-format
+msgid ""
+"A payment arrived, but not in the requested %s. Please send the amount below "
+"in the requested token."
+msgstr ""
+"Es ist eine Zahlung eingegangen, jedoch nicht in %s. Bitte senden Sie den "
+"unten stehenden Betrag im angeforderten Token."
+
+#. translators: 1: amount received, 2: amount requested, 3: amount still missing, 4: asset symbol
+#: includes/views/ledger-direct_html.php:233
+#, php-format
+msgid "Received %1$s of %2$s %4$s so far. Please send the remaining %3$s %4$s."
+msgstr ""
+"Bisher %1$s von %2$s %4$s erhalten. Bitte senden Sie die fehlenden %3$s %4$s."
+
+#: includes/views/ledger-direct_html.php:244
 msgid "Check payment processing"
 msgstr "Zahlungseingang prüfen"
 
-#: includes/views/ledger-direct_html.php:246
-#: includes/views/ledger-direct_html.php:255
-#: includes/views/ledger-direct_html.php:264
+#: includes/views/ledger-direct_html.php:252
 msgid "Order ID"
 msgstr "Bestellnummer"
 
-#: includes/views/ledger-direct_html.php:247
-#: includes/views/ledger-direct_html.php:249
-#: includes/views/ledger-direct_html.php:256
-#: includes/views/ledger-direct_html.php:258
-#: includes/views/ledger-direct_html.php:265
+#: includes/views/ledger-direct_html.php:253
+#: includes/views/ledger-direct_html.php:255
 msgid "Total"
 msgstr "Preis"
 
-#: includes/views/ledger-direct_html.php:250
-#: includes/views/ledger-direct_html.php:259
+#: includes/views/ledger-direct_html.php:256
 msgid "Exchange rate"
 msgstr "Wechselkurs"
 
-#: includes/views/ledger-direct_html.php:252
-#: includes/views/ledger-direct_html.php:261
-#: includes/views/ledger-direct_html.php:267
-#, fuzzy
+#: includes/views/ledger-direct_html.php:258
 msgid "Network"
 msgstr "Netzwerk"
 
-#: includes/views/ledger-direct_html.php:276
+#. translators: %d: minutes
+#: includes/views/ledger-direct_html.php:261
+#, php-format
+msgid "Quote valid for %d more minutes"
+msgstr "Kurs noch %d Minuten gültig"
+
+#: includes/views/ledger-direct_html.php:269
 msgid "Back"
 msgstr "Zurück"
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:55
+#: ledger-direct.php:38
+msgid ""
+"Ledger Direct requires PHP 8.2 or newer and has been disabled on this site."
+msgstr ""
+"Ledger Direct benötigt PHP 8.2 oder neuer und wurde auf dieser Website "
+"deaktiviert."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:47
 msgid "Pay directly on XRPL with LedgerDirect"
 msgstr "Direkt auf dem XRPL mit LedgerDirect bezahlen"
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:112
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:100
+msgid ""
+"The XRPL wallet is not configured. Please contact the site administrator."
+msgstr ""
+"Das XRPL-Wallet ist nicht konfiguriert. Bitte wenden Sie sich an den "
+"Administrator der Website."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:105
+#: includes/assets/js/frontend/blocks.js:1
 msgid "Choose payment method"
 msgstr "Zahlungsmethode wählen"
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:116
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:109
 msgid "XRP"
-msgstr ""
+msgstr "XRP"
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:126
-msgid "RLUSD Stablecoin"
-msgstr ""
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:115
+msgid "RLUSD Stablecoin (XRPL)"
+msgstr "RLUSD-Stablecoin (XRPL)"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:122
+msgid "USDC Stablecoin (XRPL)"
+msgstr "USDC-Stablecoin (XRPL)"
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:141
 msgid "Please select a valid payment method."
 msgstr "Bitte wählen Sie eine gültige Zahlungsmethode."
 
-#~ msgid "Accept XRPL payments"
-#~ msgstr "Zahlungen via XRPL empfangen"
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:168
+msgid ""
+"This payment method is temporarily unavailable. Please try again or choose "
+"another payment method."
+msgstr ""
+"Diese Zahlungsmethode ist vorübergehend nicht verfügbar. Bitte versuchen Sie "
+"es erneut oder wählen Sie eine andere Zahlungsmethode."
 
-#~ msgid "Receive XRP and any supported currencies into your XRPL account"
-#~ msgstr "Erhalten sie XRP und alle unterstützen Token auf ihrem XRPL Account"
+#: includes/assets/js/frontend/blocks.js:1
+msgid "LedgerDirect Payments"
+msgstr "LedgerDirect-Zahlungen"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with RLUSD"
+msgstr "Mit RLUSD bezahlen"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with USDC"
+msgstr "Mit USDC bezahlen"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with XRP"
+msgstr "Mit XRP bezahlen"
+
+#, fuzzy
+#~ msgid "Invalid Payment Method"
+#~ msgstr "Ungültige Zahlungsmethode"
+
+#, fuzzy
+#~ msgid "This order was not paid with Ledger Direct."
+#~ msgstr "Diese Bestellung wurde nicht mit LedgerDirect bezahlt."
+
+#, php-format
+#~ msgid ""
+#~ "Please send <strong>%s</strong> <strong>%s</strong> to the following "
+#~ "address:"
+#~ msgstr "Bitte zahlen Sie %s %s an folgende Adresse :"

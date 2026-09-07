@@ -10,6 +10,7 @@ BUILD_DIR=${BUILD_DIR:-"${PLUGIN_DIR}/.build"}
 DIST_DIR=${DIST_DIR:-"${BUILD_DIR}/dist"}
 SVN_DIR=${SVN_DIR:-"${BUILD_DIR}/svn"}
 VERSION=${VERSION:-}
+DRY_RUN=${DRY_RUN:-}   # set to 1 to build and verify without touching SVN
 
 info() { echo -e "\033[1;34m[info]\033[0m $*"; }
 warn() { echo -e "\033[1;33m[warn]\033[0m $*"; }
@@ -41,6 +42,59 @@ if [[ "${STABLE}" != "${VERSION}" ]]; then
   exit 1
 fi
 
+# Only a committed state gets released: the dist is an rsync of the working
+# tree, so anything uncommitted (or a stale build) would ship unnoticed.
+if command -v git >/dev/null && git -C "${PLUGIN_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  if [[ -n "$(git -C "${PLUGIN_DIR}" status --porcelain --untracked-files=no)" ]]; then
+    err "Working tree has uncommitted changes; commit or stash them before releasing."
+    git -C "${PLUGIN_DIR}" status --short --untracked-files=no
+    exit 1
+  fi
+fi
+
+# Rebuild the checkout-block bundle from source and insist that the result
+# matches what is committed - a forgotten `npm run build` must not ship.
+if [[ -f "${PLUGIN_DIR}/package.json" ]]; then
+  command -v npm >/dev/null || { err "npm not found (needed to verify the checkout-block build)"; exit 1; }
+  info "Building checkout-block assets"
+  ( cd "${PLUGIN_DIR}" && npm install --no-audit --no-fund --silent && npm run build --silent )
+  if [[ -n "$(git -C "${PLUGIN_DIR}" status --porcelain -- includes/assets)" ]]; then
+    err "Built assets differ from the committed ones; run 'npm run build' and commit includes/assets first."
+    git -C "${PLUGIN_DIR}" status --short -- includes/assets
+    exit 1
+  fi
+fi
+
+# Translations: the block needs JSON catalogs generated from the .po files.
+# Regenerate when WP-CLI is available; otherwise refuse to ship a JSON that
+# is older than its .po.
+if command -v wp >/dev/null; then
+  info "Regenerating JSON translation catalogs"
+  ( cd "${PLUGIN_DIR}" && wp i18n make-json languages --no-purge --quiet )
+  if [[ -n "$(git -C "${PLUGIN_DIR}" status --porcelain -- languages)" ]]; then
+    err "Translation catalogs changed on regeneration; commit languages/ first."
+    git -C "${PLUGIN_DIR}" status --short -- languages
+    exit 1
+  fi
+else
+  for po in "${PLUGIN_DIR}"/languages/*.po; do
+    [[ -f "${po}" ]] || continue
+    locale=$(basename "${po}" .po)
+    if ! ls "${PLUGIN_DIR}/languages/${locale}-"*.json >/dev/null 2>&1; then
+      err "No JSON translation catalog for ${locale}; run 'wp i18n make-json languages --no-purge' and commit."
+      exit 1
+    fi
+    if [[ -n "$(find "${PLUGIN_DIR}/languages" -name "${locale}-*.json" ! -newer "${po}")" ]]; then
+      err "JSON translation catalog for ${locale} is older than ${po}; regenerate and commit."
+      exit 1
+    fi
+    if [[ "${PLUGIN_DIR}/languages/${locale}.mo" -ot "${po}" ]]; then
+      err "${locale}.mo is older than ${po}; run msgfmt and commit."
+      exit 1
+    fi
+  done
+fi
+
 # Prepare build directories
 rm -rf "${BUILD_DIR}" && mkdir -p "${DIST_DIR}" "${SVN_DIR}"
 
@@ -68,6 +122,11 @@ rsync "${RSYNC_ARGS[@]}" "${PLUGIN_DIR}/" "${DIST_DIR}/"
 # Sanity checks
 [[ -f "${DIST_DIR}/${PLUGIN_MAIN}" ]] || { err "Main plugin file missing in dist (${PLUGIN_MAIN})"; exit 1; }
 [[ -f "${DIST_DIR}/readme.txt" ]] || { err "readme.txt missing in dist"; exit 1; }
+
+if [[ -n "${DRY_RUN}" ]]; then
+  info "DRY_RUN set - dist is ready in ${DIST_DIR}, not touching SVN."
+  exit 0
+fi
 
 info "Checking out WordPress.org SVN"
 svn checkout "${SVN_URL}" "${SVN_DIR}"
