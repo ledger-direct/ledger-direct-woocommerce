@@ -5,6 +5,12 @@
         stopOnFailure="false"
         displayDetailsOnTestsThatTriggerWarnings="true"
 >
+  <!-- Needs network access and the XRPL testnet faucet; run explicitly with: --group external-http -->
+  <groups>
+    <exclude>
+      <group>external-http</group>
+    </exclude>
+  </groups>
   <testsuites>
     <testsuite name="tests">
       <directory>tests</directory>
