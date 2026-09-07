@@ -352,16 +352,8 @@ class LedgerDirect
      * @return void
      */
     public function enqueue_public_styles(): void {
-        wp_enqueue_style(
-            'ledger-direct',
-            plugin_dir_url( __FILE__ ) . '../public/css/ledger-direct.css',
-            []
-        );
-        wp_enqueue_style(
-            'qr-bundle',
-            plugin_dir_url( __FILE__ ) . '../public/css/qr-bundle.min.css',
-            []
-        );
+        wp_enqueue_style('ledger-direct', ledger_direct_get_public_url('/public/css/ledger-direct.css'), [], self::asset_version('public/css/ledger-direct.css'));
+        wp_enqueue_style('qr-bundle', ledger_direct_get_public_url('/public/css/qr-bundle.min.css'), [], self::asset_version('public/css/qr-bundle.min.css'));
     }
 
     /**
@@ -370,16 +362,21 @@ class LedgerDirect
      * @return void
      */
     public function enqueue_public_scripts(): void {
-        wp_enqueue_script(
-            'jquery-qrcode',
-            plugin_dir_url( __FILE__ ) . '../public/js/jquery-qrcode.min.js',
-            ['jquery']
-        );
-        wp_enqueue_script(
-            'ledger-direct',
-            plugin_dir_url( __FILE__ ) . '../public/js/ledger-direct.js',
-            ['jquery', 'jquery-qrcode']
-        );
+        wp_enqueue_script('jquery-qrcode', ledger_direct_get_public_url('/public/js/jquery-qrcode.min.js'), ['jquery'], self::asset_version('public/js/jquery-qrcode.min.js'), true);
+        wp_enqueue_script('ledger-direct', ledger_direct_get_public_url('/public/js/ledger-direct.js'), ['jquery', 'jquery-qrcode'], self::asset_version('public/js/ledger-direct.js'), true);
+    }
+
+    /**
+     * File modification time as the asset version, so browsers pick up a
+     * changed script or stylesheet after an update instead of a cached copy.
+     *
+     * @param string $relative_path Path relative to the plugin root.
+     * @return string
+     */
+    private static function asset_version(string $relative_path): string {
+        $file = LEDGER_DIRECT_PLUGIN_FILE_PATH . $relative_path;
+
+        return file_exists($file) ? (string) filemtime($file) : '1.0.0';
     }
 
 }

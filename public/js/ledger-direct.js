@@ -74,24 +74,62 @@
     /**
      * Copies the value of the given element to the clipboard.
      *
+     * navigator.clipboard only exists in secure contexts (HTTPS or
+     * localhost). On a plain-HTTP shop the legacy execCommand path still
+     * works, so try the modern API first and fall back.
+     *
      * @param element
      * @param icon
      * @param event
      */
     function copyToClipboard(element, icon, event) {
-        if (typeof navigator.clipboard === 'undefined') {
-            console.log('Clipboard API not supported - is this a secure context?');
+        const value = element.attr("data-value");
+        const message = 'copied!';
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).then(() => {
+                showCopyFeedback(message, icon);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showCopyFeedback('Failed to copy to clipboard', icon, true);
+            });
 
             return;
         }
 
-        const message = 'copied!';
-        navigator.clipboard.writeText(element.attr("data-value")).then(() => {
+        if (legacyCopy(value)) {
             showCopyFeedback(message, icon);
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
+        } else {
             showCopyFeedback('Failed to copy to clipboard', icon, true);
-        });
+        }
+    }
+
+    /**
+     * Clipboard fallback for insecure contexts: select the value in an
+     * off-screen textarea and let the browser copy the selection.
+     *
+     * @param {string} value
+     * @returns {boolean}
+     */
+    function legacyCopy(value) {
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-1000px';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        let copied = false;
+        try {
+            copied = document.execCommand('copy');
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+
+        document.body.removeChild(textarea);
+
+        return copied;
     }
 
     /**

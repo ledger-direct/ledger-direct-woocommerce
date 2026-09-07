@@ -52,7 +52,7 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
         );
 
         if ( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations( 'ledger-direct-blocks', 'woocommerce-gateway-ledger-direct', LedgerDirect::plugin_abspath() . 'languages/' );
+            wp_set_script_translations( 'ledger-direct-payments-blocks', 'ledger-direct', LedgerDirect::plugin_abspath() . 'languages/' );
         }
 
         return [ 'ledger-direct-payments-blocks' ];
