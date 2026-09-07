@@ -213,9 +213,13 @@ class LedgerDirectInstall {
     public static function uninstall(): void {
         global $wpdb;
 
+        // The destination-tag counter table is deliberately kept: it is what
+        // guarantees a tag is never issued twice for this account. A reinstall
+        // that started over would hand out tags that earlier orders already
+        // used and match a fresh order against an old payment. The tx table is
+        // a re-syncable cache and can go.
         $tables = [
             self::tx_table(),
-            self::destination_tag_table(),
             // Legacy table names from before the destination-tag table naming
             // was unified; drop them too in case an install was removed before
             // ever running the upgrade routine.

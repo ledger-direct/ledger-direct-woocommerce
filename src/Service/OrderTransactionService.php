@@ -8,9 +8,13 @@ use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntentService;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
+use Hardcastle\LedgerDirect\Core\Xrpl\XrplTransaction;
+use Hardcastle\LedgerDirect\Port\WpdbXrplTransactionRepository;
 use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
 use InvalidArgumentException;
 use LedgerDirect;
+use Psr\Log\LoggerInterface;
+use Throwable;
 use WC_Order;
 
 /**
@@ -39,16 +43,24 @@ class OrderTransactionService
 
     private LegacyPaymentIntentMapper $legacyMapper;
 
+    private WpdbXrplTransactionRepository $transactionRepository;
+
+    private LoggerInterface $logger;
+
     public function __construct(
         PaymentIntentService $paymentIntentService,
         SyncService $syncService,
         SettlementPolicy $settlementPolicy,
-        LegacyPaymentIntentMapper $legacyMapper
+        LegacyPaymentIntentMapper $legacyMapper,
+        WpdbXrplTransactionRepository $transactionRepository,
+        LoggerInterface $logger
     ) {
         $this->paymentIntentService = $paymentIntentService;
         $this->syncService = $syncService;
         $this->settlementPolicy = $settlementPolicy;
         $this->legacyMapper = $legacyMapper;
+        $this->transactionRepository = $transactionRepository;
+        $this->logger = $logger;
     }
 
     /**
@@ -120,15 +132,9 @@ class OrderTransactionService
             $this->syncService->syncTransactions($intent->destinationAccount, $intent->network);
         }
 
-        $transaction = $this->syncService->findTransaction($intent->destinationAccount, $intent->destinationTag);
+        [$transaction, $amountPaid] = $this->findPaymentFor($intent);
 
-        if ($transaction === null) {
-            return null;
-        }
-
-        $amountPaid = $transaction->getDeliveredAmount();
-
-        if ($amountPaid === null) {
+        if ($transaction === null || $amountPaid === null) {
             return null;
         }
 
@@ -137,6 +143,53 @@ class OrderTransactionService
         $this->persistPaymentIntent($order, $fulfilledIntent);
 
         return $fulfilledIntent;
+    }
+
+    /**
+     * The transaction that pays this intent: the newest one on the order's
+     * destination tag whose delivered amount has the shape of the quoted
+     * asset (a float for XRP, an issued-currency object for a stablecoin).
+     *
+     * A tag can carry more than one transaction - a payment in the wrong
+     * asset, or a stray payment from before the order was quoted. Those
+     * are logged and skipped rather than crashing the settlement, and a
+     * wrong-issuer stablecoin payment still comes through here so the
+     * settlement policy can report it as such.
+     *
+     * @return array{0: XrplTransaction|null, 1: float|array|null}
+     */
+    private function findPaymentFor(PaymentIntent $intent): array
+    {
+        $expectsIssuedCurrency = is_array($intent->amountRequested);
+
+        foreach ($this->transactionRepository->findTransactionsByTag($intent->destinationAccount, $intent->destinationTag) as $transaction) {
+            try {
+                $amountPaid = $transaction->getDeliveredAmount();
+            } catch (Throwable $exception) {
+                $this->logger->warning('Skipping a transaction with an unreadable delivered amount', [
+                    'hash' => $transaction->hash,
+                    'exception' => $exception->getMessage(),
+                ]);
+                continue;
+            }
+
+            if ($amountPaid === null) {
+                continue;
+            }
+
+            if (is_array($amountPaid) !== $expectsIssuedCurrency) {
+                $this->logger->warning('Skipping a payment in a different asset class than the one quoted', [
+                    'hash' => $transaction->hash,
+                    'destination_tag' => $intent->destinationTag,
+                    'base_asset' => $intent->baseAsset,
+                ]);
+                continue;
+            }
+
+            return [$transaction, $amountPaid];
+        }
+
+        return [null, null];
     }
 
     /**

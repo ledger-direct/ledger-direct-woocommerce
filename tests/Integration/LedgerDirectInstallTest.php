@@ -94,6 +94,20 @@ class LedgerDirectInstallTest extends TestCase
         $this->assertSame(41, (int) $wpdb->get_var("SELECT sequence FROM {$this->tagTable} WHERE destination_account = 'rDest'"));
     }
 
+    public function testUninstallKeepsTheDestinationTagCounter(): void
+    {
+        global $wpdb;
+
+        $this->dropAll();
+        LedgerDirectInstall::create_tables();
+        $wpdb->query("INSERT INTO {$this->tagTable} (destination_account, sequence) VALUES ('rDest', 99)");
+
+        LedgerDirectInstall::uninstall();
+
+        $this->assertNull($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $this->txTable)));
+        $this->assertSame(99, (int) $wpdb->get_var("SELECT sequence FROM {$this->tagTable} WHERE destination_account = 'rDest'"));
+    }
+
     public function testMaybeUpgradeIsANoopWhenAlreadyCurrent(): void
     {
         global $wpdb;

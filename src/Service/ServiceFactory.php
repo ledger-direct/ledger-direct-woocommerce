@@ -154,7 +154,9 @@ final class ServiceFactory
             $this->getPaymentIntentService(),
             $this->getSyncService(),
             $this->getSettlementPolicy(),
-            new LegacyPaymentIntentMapper()
+            new LegacyPaymentIntentMapper(),
+            $this->getTransactionRepository(),
+            $this->getLogger()
         );
     }
 

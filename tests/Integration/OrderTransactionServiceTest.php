@@ -221,6 +221,33 @@ class OrderTransactionServiceTest extends TestCase
         $this->assertSame('111.11', $this->service->shortfall($fulfilled));
     }
 
+    /**
+     * The tag already carried a stablecoin payment from before the order
+     * (another shop on the same wallet, an earlier test). That must not
+     * crash the sync, and the later XRP payment must be the one that counts.
+     */
+    public function testAStrayPaymentInAnotherAssetClassIsSkippedInFavourOfTheRealOne(): void
+    {
+        $order = $this->order();
+        $intent = $this->service->prepareOrderForXrpl($order, 'xrp');
+
+        $this->network->addIssuedCurrencyPayment($intent->destinationTag, [
+            'currency' => '524C555344000000000000000000000000000000',
+            'value' => '5',
+            'issuer' => 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+        ], 'HASH-STRAY', 90000000);
+
+        $this->assertNull($this->service->syncOrderTransactionWithXrpl($order));
+
+        $this->network->addXrpPayment($intent->destinationTag, '200000000', 'HASH-REAL', 90000010);
+
+        $fulfilled = $this->service->syncOrderTransactionWithXrpl($order);
+
+        $this->assertInstanceOf(PaymentIntent::class, $fulfilled);
+        $this->assertSame('HASH-REAL', $fulfilled->hash);
+        $this->assertTrue($this->service->isSettled($fulfilled));
+    }
+
     public function testAnExpiredQuoteIsRefreshedInPlace(): void
     {
         $order = $this->order();

@@ -22,15 +22,33 @@ class WpdbXrplTransactionRepositoryTest extends TestCase
         $this->repository = new WpdbXrplTransactionRepository();
     }
 
-    public function testSequenceStartsAtZeroAndIncrementsPerAccount(): void
+    public function testSequenceStartsAtARandomOffsetAndIncrementsPerAccount(): void
     {
-        $this->assertSame(0, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
-        $this->assertSame(1, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
-        $this->assertSame(2, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
+        $first = $this->repository->nextDestinationTagSequence(self::ACCOUNT);
 
-        // A different account has its own counter.
-        $this->assertSame(0, $this->repository->nextDestinationTagSequence('rAnotherAccount'));
-        $this->assertSame(3, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
+        $this->assertGreaterThanOrEqual(0, $first);
+        $this->assertLessThan(2147483648, $first);
+        $this->assertSame($first + 1, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
+        $this->assertSame($first + 2, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
+
+        // A different account has its own counter, with its own start.
+        $other = $this->repository->nextDestinationTagSequence('rAnotherAccount');
+        $this->assertNotSame($first, $other);
+        $this->assertSame($first + 3, $this->repository->nextDestinationTagSequence(self::ACCOUNT));
+    }
+
+    public function testFindTransactionsByTagReturnsNewestFirst(): void
+    {
+        $this->repository->saveTransactions([
+            $this->transaction('HASH-OLD', 5, '100'),
+            $this->transaction('HASH-NEW', 5, '200'),
+            $this->transaction('HASH-OTHER-TAG', 6, '300'),
+        ]);
+
+        $found = $this->repository->findTransactionsByTag(self::ACCOUNT, 5);
+
+        $this->assertSame(['HASH-NEW', 'HASH-OLD'], array_map(static fn ($t) => $t->hash, $found));
+        $this->assertSame([], $this->repository->findTransactionsByTag(self::ACCOUNT, 7));
     }
 
     public function testATagAboveTheSigned32BitRangeSurvivesStorageAndLookup(): void
