@@ -2,7 +2,8 @@
 
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
-use Hardcastle\LedgerDirect\Service\OrderTransactionService;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
+use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
 class LedgerDirect
@@ -105,8 +106,6 @@ class LedgerDirect
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
         add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_scripts'] );
 
-        add_action( 'wp_ajax_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method'] );
-        add_action( 'wp_ajax_nopriv_ledger_direct_change_payment_method', [$this, 'ajax_change_payment_method'] );
         add_filter('query_vars', [$this, 'add_query_vars']);
     }
 
@@ -151,41 +150,6 @@ class LedgerDirect
              admin_url('admin.php?page=wc-settings&tab=checkout&section=ledger-direct'),
             null
         );
-    }
-
-    /**
-     * Handle AJAX request to change payment method
-     */
-    public function ajax_change_payment_method(): void {
-        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
-        $order_id = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
-        $payment_type = isset($_POST['payment_type']) ? sanitize_text_field(wp_unslash($_POST['payment_type'])) : '';
-
-        if (!wp_verify_nonce($nonce, 'ledger_direct_nonce')) {
-            wp_die('Security check failed');
-        }
-
-        if (!in_array($payment_type, ['xrp', 'token', 'rlusd'], true)) {
-            wp_send_json_error('Invalid payment type');
-        }
-
-        $order = wc_get_order($order_id);
-        if (!$order) {
-            wp_send_json_error('Order not found');
-        }
-
-        $order->update_meta_data("_ledger_direct_payment_type", $payment_type);
-        $order->save();
-
-        $container = ledger_direct_get_dependency_injection_container();
-        $orderTransactionService = $container->get(OrderTransactionService::class);
-        $payment_data = $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
-
-        wp_send_json_success([
-            'payment_type' => $payment_type,
-            'payment_data' => $payment_data,
-            'message' => __('Payment method updated successfully', 'ledger-direct')
-        ]);
     }
 
     /**
@@ -287,24 +251,54 @@ class LedgerDirect
                 exit;
             }
 
-            try {
-                $is_paid = $gateway->sync_and_check_payment($order);
-            } catch (Exception $e) {
-                wc_add_notice(__('An error occurred while processing your payment. Please contact support.', 'ledger-direct'), 'error');
-                self::log('Error syncing payment for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
-                wp_safe_redirect(wc_get_checkout_url());
-                exit;
-            }
-
-            if ($is_paid) {
-                $order->payment_complete();
-                WC()->cart->empty_cart();
+            if ($order->is_paid() || !$order->needs_payment()) {
                 wp_safe_redirect($gateway->get_return_url($order));
                 exit;
             }
 
-            global $ledger_direct_order;
+            $service = ServiceFactory::getInstance()->getOrderTransactionService();
+
+            try {
+                $intent = $service->readPaymentIntent($order);
+            } catch (Exception $e) {
+                self::log('Unreadable payment record on order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
+                $intent = null;
+            }
+
+            if ($intent === null) {
+                wc_add_notice(__('An error occurred while processing your payment. Please contact support.', 'ledger-direct'), 'error');
+                wp_safe_redirect(wc_get_checkout_url());
+                exit;
+            }
+
+            $fulfilled = $gateway->sync_payment($order);
+
+            if ($fulfilled instanceof PaymentIntent) {
+                $intent = $fulfilled;
+
+                if ($gateway->is_settled($fulfilled)) {
+                    $order->payment_complete((string) $fulfilled->hash);
+                    if (WC()->cart) {
+                        WC()->cart->empty_cart();
+                    }
+                    wp_safe_redirect($gateway->get_return_url($order));
+                    exit;
+                }
+            } else {
+                // Nothing arrived yet: an expired quote is refreshed in place,
+                // keeping the destination account and tag the customer may
+                // already have in their wallet.
+                try {
+                    $intent = $service->refreshExpiredQuote($order, $intent);
+                } catch (Exception $e) {
+                    self::log('Could not refresh the quote for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
+                }
+            }
+
+            global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_shortfall;
             $ledger_direct_order = $order;
+            $ledger_direct_intent = $intent;
+            $ledger_direct_shortfall = $service->shortfall($intent);
 
             $this->enqueue_public_styles();
             $this->enqueue_public_scripts();
@@ -329,42 +323,10 @@ class LedgerDirect
      * @return WC_Order|false
      */
     private function get_order_by_order_key(string $order_key) {
-        $order = wc_get_order($order_key);
+        $order = wc_get_order(wc_get_order_id_by_order_key($order_key));
 
         if ($order && $order->get_order_key() === $order_key) {
             return $order;
-        }
-
-        // Fallback: Manual DB search
-        global $wpdb;
-
-        // // Fallback: Manual DB search for HPOS
-        if (class_exists('Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore')) {
-            $order_id = $wpdb->get_var($wpdb->prepare(
-                "SELECT order_id FROM {$wpdb->prefix}wc_order_operational_data WHERE order_key = %s",
-                $order_key
-            ));
-
-            if ($order_id) {
-                $order = wc_get_order($order_id);
-                if ($order) {
-                    return $order;
-                }
-            }
-        }
-
-        // Fallback: Legacy Post Meta
-        $order_id = $wpdb->get_var($wpdb->prepare(
-            "SELECT post_id FROM {$wpdb->postmeta} 
-         WHERE meta_key = '_order_key' AND meta_value = %s",
-            $order_key
-        ));
-
-        if ($order_id) {
-            $order = wc_get_order($order_id);
-            if ($order) {
-                return $order;
-            }
         }
 
         return false;

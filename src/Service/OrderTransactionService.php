@@ -4,278 +4,200 @@ namespace Hardcastle\LedgerDirect\Service;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-use DI\DependencyException;
-use DI\NotFoundException;
-use Exception;
-use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
-use Hardcastle\LedgerDirect\Provider\RlusdPriceProvider;
-use Hardcastle\LedgerDirect\Provider\UsdcPriceProvider;
-use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
-use Hardcastle\LedgerDirect\Xrpl\Stablecoin\RLUSD;
-use Hardcastle\LedgerDirect\Xrpl\Stablecoin\USDC;
-use Hardcastle\LedgerDirect\Xrpl\XrpAmount;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentIntentService;
+use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
+use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
+use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
+use InvalidArgumentException;
 use LedgerDirect;
 use WC_Order;
 
+/**
+ * The WooCommerce side of a LedgerDirect payment: the payment record
+ * (a core PaymentIntent) lives in the order's metadata under
+ * {@see LedgerDirect::META_KEY}, and this service reads and writes it.
+ *
+ * Everything about *what* is owed - exchange rate, requested amount,
+ * destination tag, matching an on-ledger payment, whether it settles -
+ * comes from hardcastle/ledger-direct-core and is not recomputed here.
+ */
 class OrderTransactionService
 {
-    public const XRPL_METADATA_VERSION = 1.0;
-    public const DEFAULT_EXPIRY = 60 * 15; // 15 minutes
+    /** Checkout radio value → core base asset. */
+    public const BASE_ASSET_BY_PAYMENT_TYPE = [
+        'xrp' => 'XRP',
+        'rlusd' => 'RLUSD',
+        'usdc' => 'USDC',
+    ];
 
-    public static self|null $_instance = null;
+    private PaymentIntentService $paymentIntentService;
 
-    private XrplTxService $xrplTxService;
+    private SyncService $syncService;
 
-    private CryptoPriceProviderInterface $priceProvider;
+    private SettlementPolicy $settlementPolicy;
 
-    private array $pluginConfig;
+    private LegacyPaymentIntentMapper $legacyMapper;
 
-    public function __construct(XrplTxService $xrplTxService, CryptoPriceProviderInterface $priceProvider)
-    {
-        $this->xrplTxService = $xrplTxService;
-        $this->priceProvider = $priceProvider;
-        $this->pluginConfig = ledger_direct_get_configuration();
+    public function __construct(
+        PaymentIntentService $paymentIntentService,
+        SyncService $syncService,
+        SettlementPolicy $settlementPolicy,
+        LegacyPaymentIntentMapper $legacyMapper
+    ) {
+        $this->paymentIntentService = $paymentIntentService;
+        $this->syncService = $syncService;
+        $this->settlementPolicy = $settlementPolicy;
+        $this->legacyMapper = $legacyMapper;
     }
 
     /**
-     * Get Crypto price for Order
+     * Quotes the order in the asset the customer chose and stores the
+     * resulting PaymentIntent on the order.
      *
-     * @param WC_Order $order
-     * @param $cryptoCode
-     * @param string|null $network
-     * @return array
-     * @throws DependencyException
-     * @throws NotFoundException
+     * An intent already on the order is handed to the core so a repeated
+     * attempt (or a refreshed quote) keeps its destination account and tag -
+     * the customer may already be looking at those, or have a payment in
+     * flight.
+     *
+     * @param string $paymentType 'xrp' | 'rlusd' | 'usdc' (checkout value), or a core base asset.
+     * @throws \Hardcastle\LedgerDirect\Core\Payment\AssetNotAcceptedException
+     * @throws \Hardcastle\LedgerDirect\Core\Price\PriceUnavailableException
      */
-    public function getCryptoPriceForOrder(WC_Order $order, $cryptoCode, ?string $network = null): array
+    public function prepareOrderForXrpl(WC_Order $order, string $paymentType): PaymentIntent
     {
-        $orderTotal = $order->get_total();
-        $currency = $order->get_currency();
+        $baseAsset = self::BASE_ASSET_BY_PAYMENT_TYPE[strtolower($paymentType)] ?? strtoupper($paymentType);
 
-        if($cryptoCode === 'XRP') {
-            $exchangeRate = $this->priceProvider->getCurrentExchangeRate($currency);
-            if (!$exchangeRate || $exchangeRate <= 0) {
-                throw new Exception('Invalid exchange rate retrieved for currency: ' . esc_html($currency));
-            }
-            $amountRequested = round($orderTotal / $exchangeRate, 2, PHP_ROUND_HALF_UP);
-        } elseif ($cryptoCode === 'RLUSD') {
-            $container = ledger_direct_get_dependency_injection_container();
-            $priceProvider = $container->get(RlusdPriceProvider::class);
-            $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
-            $amountRequested = RLUSD::getAmount(
-                $network,
-                (string)ledger_direct_round_stable_coin($orderTotal / $exchangeRate)
-            );
-        } elseif ($cryptoCode === 'USDC') {
-            $container = ledger_direct_get_dependency_injection_container();
-            $priceProvider = $container->get(UsdcPriceProvider::class);
-            $exchangeRate = $priceProvider->getCurrentExchangeRate($currency);
-            $amountRequested = USDC::getAmount(
-                $network,
-                (string)ledger_direct_round_stable_coin($orderTotal / $exchangeRate)
-            );
-        } else {
-            throw new Exception('Unsupported crypto code: ' . esc_html($cryptoCode));
+        $intent = $this->paymentIntentService->quoteForOrder(
+            (float) $order->get_total(),
+            $order->get_currency(),
+            $baseAsset,
+            $this->readReusablePaymentIntent($order)
+        );
+
+        $this->persistPaymentIntent($order, $intent);
+
+        return $intent;
+    }
+
+    /**
+     * Re-quotes an expired, still unpaid intent in place: same destination
+     * account and tag, fresh rate, amount and expiry. Returns the intent
+     * to display, which is the existing one while it is valid or fulfilled.
+     */
+    public function refreshExpiredQuote(WC_Order $order, PaymentIntent $intent): PaymentIntent
+    {
+        if ($intent->amountPaid !== null || $intent->expiry === null || $intent->expiry > time()) {
+            return $intent;
         }
 
-        return [
-            'base_asset' => $cryptoCode,
-            'quote_currency' => $currency,
-            'pairing' => $cryptoCode . '/' . $currency,
-            'exchange_rate' => $exchangeRate,
-            'amount_requested' => $amountRequested
-        ];
+        return $this->prepareOrderForXrpl($order, $intent->baseAsset);
     }
 
     /**
-     * Return expiry timestamp (in seconds)
+     * Syncs the merchant's incoming XRPL transactions and, when one matches
+     * this order's destination tag, records the fulfillment on the intent.
      *
-     * @return int
-     * @throws Exception
+     * @param bool $sync false to only match against already-synced
+     *     transactions (a batch job syncs once, then matches many orders).
+     * @return PaymentIntent|null the fulfilled intent, or null while no
+     *     payment has arrived (or it arrived as something that delivered
+     *     nothing measurable, e.g. an EscrowCreate to the same account).
      */
-    public function getExpiryTimestamp(): int
+    public function syncOrderTransactionWithXrpl(WC_Order $order, bool $sync = true): ?PaymentIntent
     {
-        $minutes = $this->pluginConfig['xrpl_quote_expiry'] ?? self::DEFAULT_EXPIRY;
+        $intent = $this->readPaymentIntent($order);
 
-        if ($minutes <= 0) {
-            $minutes = self::DEFAULT_EXPIRY;
+        if ($intent === null) {
+            return null;
         }
 
-        return time() + (60 * $minutes);
-    }
-
-    /**
-     * Checks if a quote is expired
-     *
-     * @param WC_Order $order
-     * @return bool
-     */
-    public function isExpired(WC_Order $order): bool
-    {
-        $xrpl_order_meta = $order->get_meta(LedgerDirect::META_KEY);
-        $expiry = $xrpl_order_meta['expiry'];
-        $now = time();
-
-        return $now > $expiry;
-    }
-
-    /**
-     * Get initial order metadata for XRPL payments
-     *
-     * @param WC_Order $order
-     * @param string $paymentMethod
-     * @return void
-     * @throws Exception
-     */
-    public function prepareOrderForXrpl(WC_Order $order, string $paymentMethod): void
-    {
-        $network = $this->pluginConfig['xrpl_network'];
-        $destinationAccount = $this->pluginConfig['destination_account'];
-        $destinationTag = $this->xrplTxService->generateDestinationTag($destinationAccount);
-
-        $xrplData = [
-            'chain' => 'XRPL',
-            'network' => $network,
-            'version' => self::XRPL_METADATA_VERSION,
-            'destination_account' => $destinationAccount,
-            'destination_tag' => $destinationTag,
-            'expiry' => $this->getExpiryTimestamp()
-        ];
-
-        $this->addAdditionalDataToPayment($order, $xrplData);
-
-        match ($paymentMethod) {
-            LedgerDirectPaymentGateway::XRP_PAYMENT_ID => $this->prepareXrpPayment($order),
-            LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID => $this->prepareRlusdPayment($order, $network),
-            LedgerDirectPaymentGateway::USDC_PAYMENT_ID => $this->prepareUsdcPayment($order, $network),
-        };
-    }
-
-    /**
-     * Prepare XRP payment data for the order
-     *
-     * @param WC_Order $order
-     * @return void
-     * @throws Exception
-     */
-    private function prepareXrpPayment(WC_Order $order): void
-    {
-        $additionalData = $this->getCryptoPriceForOrder($order, 'XRP');
-        $additionalData['type'] = LedgerDirectPaymentGateway::XRP_PAYMENT_ID;
-
-        $this->addAdditionalDataToPayment($order, $additionalData);
-    }
-
-    /**
-     * Prepare RLUSD payment data for the order
-     *
-     * @param WC_Order $order
-     * @param string $network
-     * @return void
-     * @throws Exception
-     */
-    private function prepareRlusdPayment(WC_Order $order, $network): void
-    {
-        if (!$this->pluginConfig['rlusd_available']) {
-            throw new Exception('RLUSD payments are not enabled in the configuration.');
+        if ($intent->amountPaid !== null) {
+            return $intent;
         }
-        $additionalData = $this->getCryptoPriceForOrder($order, 'RLUSD', $network);
-        $additionalData['type'] = LedgerDirectPaymentGateway::RLUSD_PAYMENT_ID;
-        $additionalData['currency'] = 'RLUSD';
 
-        $this->addAdditionalDataToPayment($order, $additionalData);
-    }
-
-    /**
-     * Prepare USDC payment data for the order
-     *
-     * @param WC_Order $order
-     * @param string $network
-     * @return void
-     * @throws Exception
-     */
-    private function prepareUsdcPayment(WC_Order $order, $network): void
-    {
-        if (!$this->pluginConfig['usdc_available']) {
-            throw new Exception('USDC payments are not enabled in the configuration.');
+        if ($sync) {
+            $this->syncService->syncTransactions($intent->destinationAccount, $intent->network);
         }
-        $additionalData = $this->getCryptoPriceForOrder($order, 'USDC', $network);
-        $additionalData['type'] = LedgerDirectPaymentGateway::USDC_PAYMENT_ID;
-        $additionalData['currency'] = 'USDC';
 
-        $this->addAdditionalDataToPayment($order, $additionalData);
+        $transaction = $this->syncService->findTransaction($intent->destinationAccount, $intent->destinationTag);
+
+        if ($transaction === null) {
+            return null;
+        }
+
+        $amountPaid = $transaction->getDeliveredAmount();
+
+        if ($amountPaid === null) {
+            return null;
+        }
+
+        $fulfilledIntent = $intent->withFulfillment($transaction->hash, $amountPaid, $transaction->ctid);
+
+        $this->persistPaymentIntent($order, $fulfilledIntent);
+
+        return $fulfilledIntent;
     }
 
     /**
-     * Add additional data to order payment
-     *
-     * @param WC_Order $order
-     * @param array $xrplCustomFields
-     * @return void
+     * Whether the delivered amount pays for the quote - the core's decision.
      */
-    private function addAdditionalDataToPayment(WC_Order $order, array $xrplCustomFields): void
+    public function isSettled(PaymentIntent $intent): bool
     {
-        $xrpl_order_meta = is_array($order->get_meta(LedgerDirect::META_KEY)) ? $order->get_meta(LedgerDirect::META_KEY) : [];
-        $new_order_meta = array_replace_recursive($xrpl_order_meta, $xrplCustomFields);
-        $order->update_meta_data(LedgerDirect::META_KEY, $new_order_meta);
+        return $this->settlementPolicy->isSettled($intent);
+    }
+
+    /**
+     * What is still missing, as a plain decimal string; null once settled.
+     */
+    public function shortfall(PaymentIntent $intent): ?string
+    {
+        return $this->settlementPolicy->shortfall($intent);
+    }
+
+    /**
+     * The payment record stored on the order, or null when the order was
+     * never prepared for XRPL. Records written by plugin versions before
+     * the core retrofit are translated on the way in.
+     *
+     * @throws InvalidArgumentException on a record that is not readable as
+     *     a schema v1 PaymentIntent even after translation.
+     */
+    public function readPaymentIntent(WC_Order $order): ?PaymentIntent
+    {
+        $data = $order->get_meta(LedgerDirect::META_KEY);
+
+        if (!is_array($data) || $data === []) {
+            return null;
+        }
+
+        if ($this->legacyMapper->isLegacy($data)) {
+            $data = $this->legacyMapper->toSchemaV1($data);
+        }
+
+        return PaymentIntent::fromArray($data);
+    }
+
+    /**
+     * Like readPaymentIntent(), but for the quoting path, where an
+     * unreadable record simply means "quote from scratch".
+     */
+    private function readReusablePaymentIntent(WC_Order $order): ?PaymentIntent
+    {
+        try {
+            return $this->readPaymentIntent($order);
+        } catch (InvalidArgumentException) {
+            return null;
+        }
+    }
+
+    /**
+     * Writes the intent to the order, replacing any previous record
+     * wholesale so no field of an older shape can survive underneath.
+     */
+    private function persistPaymentIntent(WC_Order $order, PaymentIntent $intent): void
+    {
+        $order->update_meta_data(LedgerDirect::META_KEY, $intent->toArray());
         $order->save();
-    }
-
-    /**
-     * Checks if the order has a valid XRPL payment transaction.
-     *
-     * @param WC_Order $order
-     * @return bool
-     */
-    public function checkPayment(WC_Order $order): bool
-    {
-        $xrpl_order_meta = is_array($order->get_meta(LedgerDirect::META_KEY)) ? $order->get_meta(LedgerDirect::META_KEY) : [];
-
-        return (isset($xrpl_order_meta['hash']) && isset($xrpl_order_meta['ctid']));
-    }
-
-    /**
-     * Syncs the order transaction with XRPL and updates the order metadata.
-     *
-     * @param WC_Order $order
-     * @return array|null
-     * @throws Exception
-     */
-    public function syncOrderTransactionWithXrpl(WC_Order $order): array|null
-    {
-        $xrpl_order_meta = $order->get_meta(LedgerDirect::META_KEY);
-
-        if (isset($xrpl_order_meta['destination_account']) && isset($xrpl_order_meta['destination_tag'])) {
-            $this->xrplTxService->syncTransactions($xrpl_order_meta['destination_account']);
-
-            $tx = $this->xrplTxService->findTransaction(
-                $xrpl_order_meta['destination_account'],
-                (int)$xrpl_order_meta['destination_tag']
-            );
-
-            if ($tx) {
-                $txMeta = json_decode($tx['meta'], true);
-
-                if (is_array($txMeta['delivered_amount'])) {
-                    $amount = $txMeta['delivered_amount'];
-                } else {
-                    $amount = XrpAmount::dropsToXrp($txMeta['delivered_amount']);
-                }
-
-                $tx_order_meta = [
-                    'hash' => $tx['hash'],
-                    'ctid' => $tx['ctid'],
-                    'delivered_amount' => $amount
-                ];
-
-                $new_order_meta = array_replace_recursive($xrpl_order_meta, $tx_order_meta);
-                $order->update_meta_data(LedgerDirect::META_KEY, $new_order_meta);
-                $order->save();
-
-                return $tx;
-            }
-        }
-
-        return null;
     }
 }

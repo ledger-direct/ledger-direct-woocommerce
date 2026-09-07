@@ -4,10 +4,10 @@ namespace Hardcastle\LedgerDirect\Woocommerce;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-use DI\DependencyException;
-use DI\NotFoundException;
+use Exception;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
-use LedgerDirect;
+use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use WC_Order;
 use WC_Payment_Gateway;
 
@@ -17,8 +17,6 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public const ID = 'ledger-direct';
 
     public const XRP_PAYMENT_ID = 'xrp';
-
-    public const TOKEN_PAYMENT_ID = 'token';
 
     public const RLUSD_PAYMENT_ID = 'rlusd';
 
@@ -65,8 +63,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         add_action( 'woocommerce_update_options_payment_gateways_ledger-direct', [$this, 'process_admin_options']);
 
-        $container = ledger_direct_get_dependency_injection_container();
-        $this->orderTransactionService = $container->get(OrderTransactionService::class);
+        $this->orderTransactionService = ServiceFactory::getInstance()->getOrderTransactionService();
     }
 
     /**
@@ -140,7 +137,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling this gateway method.
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        if (!in_array($payment_type, ['xrp', 'rlusd', 'usdc'], true)) {
+        if (!array_key_exists($payment_type, OrderTransactionService::BASE_ASSET_BY_PAYMENT_TYPE)) {
             wc_add_notice(__('Please select a valid payment method.', 'ledger-direct'), 'error');
             return false;
         }
@@ -149,12 +146,10 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     }
 
     /**
-     * Prepares the order for XRPL payment and returns the redirect URL.
+     * Quotes the order in the chosen asset and returns the payment page URL.
      *
      * @param int $order_id
      * @return array
-     * @throws DependencyException
-     * @throws NotFoundException
      */
     public function process_payment($order_id): array
     {
@@ -162,88 +157,74 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling this gateway method.
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        $container = ledger_direct_get_dependency_injection_container();
-        $orderTransactionService = $container->get(OrderTransactionService::class);
-        $orderTransactionService->prepareOrderForXrpl($order, $payment_type);
+        try {
+            $this->orderTransactionService->prepareOrderForXrpl($order, $payment_type);
+        } catch (Exception $exception) {
+            ServiceFactory::getInstance()->getLogger()->error('Could not quote an order for XRPL payment', [
+                'order_id' => $order->get_id(),
+                'payment_type' => $payment_type,
+                'exception' => $exception->getMessage(),
+            ]);
+            wc_add_notice(__('This payment method is temporarily unavailable. Please try again or choose another payment method.', 'ledger-direct'), 'error');
 
-        // Generate the payment URL, depending on whether permalinks are enabled or not
-        global $wp_rewrite;
-        if ($wp_rewrite->using_permalinks()) {
-            $payment_url = home_url('/ledger-direct-payment/' . $order->get_order_key() . '/');
-        } else {
-            $payment_url = home_url('/?ledger-direct-payment=' . $order->get_order_key());
+            return ['result' => 'failure'];
         }
 
         return [
             'result' => 'success',
-            'redirect' => $payment_url
+            'redirect' => self::get_payment_page_url($order)
         ];
     }
 
     /**
-     * Syncs the order transaction with XRPL and checks if the payment is valid.
-     *
-     * @param WC_Order $order
-     * @return bool
+     * The payment page URL, depending on whether permalinks are enabled or not.
+     */
+    public static function get_payment_page_url(WC_Order $order): string
+    {
+        global $wp_rewrite;
+
+        if ($wp_rewrite->using_permalinks()) {
+            return home_url('/ledger-direct-payment/' . $order->get_order_key() . '/');
+        }
+
+        return home_url('/?ledger-direct-payment=' . $order->get_order_key());
+    }
+
+    /**
+     * Syncs the order with the XRPL and returns the fulfilled intent when a
+     * payment has arrived (settled or not - see is_settled()), null otherwise.
+     * A sync failure is logged, not thrown: the page still renders.
+     */
+    public function sync_payment(WC_Order $order): ?PaymentIntent
+    {
+        try {
+            return $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
+        } catch (Exception $exception) {
+            ServiceFactory::getInstance()->getLogger()->warning('Failed to sync order transaction with XRPL', [
+                'order_id' => $order->get_id(),
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Whether a fulfilled intent settles the order - the core's decision,
+     * identical across every LedgerDirect plugin.
+     */
+    public function is_settled(PaymentIntent $intent): bool
+    {
+        return $this->orderTransactionService->isSettled($intent);
+    }
+
+    /**
+     * Syncs and checks in one go, for callers that only need the answer.
      */
     public function sync_and_check_payment(WC_Order $order): bool
     {
-        try {
-            $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
-        } catch (\Exception $e) {
-            wc_get_logger()->warning('LedgerDirect: failed to sync order transaction with XRPL', [
-                'source'   => 'ledger-direct',
-                'order_id' => $order->get_id(),
-                'exception' => $e->getMessage(),
-            ]);
-        }
+        $intent = $this->sync_payment($order);
 
-        $meta = $order->get_meta(LedgerDirect::META_KEY);
-        if ($this->orderTransactionService->checkPayment($order)) {
-            if ($meta['type'] === self::XRP_PAYMENT_ID ) {
-                return $this->is_xrp_payment_valid($meta);
-            } elseif ($meta['type'] === self::RLUSD_PAYMENT_ID || $meta['type'] === self::USDC_PAYMENT_ID) {
-                return $this->is_token_payment_valid($meta);
-            }
-        }
-
-        return false;
+        return $intent !== null && $this->is_settled($intent);
     }
-
-    /**
-     * Checks if the XRP payment is valid based on the delivered amount and requested amount.
-     *
-     * @param array $meta
-     * @return bool
-     */
-    private function is_xrp_payment_valid(array $meta): bool
-    {
-        // Payment is settled, let's check whether the paid amount is enough
-        $requestedXrpAmount = (float) $meta['amount_requested'];
-        $paidXrpAmount = (float) $meta['delivered_amount'];
-
-        return $paidXrpAmount >= $requestedXrpAmount;
-    }
-
-    /**
-     * Checks if the token (RLUSD/USDC) payment is valid based on the delivered amount and requested amount.
-     *
-     * @param array $meta
-     * @return bool
-     */
-    private function is_token_payment_valid(array $meta): bool
-    {
-        if (!isset($meta['delivered_amount']) || !isset($meta['amount_requested'])) {
-            return false;
-        }
-        $requestedAmount = $meta['amount_requested'];
-        $deliveredAmount = $meta['delivered_amount'];
-
-        if ($deliveredAmount === $requestedAmount) {
-            return true;
-        }
-
-        return false;
-    }
-
 }
