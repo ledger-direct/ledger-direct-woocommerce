@@ -45,10 +45,10 @@ class WpdbXrplTransactionRepositoryTest extends TestCase
             $this->transaction('HASH-OTHER-TAG', 6, '300'),
         ]);
 
-        $found = $this->repository->findTransactionsByTag(self::ACCOUNT, 5);
+        $found = $this->repository->findTransactions(self::ACCOUNT, 5);
 
         $this->assertSame(['HASH-NEW', 'HASH-OLD'], array_map(static fn ($t) => $t->hash, $found));
-        $this->assertSame([], $this->repository->findTransactionsByTag(self::ACCOUNT, 7));
+        $this->assertSame([], $this->repository->findTransactions(self::ACCOUNT, 7));
     }
 
     public function testATagAboveTheSigned32BitRangeSurvivesStorageAndLookup(): void
@@ -57,12 +57,13 @@ class WpdbXrplTransactionRepositoryTest extends TestCase
 
         $this->repository->saveTransactions([$this->transaction('HASH-BIG', $tag, '100')]);
 
-        $found = $this->repository->findTransaction(self::ACCOUNT, $tag);
+        $found = $this->repository->findTransactions(self::ACCOUNT, $tag)[0] ?? null;
 
         $this->assertNotNull($found);
         $this->assertSame($tag, $found->destinationTag);
         $this->assertSame('HASH-BIG', $found->hash);
         $this->assertSame(['delivered_amount' => '1000000'], $found->meta);
+        $this->assertSame('testnet', $found->network);
         $this->assertSame(1.0, $found->getDeliveredAmount());
     }
 
@@ -89,29 +90,49 @@ class WpdbXrplTransactionRepositoryTest extends TestCase
 
     public function testLastSyncedLedgerIndexIsNumericNotLexicographic(): void
     {
-        $this->assertNull($this->repository->getLastSyncedLedgerIndex());
+        $this->assertNull($this->repository->getLastSyncedLedgerIndex(self::ACCOUNT, 'testnet'));
 
         $this->repository->saveTransactions([
             $this->transaction('HASH-A', 1, '99999999'),
             $this->transaction('HASH-B', 2, '100000000'),
         ]);
 
-        $this->assertSame('100000000', $this->repository->getLastSyncedLedgerIndex());
+        $this->assertSame('100000000', $this->repository->getLastSyncedLedgerIndex(self::ACCOUNT, 'testnet'));
     }
 
-    public function testFindTransactionReturnsNullWhenNothingMatches(): void
+    /**
+     * A ledger index only means anything within one network: a mainnet row
+     * must never pin the testnet cursor, and another account's rows must
+     * never advance this account's cursor.
+     */
+    public function testLastSyncedLedgerIndexIsScopedPerAccountAndNetwork(): void
     {
-        $this->assertNull($this->repository->findTransaction(self::ACCOUNT, 12345));
+        $this->repository->saveTransactions([
+            $this->transaction('HASH-TEST', 1, '20000000', 'testnet'),
+            $this->transaction('HASH-MAIN', 2, '100000000', 'mainnet'),
+            $this->transaction('HASH-OTHER', 3, '30000000', 'testnet', 'rAnotherAccount'),
+        ]);
+
+        $this->assertSame('20000000', $this->repository->getLastSyncedLedgerIndex(self::ACCOUNT, 'testnet'));
+        $this->assertSame('100000000', $this->repository->getLastSyncedLedgerIndex(self::ACCOUNT, 'mainnet'));
+        $this->assertSame('30000000', $this->repository->getLastSyncedLedgerIndex('rAnotherAccount', 'testnet'));
+        $this->assertNull($this->repository->getLastSyncedLedgerIndex('rAnotherAccount', 'mainnet'));
     }
 
-    private function transaction(string $hash, int $destinationTag, string $ledgerIndex): XrplTransaction
+    public function testFindTransactionsReturnsEmptyWhenNothingMatches(): void
+    {
+        $this->assertSame([], $this->repository->findTransactions(self::ACCOUNT, 12345));
+    }
+
+    private function transaction(string $hash, int $destinationTag, string $ledgerIndex, string $network = 'testnet', string $destination = self::ACCOUNT): XrplTransaction
     {
         return new XrplTransaction(
+            network: $network,
             ledgerIndex: $ledgerIndex,
             hash: $hash,
             ctid: 'C000000100000000',
             account: 'rSenderAccount',
-            destination: self::ACCOUNT,
+            destination: $destination,
             destinationTag: $destinationTag,
             date: 1700000000,
             meta: ['delivered_amount' => '1000000'],

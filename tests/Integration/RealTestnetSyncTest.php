@@ -61,9 +61,11 @@ class RealTestnetSyncTest extends TestCase
         $this->assertSame(64, strlen($rows[0]['hash']));
         $this->assertNotEmpty($rows[0]['ctid']);
         $this->assertGreaterThan(0, (int) $rows[0]['ledger_index']);
-        $this->assertIsString($factory->getTransactionRepository()->getLastSyncedLedgerIndex());
+        $this->assertSame('testnet', $rows[0]['network']);
+        $this->assertIsString($factory->getTransactionRepository()->getLastSyncedLedgerIndex($account, 'testnet'));
+        $this->assertNull($factory->getTransactionRepository()->getLastSyncedLedgerIndex($account, 'mainnet'));
 
-        $transaction = $factory->getTransactionRepository()->findTransaction($account, (int) ($rows[0]['destination_tag'] ?? 0));
+        $transaction = $factory->getTransactionRepository()->findTransactions($account, (int) ($rows[0]['destination_tag'] ?? 0))[0] ?? null;
         if ($transaction !== null) {
             $this->assertIsFloat($transaction->getDeliveredAmount());
         }

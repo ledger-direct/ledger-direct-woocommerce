@@ -19,8 +19,10 @@ class LedgerDirectInstall {
      * 1 - unified destination-tag table name, unique key on tx.hash
      * 2 - core alignment: numeric ledger_index, per-account destination-tag
      *     counter instead of a list of issued tags (see upgrade_to_2())
+     * 3 - network column on the tx table; the sync cursor is scoped per
+     *     account and network (see upgrade_to_3())
      */
-    public const DB_VERSION = '2';
+    public const DB_VERSION = '3';
 
     /**
      * Install the plugin.
@@ -104,6 +106,10 @@ class LedgerDirectInstall {
             self::upgrade_to_2();
         }
 
+        if ( version_compare( $installedVersion, '3', '<' ) ) {
+            self::upgrade_to_3();
+        }
+
         self::create_tables();
     }
 
@@ -171,6 +177,47 @@ class LedgerDirectInstall {
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
             $wpdb->query( "DROP TABLE IF EXISTS {$legacy_table}" );
         }
+    }
+
+    /**
+     * Schema version 3 - the sync cursor is scoped per account and network
+     * (core 0.4, INVARIANTS.md "Tables"): a ledger index only means anything
+     * within one network, and a single mainnet row would otherwise pin the
+     * testnet cursor above every testnet ledger forever.
+     *
+     * Adds the `network` column itself (dbDelta only runs afterwards and
+     * the backfill needs the column) and fills it from the CTID, which
+     * encodes the network id in its last four hex digits: 0 = mainnet,
+     * 1 = testnet. Exact, unlike the currently configured network, which is
+     * wrong for every shop that tested on testnet and then went live.
+     * Rows whose CTID is unusable keep '' and are simply ignored by the
+     * cursor. Idempotent.
+     *
+     * @return void
+     */
+    private static function upgrade_to_3(): void {
+        global $wpdb;
+
+        $tx_table = self::tx_table();
+
+        if ( ! self::table_exists( $tx_table ) ) {
+            return;
+        }
+
+        if ( ! self::column_exists( $tx_table, 'network' ) ) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
+            $wpdb->query( "ALTER TABLE {$tx_table} ADD COLUMN network varchar(16) NOT NULL DEFAULT ''" );
+        }
+
+        $wpdb->query(
+            "UPDATE {$tx_table}
+                SET network = CASE CONV(RIGHT(ctid, 4), 16, 10)
+                                WHEN 0 THEN 'mainnet'
+                                WHEN 1 THEN 'testnet'
+                                ELSE ''
+                              END
+              WHERE network = '' AND CHAR_LENGTH(ctid) = 16"
+        );
     }
 
     /**
@@ -344,6 +391,7 @@ class LedgerDirectInstall {
         $tables = "
             CREATE TABLE {$tx_table} (
                 id int(10) unsigned NOT NULL AUTO_INCREMENT,
+                network varchar(16) NOT NULL DEFAULT '',
                 ledger_index bigint(20) unsigned NOT NULL,
                 ctid varchar(16) NOT NULL,
                 hash varchar(64) NOT NULL,
@@ -355,7 +403,8 @@ class LedgerDirectInstall {
                 tx text NOT NULL,
                 PRIMARY KEY  (id),
                 UNIQUE KEY  hash (hash),
-                KEY  destination (destination,destination_tag)
+                KEY  destination (destination,destination_tag),
+                KEY  destination_network (destination,network,ledger_index)
             ) $collate;
             CREATE TABLE {$dest_tag_table} (
                 destination_account varchar(64) NOT NULL,
