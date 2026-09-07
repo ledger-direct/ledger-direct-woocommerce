@@ -1,0 +1,153 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    name: PHP lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - name: Lint all PHP files
+        run: |
+          find . \
+            -path ./vendor -prune -o \
+            -path ./node_modules -prune -o \
+            -name '*.php' -print0 \
+            | xargs -0 -n1 php -l
+
+  phpcs:
+    name: WordPress Coding Standards (phpcs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, mysqli
+          coverage: none
+      - name: Install composer dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Run phpcs
+        run: vendor/bin/phpcs -p
+
+  phpstan:
+    name: Static analysis (phpstan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, mysqli
+          coverage: none
+      - name: Install composer dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Run phpstan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+  phpunit:
+    name: PHPUnit (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, mysqli, intl, zip
+          coverage: none
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Install subversion
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq subversion
+
+      - name: Install WP test suite
+        env:
+          WP_TESTS_DIR: /tmp/wordpress-tests-lib
+          WP_CORE_DIR: /tmp/wordpress
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest
+
+      - name: Install WooCommerce into the WP test install
+        run: |
+          curl -sSL https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip -o /tmp/woocommerce.zip
+          mkdir -p /tmp/wordpress/wp-content/plugins
+          unzip -q /tmp/woocommerce.zip -d /tmp/wordpress/wp-content/plugins
+
+      - name: Link this plugin into the WP test install
+        run: ln -s "$GITHUB_WORKSPACE" /tmp/wordpress/wp-content/plugins/ledger-direct
+
+      - name: Run phpunit
+        env:
+          WP_TESTS_DIR: /tmp/wordpress-tests-lib
+        run: vendor/bin/phpunit -c phpunit.xml
+
+  plugin-check:
+    name: WordPress Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      # Checked out under the plugin's actual WordPress.org slug (ledger-direct) rather
+      # than the GitHub repo name (ledger-direct-woocommerce) - Plugin Check derives the
+      # expected text domain from the directory name it scans, and it must match the
+      # `Text Domain: ledger-direct` header used throughout the codebase.
+      - uses: actions/checkout@v4
+        with:
+          path: ledger-direct
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, mysqli
+          coverage: none
+      - name: Install composer dependencies (production only)
+        working-directory: ledger-direct
+        run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+
+      # Plugin Check scans build-dir as-is - it does not know this is a raw git checkout,
+      # so without this it also flags .git, .github, tests/, dev tooling configs etc. as
+      # if they shipped in the plugin. Reuse .distignore (the same exclude list the
+      # WordPress.org SVN release build in scripts/deploy-wp-org.sh uses) to produce a
+      # clean copy and point Plugin Check at that instead of the raw checkout.
+      - name: Build a clean plugin copy for Plugin Check
+        run: |
+          mkdir -p /tmp/plugin-build/ledger-direct
+          rsync -a --exclude-from=ledger-direct/.distignore ledger-direct/ /tmp/plugin-build/ledger-direct/
+          # .distignore deliberately excludes .wp-env.json from the real WP.org release
+          # build (it has no purpose there), but Plugin Check's own environment needs it
+          # to know to install WooCommerce - copy it back in for this build only.
+          cp ledger-direct/.wp-env.json /tmp/plugin-build/ledger-direct/.wp-env.json
+
+      - name: Run WordPress Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: '/tmp/plugin-build/ledger-direct'
+          # .wp-env.json has to be physically present in build-dir for the wp-env-based
+          # WooCommerce dependency setup above to work, but Plugin Check's own file-type
+          # check then flags that same file as a disallowed hidden file. Exclude it from
+          # the check results specifically (not from the scanned directory).
+          exclude-files: '.wp-env.json'

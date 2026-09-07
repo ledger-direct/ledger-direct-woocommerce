@@ -30,7 +30,6 @@ class ConfigurationService
     protected array $config;
 
     public function __construct() {
-
     }
 
     /**

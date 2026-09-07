@@ -4,24 +4,22 @@ namespace Hardcastle\LedgerDirect\Tests\Mock\LedgerDirect\Service;
 
 use Hardcastle\LedgerDirect\Provider\CryptoPriceProviderInterface;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
-
 use Hardcastle\LedgerDirect\Service\XrplTxService;
-use Hardcastle\LedgerDirect\Tests\Fixtures\Fixtures;
 use Mockery;
 
 class OrderTransactionServiceMock
 {
-    public static function createInstance(): OrderTransactionService
+    /**
+     * @param float $exchangeRate Exchange rate returned by the mocked price provider for any currency.
+     */
+    public static function createInstance(float $exchangeRate = 1.0): OrderTransactionService
     {
-        $configurationService = ConfigurationServiceMock::createInstance(); // ConfigurationService
-        $xrplTxService = Mockery::mock(XrplTxService::class); // XrplTxService,
-        $priceProvider = Mockery::mock(CryptoPriceProviderInterface::class); // CryptoPriceProviderInterface
+        $xrplTxService = Mockery::mock(XrplTxService::class);
+        $priceProvider = Mockery::mock(CryptoPriceProviderInterface::class);
         $priceProvider->shouldReceive('getCurrentExchangeRate')
-            ->with('EUR')
-            ->andReturn(1.0);
+            ->andReturn($exchangeRate);
 
         return new OrderTransactionService(
-            $configurationService,
             $xrplTxService,
             $priceProvider
         );

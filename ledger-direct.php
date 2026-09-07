@@ -3,13 +3,16 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://github.com/ledger-direct/ledger-direct-woocommerce
  * Description: A XRP Ledger integration.
- * Version: 0.10.1
+ * Version: 0.11.0
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct
  * Domain Path: /languages
  * Requires at least: 6.7
  * Requires PHP: 8.1
+ * Requires Plugins: woocommerce
+ * WC requires at least: 8.6.1
+ * WC tested up to: 11.1
  * License: MIT
  *
  * @package LedgerDirect
@@ -36,12 +39,21 @@ function ledger_direct_activate(): void {
 register_activation_hook( __FILE__, 'ledger_direct_activate');
 
 /**
+ * Run outstanding DB migrations on already-active installs.
+ *
+ * WordPress does not re-fire the activation hook on a routine plugin
+ * update, so this is the only reliable place to migrate sites that were
+ * already live before a schema change ships.
+ */
+add_action( 'plugins_loaded', ['LedgerDirectInstall', 'maybe_upgrade'] );
+
+/**
  * Plugin deactivation hook.
  */
-function edger_direct_deactivate(): void {
+function ledger_direct_deactivate(): void {
     LedgerDirectInstall::deactivate();
 }
-register_deactivation_hook( __FILE__, 'edger_direct_deactivate');
+register_deactivation_hook( __FILE__, 'ledger_direct_deactivate');
 
 /**
  * Plugin deactivation hook.
@@ -58,7 +70,7 @@ function ledger_direct_get_configuration(): array {
         'enabled' => $settings['enabled'] ?? 'no',
     ];
 
-    $xrpl_network = in_array($settings['xrpl_network'], ['mainnet', 'testnet']) ? $settings['xrpl_network'] : 'testnet';
+    $xrpl_network = in_array($settings['xrpl_network'] ?? null, ['mainnet', 'testnet']) ? $settings['xrpl_network'] : 'testnet';
 
     $xrpl_testnet_destination_account = $settings['xrpl_testnet_destination_account'] ?? '';
     $xrpl_mainnet_destination_account = $settings['xrpl_mainnet_destination_account'] ?? '';

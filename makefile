@@ -1,4 +1,4 @@
-.PHONY: build clean
+.PHONY: build clean release clean-build
 
 EXCLUDE_VENDOR_DIRS= test tests doc docs example examples bin
 
@@ -15,3 +15,24 @@ build:
 clean:
 	rm -rf ledger-direct
 	rm -f ledger-direct-*.zip
+
+# ===== WordPress.org release workflow =====
+# These targets allow releasing to the WP.org SVN using scripts/deploy-wp-org.sh
+
+PLUGIN_SLUG ?= ledger-direct
+PLUGIN_MAIN ?= ledger-direct.php
+SVN_URL     ?= https://plugins.svn.wordpress.org/$(PLUGIN_SLUG)
+
+# Optional override when calling: make release VERSION=0.10.2
+VERSION ?=
+
+clean-build:
+	rm -rf .build
+
+release: clean-build
+	chmod +x scripts/deploy-wp-org.sh
+	PLUGIN_SLUG=$(PLUGIN_SLUG) \
+	PLUGIN_MAIN=$(PLUGIN_MAIN) \
+	SVN_URL=$(SVN_URL) \
+	VERSION=$(VERSION) \
+	./scripts/deploy-wp-org.sh

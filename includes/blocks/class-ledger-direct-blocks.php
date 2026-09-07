@@ -36,7 +36,7 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
         $script_path       = '/assets/js/frontend/blocks.js';
         $script_asset_path = LedgerDirect::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
         $script_asset      = file_exists( $script_asset_path )
-            ? require( $script_asset_path )
+            ? require $script_asset_path
             : array(
                 'dependencies' => array(),
                 'version'      => '1.2.0'

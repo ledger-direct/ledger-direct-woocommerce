@@ -1,0 +1,33 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 3
+    paths:
+        - ledger-direct.php
+        - includes
+        - src
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    scanFiles:
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    excludePaths:
+        - includes/views/*
+        - includes/admin/views/*
+    ignoreErrors:
+        -
+            # WooCommerce sets this property dynamically at runtime; the stub package doesn't model it.
+            message: '#Access to an undefined property WooCommerce::\$payment_gateways#'
+            path: includes/blocks/class-ledger-direct-blocks.php
+        -
+            # ledger_direct_init_form_fields / ledger_direct_render_plugin_settings are extension
+            # points for third-party hooks; the plugin itself calls apply_filters() and intentionally
+            # discards the return value, so callbacks are not required to return anything.
+            message: '#Filter callback return statement is missing#'
+            path: includes/class-ledger-direct.php
+        -
+            # process_admin_options() is WC_Settings_API's own method, registered as-is via
+            # add_action() - the standard way every WC_Payment_Gateway wires this hook.
+            message: '#Action callback returns bool but should not return anything#'
+            path: src/Woocommerce/LedgerDirectPaymentGateway.php

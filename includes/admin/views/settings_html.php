@@ -6,7 +6,7 @@
 ?>
 
 <h2>
-    <?php esc_html_e('LedgerDirect for WooCommerce','ledger-direct'); ?>
+    <?php esc_html_e('LedgerDirect for WooCommerce', 'ledger-direct'); ?>
 </h2>
 
 <table class="form-table">

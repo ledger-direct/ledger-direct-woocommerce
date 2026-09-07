@@ -1,9 +1,9 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
-Tags: xrpl, xrp, rlusd, usdc, cryptocurrency, woocommerce
-Stable tag: 0.10.1
+Tags: xrpl, xrp, rlusd, usdc, woocommerce
+Stable tag: 0.11.0
 Requires at least: 6.7
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 8.1
 License: MIT
 License URI: https://opensource.org/license/mit/
@@ -11,7 +11,7 @@ License URI: https://opensource.org/license/mit/
 Accept XRP, EUR, USD directly on the XRP Ledger, using LedgerDirect!
 
 == Description ==
-LedgerDirect is a WordPress plugin that allows you to accept direct payments in XRP, EURC, USDC, and RLUSD on the XRP Ledger. It provides a seamless integration with WooCommerce, enabling merchants to receive payments directly in their XRP Ledger accounts without the need for intermediaries.
+LedgerDirect is a WordPress plugin that allows you to accept direct payments in XRP, USDC, and RLUSD on the XRP Ledger. It provides a seamless integration with WooCommerce, enabling merchants to receive payments directly in their XRP Ledger accounts without the need for intermediaries.
 
 == Features ==
 - Accept payments in XRP, USDC and RLUSD.
@@ -26,7 +26,7 @@ The best way is to configure the plugin to use the testnet and make a test payme
 = Minimum Requirements =
 
 * PHP version 8.1 or greater
-* WordPress 6.3 or greater
+* WordPress 6.7 or greater
 * WooCommerce 8.6.1 or greater
 
 = Automatic installation =
@@ -71,3 +71,13 @@ LedgerDirect uses minified assets from third party libraries. The source for the
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 0.11.0 =
+* Fix: the destination-tag table existed under three different names across install.php and XrplTxService, so reserved destination tags were silently never persisted on fresh installs. Unified to `ledger_direct_xrpl_destination_tag`, with an automatic upgrade routine for existing installs.
+* Fix: add a unique constraint on the transactions table's `hash` column to enforce deduplication at the database level.
+* Fix: KrakenOracle only ever returned a price for the XRP/USD pair (it read a hardcoded response key); it now reads any pair generically.
+* Fix: price oracle failures are now logged instead of silently discarded, to make pricing issues diagnosable.
+* Fix: the "change payment method" AJAX action always failed due to a typo reading the wrong POST field.
+* Add: order pricing metadata now includes `base_asset` and `quote_currency` fields alongside the existing `pairing`/`exchange_rate`/`amount_requested`.
+* Remove: the unused, always-returns-zero RippleOracle.
+* Internal: added automated tests, a CI pipeline (lint, coding standards, static analysis, PHPUnit, WordPress Plugin Check), and a WordPress.org SVN release workflow.
