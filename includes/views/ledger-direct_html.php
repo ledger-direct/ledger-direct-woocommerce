@@ -2,12 +2,11 @@
 
 defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
-use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
 /**
  * @var WC_Order|null $ledger_direct_order
- * @var PaymentIntent|null $ledger_direct_intent
+ * @var object|null $ledger_direct_intent  A core PaymentIntent (this file is not scoped, so the class is not referenced)
  * @var string|null $ledger_direct_shortfall
  */
 global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_shortfall;
@@ -59,7 +58,7 @@ if (!in_array($order_status, $valid_statuses, true)) {
 }
 
 $payment_method = $ledger_direct_order->get_payment_method();
-if ($payment_method !== LedgerDirectPaymentGateway::ID || !$ledger_direct_intent instanceof PaymentIntent) {
+if ($payment_method !== LedgerDirectPaymentGateway::ID || !is_object($ledger_direct_intent)) {
     echo '<div class="woocommerce-error">';
     echo '<h2>' . esc_html__('Invalid payment method', 'ledger-direct') . '</h2>';
     echo '<p>' . esc_html__('This order was not paid with LedgerDirect.', 'ledger-direct') . '</p>';

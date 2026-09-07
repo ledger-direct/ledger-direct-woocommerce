@@ -2,7 +2,6 @@
 
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
-use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
@@ -273,7 +272,7 @@ class LedgerDirect
 
             $fulfilled = $gateway->sync_payment($order);
 
-            if ($fulfilled instanceof PaymentIntent) {
+            if ($fulfilled !== null) {
                 $intent = $fulfilled;
 
                 if ($gateway->is_settled($fulfilled)) {

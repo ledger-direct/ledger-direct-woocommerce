@@ -38,3 +38,4 @@ Thumbs.db
 /TODO.md
 
 /vendor/psr/http-message/docs
+/scoper.inc.php
