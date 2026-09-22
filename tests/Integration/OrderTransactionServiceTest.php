@@ -266,4 +266,111 @@ class OrderTransactionServiceTest extends TestCase
         // A valid quote is left alone.
         $this->assertSame($refreshed, $this->service->refreshExpiredQuote($order, $refreshed));
     }
+
+    /**
+     * The bug shipped in 1.1.0: a first, short payment was recorded and then
+     * the guard "amountPaid !== null" returned that record for ever. Neither
+     * the page nor the cron synced again, so the customer who sent the
+     * shortfall never got their order. Payments in the quoted asset add up.
+     */
+    public function testTwoPartialPaymentsAddUpAndTheTopUpSettles(): void
+    {
+        $order = $this->order();
+        $intent = $this->service->prepareOrderForXrpl($order, 'xrp');
+
+        $this->network->addXrpPayment($intent->destinationTag, '150000000', 'HASH-FIRST', 90000000);
+
+        $partial = $this->service->syncOrderTransactionWithXrpl($order);
+
+        $this->assertInstanceOf(PaymentIntent::class, $partial);
+        $this->assertFalse($this->service->isSettled($partial));
+        $this->assertSame('50', $this->service->shortfall($partial));
+
+        $this->network->addXrpPayment($intent->destinationTag, '50000000', 'HASH-TOPUP', 90000010);
+
+        $settled = $this->service->syncOrderTransactionWithXrpl($order);
+
+        $this->assertInstanceOf(PaymentIntent::class, $settled);
+        $this->assertSame('HASH-TOPUP', $settled->hash);
+        $this->assertSame(200.0, $settled->amountPaid);
+        $this->assertTrue($this->service->isSettled($settled));
+
+        $stored = wc_get_order($order->get_id())->get_meta(LedgerDirect::META_KEY);
+        $this->assertSame('HASH-TOPUP', $stored['hash']);
+        $this->assertSame(200.0, $stored['amount_paid']);
+    }
+
+    public function testAPaymentInTheRightAssetReplacesOneFromTheWrongIssuer(): void
+    {
+        $order = $this->order();
+        $intent = $this->service->prepareOrderForXrpl($order, 'rlusd');
+
+        $this->network->addIssuedCurrencyPayment($intent->destinationTag, [
+            'currency' => $intent->amountRequested['currency'],
+            'value' => '999',
+            'issuer' => 'rSomeOtherIssuerXXXXXXXXXXXXXXXXXX',
+        ], 'HASH-WRONG-ISSUER', 90000000);
+
+        $wrong = $this->service->syncOrderTransactionWithXrpl($order);
+
+        $this->assertInstanceOf(PaymentIntent::class, $wrong);
+        $this->assertSame('HASH-WRONG-ISSUER', $wrong->hash);
+        $this->assertFalse($this->service->isSettled($wrong));
+
+        $this->network->addIssuedCurrencyPayment($intent->destinationTag, [
+            'currency' => $intent->amountRequested['currency'],
+            'value' => $intent->amountRequested['value'],
+            'issuer' => $intent->amountRequested['issuer'],
+        ], 'HASH-RIGHT-ISSUER', 90000010);
+
+        $settled = $this->service->syncOrderTransactionWithXrpl($order);
+
+        $this->assertInstanceOf(PaymentIntent::class, $settled);
+        $this->assertSame('HASH-RIGHT-ISSUER', $settled->hash);
+        $this->assertSame($intent->amountRequested['value'], $settled->amountPaid['value']);
+        $this->assertTrue($this->service->isSettled($settled));
+    }
+
+    public function testASettledOrderIsNotSyncedAgain(): void
+    {
+        $order = $this->order();
+        $intent = $this->service->prepareOrderForXrpl($order, 'xrp');
+        $this->network->addXrpPayment($intent->destinationTag, '200000000', 'HASH-PAID');
+        $this->service->syncOrderTransactionWithXrpl($order);
+
+        $requestsBefore = count($this->network->requests);
+
+        $again = $this->service->syncOrderTransactionWithXrpl(wc_get_order($order->get_id()));
+
+        $this->assertInstanceOf(PaymentIntent::class, $again);
+        $this->assertSame('HASH-PAID', $again->hash);
+        $this->assertCount($requestsBefore, $this->network->requests);
+    }
+
+    public function testAnUnchangedPartialPaymentIsNotSavedTwice(): void
+    {
+        $order = $this->order();
+        $intent = $this->service->prepareOrderForXrpl($order, 'xrp');
+        $this->network->addXrpPayment($intent->destinationTag, '150000000', 'HASH-SHORT');
+        $this->service->syncOrderTransactionWithXrpl($order);
+
+        $order = wc_get_order($order->get_id());
+        $modifiedBefore = $order->get_date_modified()?->getTimestamp();
+        $saves = 0;
+        $counter = static function (int $orderId) use ($order, &$saves): void {
+            if ($orderId === $order->get_id()) {
+                ++$saves;
+            }
+        };
+        add_action('woocommerce_update_order', $counter);
+
+        $again = $this->service->syncOrderTransactionWithXrpl($order);
+
+        remove_action('woocommerce_update_order', $counter);
+
+        $this->assertInstanceOf(PaymentIntent::class, $again);
+        $this->assertFalse($this->service->isSettled($again));
+        $this->assertSame(0, $saves);
+        $this->assertSame($modifiedBefore, wc_get_order($order->get_id())->get_date_modified()?->getTimestamp());
+    }
 }

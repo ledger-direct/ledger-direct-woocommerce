@@ -5,6 +5,7 @@ namespace Hardcastle\LedgerDirect\Tests\Integration;
 use Hardcastle\LedgerDirect\Cron\SettlePendingOrders;
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
+use LedgerDirect;
 use WC_Order;
 
 class SettlePendingOrdersTest extends TestCase
@@ -91,5 +92,31 @@ class SettlePendingOrdersTest extends TestCase
         SettlePendingOrders::run();
 
         $this->assertSame('pending', wc_get_order($order->get_id())->get_status());
+    }
+
+    /**
+     * The safety net must not give up on an order after a short first
+     * payment: the top-up that arrives later settles it on a later run.
+     */
+    public function testATopUpAfterAPartialPaymentSettlesOnALaterRun(): void
+    {
+        $service = ServiceFactory::getInstance()->getOrderTransactionService();
+
+        $order = $this->pendingOrder();
+        $intent = $service->prepareOrderForXrpl($order, 'xrp');
+
+        $this->network->addXrpPayment($intent->destinationTag, '150000000', 'HASH-FIRST', 90000000);
+        SettlePendingOrders::run();
+
+        $order = wc_get_order($order->get_id());
+        $this->assertFalse($order->is_paid());
+        $this->assertSame('HASH-FIRST', $order->get_meta(LedgerDirect::META_KEY)['hash']);
+
+        $this->network->addXrpPayment($intent->destinationTag, '50000000', 'HASH-TOPUP', 90000010);
+        SettlePendingOrders::run();
+
+        $order = wc_get_order($order->get_id());
+        $this->assertTrue($order->is_paid());
+        $this->assertSame('HASH-TOPUP', $order->get_transaction_id());
     }
 }
