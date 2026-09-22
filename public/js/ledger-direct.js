@@ -1,53 +1,29 @@
+/**
+ * Payment page behaviour: count the quote down, and ask the server which
+ * state the payment is in.
+ *
+ * Both are conveniences. The page is fully usable without JavaScript - the
+ * amount, destination and tag are server-rendered, every state block exists
+ * in the markup, the check button is a plain form submit, and the
+ * background job settles the order regardless of whether anyone is
+ * watching this page.
+ *
+ * The poll answers with the core's payment-status payload (state, amounts,
+ * seconds left) plus a `redirect` once the order no longer waits. This
+ * script knows no sentence a customer reads: it switches the
+ * server-rendered blocks and fills in two numbers.
+ */
 (function ($) {
     'use strict';
 
-    function xrpToDrops(xrpToConvert) {
-        const DROPS_PER_XRP = 1000000.0;
-        const MAX_FRACTION_LENGTH = 6;
-        const BASE_TEN = 10;
-        const SANITY_CHECK = /^-?[0-9.]+$/u;
+    const POLL_INTERVAL_MS = 8000;
 
-        const xrp = BigNumber(xrpToConvert).toString(BASE_TEN);
-
-        // check that the value is valid and actually a number
-        if (typeof xrpToConvert === 'string' && xrp === 'NaN') {
-            throw new Error(
-                `xrpToDrops: invalid value '${xrpToConvert}', should be a BigNumber or string-encoded number.`,
-            )
-        }
-
-        /*
-         * This should never happen; the value has already been
-         * validated above. This just ensures BigNumber did not do
-         * something unexpected.
-         */
-        if (!SANITY_CHECK.exec(xrp)) {
-            throw new Error(
-                `xrpToDrops: failed sanity check - value '${xrp}', does not match (^-?[0-9.]+$).`,
-            );
-        }
-
-        const components = xrp.split('.')
-        if (components.length > 2) {
-            throw new Error(
-                `xrpToDrops: failed sanity check - value '${xrp}' has too many decimal points.`,
-            );
-        }
-
-        const fraction = components[1] || '0'
-        if (fraction.length > MAX_FRACTION_LENGTH) {
-            throw new Error(
-                `xrpToDrops: value '${xrp}' has too many decimal places.`,
-            );
-        }
-
-        return new BigNumber(xrp).times(DROPS_PER_XRP).integerValue(BigNumber.ROUND_FLOOR).toString(BASE_TEN);
-    }
-
-    /**
-     * Entry point for the plugin.
-     */
     $(function () {
+        const page = document.querySelector('[data-xrp-payment-page]');
+        if (!page) {
+            return;
+        }
+
         const destinationAccount = $('#destination-account');
         const destinationAccountCopy = destinationAccount.next().children().eq(0);
         const destinationAccountQrCode = destinationAccount.next().children().eq(1);
@@ -58,18 +34,205 @@
         destinationAccountCopy.on('click', copyToClipboard.bind(this, destinationAccount, destinationAccountCopy));
         destinationTagCopy.on('click', copyToClipboard.bind(this, destinationTag, destinationTagCopy));
 
-        attachQrCodeTooltip(destinationAccountQrCode, destinationAccount.attr("data-value"));
-        attachQrCodeTooltip(destinationTagQrCode, destinationTag.attr("data-value"));
+        attachQrCodeTooltip(destinationAccountQrCode, destinationAccount.attr('data-value'));
+        attachQrCodeTooltip(destinationTagQrCode, destinationTag.attr('data-value'));
 
         const checkPaymentButton = $('#check-payment-button');
-        checkPaymentButton.on("click", function () {
+        const spinner = checkPaymentButton.find('span');
+        checkPaymentButton.on('click', function (event) {
+            // With JavaScript the button is the poll; without, the form reloads the page.
+            event.preventDefault();
             checkPayment();
         });
 
-        // Disable Wallets for now
-        // setTimeout(setupWallets, 1000);
+        const blocks = {
+            waiting: page.querySelector('[data-ld-live]'),
+            expired: page.querySelector('[data-ld-expired]'),
+            partial: page.querySelector('[data-ld-partial]'),
+            wrong_asset: page.querySelector('[data-ld-wrong-asset]')
+        };
+        const countdown = page.querySelector('[data-ld-countdown]');
+        const pollUrl = page.getAttribute('data-ld-poll-url');
+        let state = page.getAttribute('data-ld-state') || 'waiting';
+        let secondsLeft = parseInt(page.getAttribute('data-ld-seconds-left'), 10);
+        let pollTimer = null;
 
+        startCountdown();
+        schedulePoll();
+
+        /* ---- polling ---- */
+
+        function schedulePoll() {
+            if (!pollUrl) {
+                return;
+            }
+            pollTimer = setTimeout(poll, POLL_INTERVAL_MS);
+        }
+
+        function fetchStatus() {
+            return fetch(pollUrl, {
+                credentials: 'same-origin',
+                headers: {'Accept': 'application/json'}
+            }).then(function (response) {
+                // A failed poll is not worth surfacing - the next one may well
+                // work, and the background job is the actual guarantee.
+                return response.status === 200 ? response.json() : null;
+            }).catch(function () {
+                return null;
+            });
+        }
+
+        /**
+         * The background poll: no spinner, no disabled button - the customer
+         * did not ask for anything.
+         */
+        function poll() {
+            pollTimer = null;
+            fetchStatus().then(function (payload) {
+                if (applyStatus(payload)) {
+                    schedulePoll();
+                }
+            });
+        }
+
+        /**
+         * The button: the same request, with the spinner while it runs.
+         */
+        function checkPayment() {
+            if (pollTimer) {
+                clearTimeout(pollTimer);
+                pollTimer = null;
+            }
+            spinner.show();
+            checkPaymentButton.prop('disabled', true);
+            fetchStatus().then(function (payload) {
+                spinner.hide();
+                checkPaymentButton.prop('disabled', false);
+                if (applyStatus(payload)) {
+                    schedulePoll();
+                }
+            });
+        }
+
+        /**
+         * @returns {boolean} whether to keep polling
+         */
+        function applyStatus(payload) {
+            if (!payload) {
+                return true;
+            }
+
+            // Whatever ended the wait - settled on the ledger, cancelled by the
+            // merchant - the server sends where to go. That, and only that,
+            // stops the polling: a partial payment keeps polling so the top-up
+            // is noticed, and an expired quote keeps polling so a late payment is.
+            if (payload.redirect) {
+                window.location.href = payload.redirect;
+                return false;
+            }
+
+            if (payload.state === 'partial' || payload.state === 'wrong_asset') {
+                fillAmounts(blocks[payload.state], payload);
+                showState(payload.state);
+            } else if (payload.state === 'expired') {
+                secondsLeft = 0;
+                showState('expired');
+            } else if (payload.state === 'waiting') {
+                // Trust the server's clock over the browser's: it is the one
+                // that decides whether the quote still stands.
+                if (typeof payload.seconds_left === 'number') {
+                    secondsLeft = payload.seconds_left;
+                }
+                showState('waiting');
+                renderCountdown();
+            }
+
+            return true;
+        }
+
+        /* ---- state blocks ---- */
+
+        function showState(nextState) {
+            state = nextState;
+            page.setAttribute('data-ld-state', nextState);
+
+            Object.keys(blocks).forEach(function (name) {
+                if (blocks[name]) {
+                    blocks[name].hidden = name !== nextState;
+                }
+            });
+        }
+
+        /* ---- amounts ---- */
+
+        /**
+         * The only formatting in this script, and the same rule the server
+         * uses: the plain decimal the core states - a native amount arrives as
+         * a number, a token amount as an object with a value. Nothing is
+         * computed or rounded here; the server already decided what is paid
+         * and what is missing.
+         */
+        function formatAmount(amount) {
+            if (amount === null || amount === undefined) {
+                return '';
+            }
+            if (typeof amount === 'number') {
+                return String(amount);
+            }
+            return typeof amount.value === 'string' ? amount.value : '';
+        }
+
+        function fillAmounts(block, payload) {
+            if (!block) {
+                return;
+            }
+            const paid = block.querySelector('[data-ld-paid]');
+            const shortfall = block.querySelector('[data-ld-shortfall]');
+            if (paid) {
+                paid.textContent = formatAmount(payload.amount_paid);
+            }
+            if (shortfall) {
+                shortfall.textContent = formatAmount(payload.shortfall);
+            }
+        }
+
+        /* ---- countdown ---- */
+
+        function startCountdown() {
+            if (isNaN(secondsLeft)) {
+                return;
+            }
+            renderCountdown();
+            setInterval(function () {
+                secondsLeft -= 1;
+                renderCountdown();
+            }, 1000);
+        }
+
+        function renderCountdown() {
+            if (!countdown || isNaN(secondsLeft)) {
+                return;
+            }
+
+            if (secondsLeft <= 0) {
+                // Only swaps which block is visible, and only while nothing has
+                // arrived: once a payment is in, the partial/wrong-asset block
+                // stays and the refresh button must not be offered. The
+                // refreshed amount comes from the server on submit - this never
+                // recomputes a price in the browser.
+                if (state === 'waiting') {
+                    showState('expired');
+                }
+                return;
+            }
+
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            countdown.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }
     });
+
+    /* ---- copy & QR ---- */
 
     /**
      * Copies the value of the given element to the clipboard.
@@ -83,7 +246,7 @@
      * @param event
      */
     function copyToClipboard(element, icon, event) {
-        const value = element.attr("data-value");
+        const value = element.attr('data-value');
         const message = 'copied!';
 
         if (navigator.clipboard && window.isSecureContext) {
@@ -135,6 +298,7 @@
     /**
      * Shows a temporary toast notification for copy feedback
      * @param {string} message
+     * @param icon
      * @param {boolean} isError
      */
     function showCopyFeedback(message, icon, isError = false) {
@@ -152,15 +316,6 @@
         }, 3000);
     }
 
-
-    /**
-     * Checks the payment status by reloading the page.
-     * This is a simple way to check if the payment has been received.
-     */
-    function checkPayment() {
-        location.reload();
-    }
-
     /**
      * Attaches a QR code tooltip to the given element.
      * The tooltip will display a QR code with the given value.
@@ -170,11 +325,10 @@
     function attachQrCodeTooltip(element, value) {
         element.tooltipster({
             theme: 'tooltipster-shadow',
-            //contentAsHTML: true,
             content: $('<div id="qrcode" style="width: 256px; height: 260px;">' + value + '</div>'),
             trigger: 'click',
             maxwidth: 256,
-            functionReady: function() {
+            functionReady: function () {
                 $('#qrcode').empty().qrcode({
                     width: 256,
                     height: 256,
@@ -182,103 +336,6 @@
                 });
             }
         });
-    }
-
-    /**
-     * Sets up wallets for payment if API is detected.
-     */
-    function setupWallets() {
-        setupGemWallet();
-        setupCrossmark();
-    }
-
-    /**
-     * Check if the Gem Wallet API is installed and sets Gem Wallet payments accordingly.
-     */
-    function setupGemWallet() {
-        const gemWalletButton = $('#gem-wallet-button');
-        GemWalletApi.isInstalled().then((response) => {
-            if (response.result.isInstalled) {
-                gemWalletButton.removeClass('wallet-disabled');
-                gemWalletButton.addClass('wallet-active');
-                gemWalletButton.click('click', () => {
-                    GemWalletApi.sendPayment(preparePaymentPayload()).then((response) => {
-                        console.log(response.result?.hash)
-                        checkPayment();
-                    });
-                });
-            }
-        });
-    }
-
-    /**
-     * Check if the Crossmark SDK is available and set up Crossmark Wallet accordingly.
-     */
-    function setupCrossmark() {
-        if (window.xrpl?.isCrossmark) {
-            const CrossmarkSDK = window.xrpl.crossmark;
-            const crossmarkWalletButton = $('#crossmark-wallet-button');
-            crossmarkWalletButton.removeClass('wallet-disabled');
-            crossmarkWalletButton.addClass('wallet-active');
-            crossmarkWalletButton.click('click', () => {
-                const paymentData = preparePaymentPayload();
-                const transaction = {
-                    TransactionType: 'Payment',
-                    Account: CrossmarkSDK.sign({TransactionType: 'SignIn'}),
-                    Destination: paymentData.destination,
-                    DestinationTag: paymentData.destinationTag,
-                    Amount: paymentData.amount
-                }
-                const response = CrossmarkSDK.signAndSubmit(transaction);
-                console.log(response);
-            });
-        }
-    }
-
-    /**
-     * Generate a payment payload.
-     * @returns {{amount: {currency: (*|string|jQuery), issuer: (*|string|jQuery), value: (*|string|jQuery)}, destination: *, destinationTag: number}|{amount: *, destination: *, destinationTag: number}}
-     */
-    function preparePaymentPayload() {
-        // XRP Payment
-        try {
-            const xrpAmount = $('#xrp-amount');
-            const destinationAccount = $('#destination-account');
-            const destinationTag = $('#destination-tag');
-
-            const xrpPaymentData = {
-                amount: parseFloat(xrpAmount.val()).toFixed(6),
-                destination: destinationAccount.data('value'),
-                destinationTag: parseInt(destinationTag.data('value'))
-            }
-
-            return {
-                amount: xrpToDrops(xrpPaymentData.amount), // converted to drops
-                destination: xrpPaymentData.destination,
-                destinationTag: xrpPaymentData.destinationTag
-            }
-        } catch (error) {
-            console.log(error)
-        }
-
-        // Token/Stablecoin Payment
-        try {
-            const tokenAmount = $('#token-amount')
-            const issuer = $('#issuer')
-            const currency = $('#currency')
-
-            return {
-                amount: {
-                    currency: currency.val(),
-                    issuer: issuer.val(),
-                    value: tokenAmount.val()
-                },
-                destination: destinationAccount.val(),
-                destinationTag: parseInt(destinationTag.val())
-            }
-        } catch (error) {
-            console.log(error)
-        }
     }
 
 })(jQuery);

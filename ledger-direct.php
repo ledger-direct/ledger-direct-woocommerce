@@ -3,7 +3,7 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://github.com/ledger-direct/ledger-direct-woocommerce
  * Description: A XRP Ledger integration.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct
@@ -20,6 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use Hardcastle\LedgerDirect\Api\PaymentStatusEndpoint;
 use Hardcastle\LedgerDirect\Cron\SettlePendingOrders;
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
@@ -157,5 +158,6 @@ function ledger_direct_get_svg_html(string $icon, array $properties = []): strin
 }
 
 SettlePendingOrders::register();
+PaymentStatusEndpoint::register();
 
 LedgerDirect::instance();

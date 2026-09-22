@@ -1,0 +1,144 @@
+# Manual test cases — payment status, WooCommerce
+
+The WooCommerce instantiation of the core's case catalogue, `docs/manual-tests/payment-status.md` in
+`hardcastle/ledger-direct-core`. The catalogue says *what* must hold on every platform; this file says how to
+make it happen in this shop: which setting, which command, which status name, where the evidence shows up.
+Same IDs.
+
+**How this is used.** A pull request that touches the payment page, `Api/PaymentStatusEndpoint`,
+`OrderTransactionService` or `Cron/SettlePendingOrders` lists the applicable IDs under "Manual end-to-end
+tests" as checkboxes and ticks what was actually run, with the order number or hash next to it. Results are
+not collected in this file; the PR is the record. Should a case get automated or become a merge gate one day,
+it keeps its ID.
+
+## Environment
+
+- The docker stack in `wordpress-docker-compose-master/` (`docker compose up -d`; the `wp` container has
+  WP-CLI: `docker compose exec wp wp <command> --allow-root`). The shop is `https://localhost`.
+- **Own testnet wallet** for this shop (never the one another shop uses — shared tag space; never an issuer
+  account): `tests/manual/xrpl-e2e/faucet.js` funds one, `trustset.js <seed> <currencyHex> <issuer>` adds the
+  trust lines to the testnet issuers of RLUSD and USDC from the core's `StablecoinRegistry`. Seeds stay in the
+  git-ignored `tests/manual/`, never in docs or commits. `pay.js <seed> <destination> <tag> <amount>` sends a
+  signed XRP payment with a destination tag and waits for validation; `info.js <address>` shows balance and
+  trust lines.
+- Configuration: WooCommerce → Settings → Payments → LedgerDirect: network *Testnet*, the testnet account, RLUSD
+  and USDC enabled, quote expiry 15 minutes unless a case says otherwise. Or by WP-CLI:
+
+  ```
+  wp option patch update woocommerce_ledger-direct_settings xrpl_testnet_destination_account <wallet> --allow-root
+  wp option patch update woocommerce_ledger-direct_settings xrpl_quote_expiry 1 --allow-root
+  ```
+
+- The payment page: `/ledger-direct-payment/<order key>/` (with permalinks) or
+  `/?ledger-direct-payment=<order key>`. The poll it makes: `/wp-json/ledger-direct/v1/payment-status/<order key>`.
+  Watch it in the browser's network tab, or call it with `curl -sk -H 'Accept: application/json'`. The key of
+  an order: `wp wc shop_order get <id> --fields=order_key --user=admin --allow-root`, or the *Order received*
+  URL after checkout.
+- Order status: WooCommerce → Orders, or `wp wc shop_order get <id> --fields=status,transaction_id --user=admin --allow-root`.
+  An order waits for payment while it is *Pending payment*; *Processing* (or *Completed* for virtual goods)
+  with a transaction ID means paid. The payment record: the order's `_ledger_direct` meta
+  (`wp post meta get <id> _ledger_direct --allow-root` on non-HPOS stores, or the *Custom Fields* box).
+- The background job: Action Scheduler, hook `ledger_direct_settle_pending_orders` every five minutes. Run it
+  now with `wp action-scheduler run --hooks=ledger_direct_settle_pending_orders --allow-root`, or WooCommerce →
+  Status → Scheduled Actions → *Run*. Its log lines are under WooCommerce → Status → Logs, source
+  `ledger-direct`.
+
+## PS-01 — Waiting
+
+Place an order with *XRP*, send nothing, open the payment page.
+
+Look for: `data-ld-state="waiting"` on the page wrapper; the countdown next to *This amount is guaranteed
+for*; a request to `/wp-json/ledger-direct/v1/payment-status/…` every 8 s in the network tab, each answering
+`"state":"waiting"` with a falling `seconds_left` and no `redirect`; the order *Pending payment*.
+
+## PS-02 — Expired, then refreshed
+
+Quote expiry 1 minute in the settings. Place an XRP order, send nothing, wait a minute with the page open.
+
+Look for: the countdown block hidden, the expired notice with *Get an updated amount* visible; the poll answers
+`"state":"expired"`, `"seconds_left":null`, still no `redirect`. Click the button (a POST to the payment page
+with the nonce): the page reloads with a new amount and a fresh countdown, the destination tag unchanged
+(`destination_tag` in the `_ledger_direct` meta). Reset the expiry afterwards.
+
+Also: the button is refused (plain reload, no new quote) when something has arrived — try it on the PS-03
+order.
+
+## PS-03 — Partial, then topped up
+
+Place a small XRP order. Send half the displayed amount to account and tag. Do **not** reload.
+
+Look for, within 8 s: the `data-ld-partial` block visible with *X XRP received so far. Y XRP is still
+outstanding*; the poll answers `"state":"partial"` with `amount_paid` and `shortfall`; the order still
+*Pending payment*, its `_ledger_direct` meta carrying the hash and the amount. Then send `Y` to the same account
+and tag: the poll answers `redirect`, the page leaves for *Order received*, the order is *Processing* with
+`transaction_id` = the second transaction's hash and `amount_paid` in the meta = the sum.
+
+## PS-04 — Wrong asset, then the right one
+
+Place a *USDC* order. Pay the full amount in **RLUSD** to account and tag.
+
+Look for: the `data-ld-wrong-asset` block visible naming the RLUSD amount and the full USDC request; the poll
+answers `"state":"wrong_asset"` with `amount_paid.issuer` the RLUSD issuer and `shortfall` in USDC with the
+full value; the order *Pending payment*. Then send the USDC: `redirect`, *Processing*, and `transaction_id` is
+the USDC transaction.
+
+## PS-05 — Settled
+
+Place an XRP order of about 1.00 in shop currency. Send exactly the amount the page shows.
+
+Look for: `redirect` in the next poll, the *Order received* page, the order *Processing*; exactly one
+*Processing* order note from WooCommerce (`payment_complete()` ran once — not once from the poll and again
+from the page or the job), one order confirmation mail.
+
+## PS-06 — Guest, key knowledge instead of login
+
+Place the order as a guest. After the checkout the address bar reads `/ledger-direct-payment/wc_order_…/`;
+copy that URL. Open it in a private window.
+
+Look for: the payment page renders without a login prompt; the poll URL opened in the same window answers
+200 with the payload.
+
+## PS-07 — Wrong key is refused without a hint
+
+```
+curl -sk -o /dev/null -w '%{http_code}\n' 'https://localhost/wp-json/ledger-direct/v1/payment-status/wc_order_wrong'
+curl -sk -o /dev/null -w '%{http_code}\n' 'https://localhost/wp-json/ledger-direct/v1/payment-status/<key of a non-LedgerDirect order>'
+```
+
+Look for: 403 both times, the same body `{"error":"forbidden"}`. The payment page with a wrong key answers
+404. A key that is not of the form `wc_order_…` does not even match the route (404 from the REST API).
+
+## PS-08 — Throttling
+
+Two open orders on the testnet wallet, two payment pages open in two browsers (or one page plus `curl` on
+the poll URL twice within 5 s).
+
+Look for: both polls answer the full payload. The node request count: the core does not log each
+`account_tx` call, so measure by timing — a poll that synced takes noticeably longer (about a second) than
+one answered from the stored intent; only one of two calls within 5 s does. Or count the requests to
+`s.altnet.rippletest.net` with `WP_DEBUG_LOG` and a `http_api_debug` filter.
+
+## PS-09 — Safety net without a browser
+
+Place an XRP order, close the page, send the full amount. Then run the Action Scheduler hook (see
+Environment).
+
+Look for: the order *Processing* without any page having been open. With several open orders on one account
+the job makes one `account_tx` request (its warning lines, if any, are per order; the sync is per account).
+
+## PS-10 — Late return after the checkout session is gone
+
+WooCommerce has no payment token; what a customer loses is the checkout session and cart. Place an order,
+open the key URL in a **new private window** (no session), pay the full amount there.
+
+Look for: the poll answers `"state":"settled"` with a `redirect` to the *Order received* page for that order
+key; following it shows the order, no cart redirect; the order *Processing*.
+
+## PS-11 — Closed by the merchant
+
+Place an XRP order, send nothing, keep the page open. In the admin, cancel the order.
+
+Look for: the next poll carries a `redirect` while `state` is still `waiting`; the page leaves. Then send the
+amount anyway and run the job: the order stays *Cancelled* — neither the job (which only looks at *Pending
+payment* orders) nor the page or the poll (which no longer sync an order that does not need payment) touch it;
+the payment stays in the transaction table for the merchant to deal with by hand.

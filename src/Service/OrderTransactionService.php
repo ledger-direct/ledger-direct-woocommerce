@@ -6,11 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntentService;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
+use Hardcastle\LedgerDirect\Core\Xrpl\SyncThrottle;
 use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
 use InvalidArgumentException;
 use LedgerDirect;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Throwable;
 use WC_Order;
 
 /**
@@ -39,16 +44,24 @@ class OrderTransactionService
 
     private LegacyPaymentIntentMapper $legacyMapper;
 
+    private ?SyncThrottle $syncThrottle;
+
+    private LoggerInterface $logger;
+
     public function __construct(
         PaymentIntentService $paymentIntentService,
         SyncService $syncService,
         SettlementPolicy $settlementPolicy,
-        LegacyPaymentIntentMapper $legacyMapper
+        LegacyPaymentIntentMapper $legacyMapper,
+        ?SyncThrottle $syncThrottle = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->paymentIntentService = $paymentIntentService;
         $this->syncService = $syncService;
         $this->settlementPolicy = $settlementPolicy;
         $this->legacyMapper = $legacyMapper;
+        $this->syncThrottle = $syncThrottle;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -144,6 +157,56 @@ class OrderTransactionService
         }
 
         return $fulfilledIntent;
+    }
+
+    /**
+     * The customer-facing path: the payment page and the status endpoint.
+     *
+     * Syncs the receiving account at most once per interval, however many
+     * pages poll it (SyncThrottle, keyed by network and account), then
+     * matches against the local table. The mark is set before the request:
+     * a node that does not answer is otherwise hit by every poll. A sync
+     * failure is logged, not thrown - the poll still answers from what is
+     * stored, and the next poll or the background job tries again.
+     *
+     * The background job does not come through here; it syncs once per
+     * account per run, unthrottled, and matches many orders.
+     */
+    public function syncOrderTransactionThrottled(WC_Order $order): ?PaymentIntent
+    {
+        $intent = $this->readPaymentIntent($order);
+
+        if ($intent === null) {
+            return null;
+        }
+
+        $due = $this->syncThrottle === null
+            || $this->syncThrottle->shouldSync($intent->network, $intent->destinationAccount);
+
+        if ($due && !($intent->hash !== null && $this->settlementPolicy->isSettled($intent))) {
+            $this->syncThrottle?->markSynced($intent->network, $intent->destinationAccount);
+
+            try {
+                $this->syncService->syncTransactions($intent->destinationAccount, $intent->network);
+            } catch (Throwable $exception) {
+                $this->logger->warning('LedgerDirect: ledger sync failed, matching against the stored transactions', [
+                    'order_id' => $order->get_id(),
+                    'exception' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        return $this->syncOrderTransactionWithXrpl($order, false);
+    }
+
+    /**
+     * The answer to "is this order paid?" - one of the five states of the
+     * payment-status contract, derived from the stored intent and the
+     * core's policy (INVARIANTS.md, "Payment status").
+     */
+    public function paymentStatus(PaymentIntent $intent): PaymentStatus
+    {
+        return PaymentStatus::fromIntent($intent, $this->settlementPolicy);
     }
 
     /**
