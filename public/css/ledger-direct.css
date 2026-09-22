@@ -211,3 +211,46 @@ body.ld-body {
         height: 20px;
     }
 }
+/* Payment states: the server renders every block, the script switches them. */
+.ld-container [hidden] {
+    display: none !important;
+}
+
+.ld-quote-validity {
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.ld-warning .alert-info {
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #1daae6;
+    background-color: #eef8fc;
+}
+
+.ld-warning .alert-warning {
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #f0ad4e;
+    background-color: #fdf6ec;
+}
+
+.ld-warning .alert-content p {
+    margin: 0 0 0.5rem 0;
+}
+
+.ld-refresh-quote {
+    padding: 0.5rem;
+    font-weight: bold;
+    color: white;
+    background-color: #1daae6;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.ld-refresh-quote:hover {
+    background-color: #59c2ef;
+}
+
+.ld-sync form {
+    margin: 0;
+}

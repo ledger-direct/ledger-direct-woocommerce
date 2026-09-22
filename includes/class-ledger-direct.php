@@ -2,6 +2,7 @@
 
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
+use Hardcastle\LedgerDirect\Api\PaymentStatusEndpoint;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
@@ -270,6 +271,21 @@ class LedgerDirect
                 exit;
             }
 
+            // The refresh of an expired quote is an explicit POST from the
+            // expired block, never a side effect of loading the page: the
+            // customer may have sent the old amount already, and the page
+            // has to be able to say "expired" before it changes the number.
+            if ($this->is_refresh_request($order)) {
+                try {
+                    $service->refreshExpiredQuote($order, $intent);
+                } catch (Exception $e) {
+                    self::log('Could not refresh the quote for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
+                }
+
+                wp_safe_redirect(LedgerDirectPaymentGateway::get_payment_page_url($order));
+                exit;
+            }
+
             $fulfilled = $gateway->sync_payment($order);
 
             if ($fulfilled !== null) {
@@ -283,21 +299,15 @@ class LedgerDirect
                     wp_safe_redirect($gateway->get_return_url($order));
                     exit;
                 }
-            } else {
-                // Nothing arrived yet: an expired quote is refreshed in place,
-                // keeping the destination account and tag the customer may
-                // already have in their wallet.
-                try {
-                    $intent = $service->refreshExpiredQuote($order, $intent);
-                } catch (Exception $e) {
-                    self::log('Could not refresh the quote for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
-                }
             }
 
-            global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_shortfall;
+            global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_status, $ledger_direct_shortfall, $ledger_direct_poll_url, $ledger_direct_refresh_nonce;
             $ledger_direct_order = $order;
             $ledger_direct_intent = $intent;
+            $ledger_direct_status = $service->paymentStatus($intent);
             $ledger_direct_shortfall = $service->shortfall($intent);
+            $ledger_direct_poll_url = PaymentStatusEndpoint::url($order);
+            $ledger_direct_refresh_nonce = wp_create_nonce(self::refresh_nonce_action($order));
 
             $this->enqueue_public_styles();
             $this->enqueue_public_scripts();
@@ -313,6 +323,29 @@ class LedgerDirect
         }
 
         return $template;
+    }
+
+    /**
+     * Whether this request is the "get an updated amount" form of the
+     * expired block: a POST to the payment page with the nonce the page
+     * rendered for this order.
+     */
+    private function is_refresh_request(WC_Order $order): bool {
+        if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return false;
+        }
+
+        if (!isset($_POST['ledger_direct_refresh'])) {
+            return false;
+        }
+
+        $nonce = isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
+
+        return wp_verify_nonce($nonce, self::refresh_nonce_action($order)) !== false;
+    }
+
+    public static function refresh_nonce_action(WC_Order $order): string {
+        return 'ledger_direct_refresh_' . $order->get_order_key();
     }
 
     /**

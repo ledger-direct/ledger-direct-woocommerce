@@ -7,17 +7,19 @@ use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 /**
  * @var WC_Order|null $ledger_direct_order
  * @var object|null $ledger_direct_intent  A core PaymentIntent (this file is not scoped, so the class is not referenced)
+ * @var object|null $ledger_direct_status  A core PaymentStatus, same reason
  * @var string|null $ledger_direct_shortfall
+ * @var string|null $ledger_direct_poll_url
+ * @var string|null $ledger_direct_refresh_nonce
  */
-global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_shortfall;
+global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_status, $ledger_direct_shortfall, $ledger_direct_poll_url, $ledger_direct_refresh_nonce;
 
-$ledger_direct_current_user = wp_get_current_user();
-
-// Check if user is owner of the order, otherwise redirect to shop page
-if ($ledger_direct_order && $ledger_direct_current_user->ID !== $ledger_direct_order->get_user_id()) {
-    wp_safe_redirect(get_permalink( wc_get_page_id( 'shop' ) ));
-    exit;
-}
+/*
+ * Whoever holds the order key holds the page - the same rule as WooCommerce's
+ * own "order received" page, and the only one that works for the guest order
+ * a crypto checkout mostly is, or for a customer coming back from the
+ * confirmation mail in another browser.
+ */
 
 ?>
 
@@ -85,13 +87,28 @@ $exchange_rate = $intent->exchangeRate;
 $pairing = $intent->pairing;
 $issued_amount = is_array($intent->amountRequested) ? $intent->amountRequested : null;
 
-$amount_paid = $intent->amountPaidValue();
-$shortfall = $ledger_direct_shortfall;
-// A same-named token from another issuer is a different asset and never settles.
-$paid_wrong_asset = is_array($intent->amountPaid) && is_array($intent->amountRequested)
-    && ($intent->amountPaid['issuer'] !== $intent->amountRequested['issuer']
-        || $intent->amountPaid['currency'] !== $intent->amountRequested['currency']);
-$expires_in = $intent->expiry !== null ? max(0, $intent->expiry - time()) : null;
+/*
+ * The five-state payment status (INVARIANTS.md, "Payment status"), rendered
+ * server-side: one block per state, the server decides which starts visible,
+ * the script only switches them and fills in two numbers from the poll. Which
+ * state it is - partial, wrong asset, expired - is the core's decision, not a
+ * comparison made here. Every amount is the plain decimal the core states;
+ * nothing is rounded. A settled order never renders this page.
+ */
+$state = is_object($ledger_direct_status) ? $ledger_direct_status->state : 'waiting';
+$seconds_left = is_object($ledger_direct_status) ? $ledger_direct_status->secondsLeft : null;
+$has_expiry = $intent->expiry !== null;
+$amount_paid = (string) $intent->amountPaidValue();
+$shortfall = (string) $ledger_direct_shortfall;
+$countdown = $seconds_left === null ? '' : sprintf('%d:%02d', intdiv(max(0, $seconds_left), 60), max(0, $seconds_left) % 60);
+$page_url = LedgerDirectPaymentGateway::get_payment_page_url($ledger_direct_order);
+$order_key = $ledger_direct_order->get_order_key();
+$allowed_amount_html = [
+        'strong' => [
+                'data-ld-paid' => true,
+                'data-ld-shortfall' => true,
+        ],
+];
 
 $allowed_svg_html = [
         'svg'   => [
@@ -126,7 +143,11 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
     </h3>
 </div>
 
-<div class="ld-container" data-xrp-payment-page="true">
+<div class="ld-container"
+     data-xrp-payment-page="true"
+     data-ld-state="<?php echo esc_attr($state); ?>"
+     data-ld-poll-url="<?php echo esc_url($ledger_direct_poll_url ?? ''); ?>"
+     <?php if ($seconds_left !== null) { ?>data-ld-seconds-left="<?php echo esc_attr((string) $seconds_left); ?>"<?php } ?>>
     <div class="ld-content">
 
         <div class="ld-card">
@@ -209,6 +230,52 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                     </div>
                 </div>
 
+                <?php
+                /*
+                 * Something arrived but the order is not paid. Neutral tone on
+                 * purpose: the customer did what their wallet told them; the page
+                 * explains, it does not alarm. The markup enclosing the numbers is
+                 * passed in as the placeholders, so the translations carry none of
+                 * it and the script can find the numbers to update.
+                 */
+                ?>
+                <div class="ld-warning" data-ld-partial <?php echo $state !== 'partial' ? 'hidden' : ''; ?>>
+                    <div role="alert" class="alert alert-info">
+                        <div class="alert-content-container">
+                            <div class="alert-content">
+                                <?php
+                                $partial_notice = sprintf(
+                                    /* translators: 1: amount received so far with asset symbol, 2: amount still outstanding with asset symbol */
+                                    __('%1$s received so far. %2$s is still outstanding – please send the remaining amount to the same address, with the same destination tag.', 'ledger-direct'),
+                                    '<strong data-ld-paid>' . esc_html($amount_paid) . '</strong> ' . esc_html($base_asset),
+                                    '<strong data-ld-shortfall>' . esc_html($shortfall) . '</strong> ' . esc_html($base_asset)
+                                );
+                                echo wp_kses($partial_notice, $allowed_amount_html);
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ld-warning" data-ld-wrong-asset <?php echo $state !== 'wrong_asset' ? 'hidden' : ''; ?>>
+                    <div role="alert" class="alert alert-info">
+                        <div class="alert-content-container">
+                            <div class="alert-content">
+                                <?php
+                                $wrong_asset_notice = sprintf(
+                                    /* translators: 1: amount that arrived, 2: amount still outstanding, 3: token symbol (RLUSD, USDC) */
+                                    __('A payment of %1$s arrived, but not in the token this order is quoted in – the currency or the issuer does not match, so it cannot be credited. Please send %2$s %3$s from the issuer shown above, or contact us about the payment you already made.', 'ledger-direct'),
+                                    '<strong data-ld-paid>' . esc_html($amount_paid) . '</strong>',
+                                    '<strong data-ld-shortfall>' . esc_html($shortfall) . '</strong>',
+                                    esc_html($base_asset)
+                                );
+                                echo wp_kses($wrong_asset_notice, $allowed_amount_html);
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="ld-warning">
                     <div role="alert" class="alert alert-warning alert-has-icon">
                         <div class="alert-content-container">
@@ -219,18 +286,35 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                     </div>
                 </div>
 
-                <?php if ($amount_paid !== null && $shortfall !== null) { ?>
-                    <div class="ld-warning">
-                        <div role="alert" class="alert alert-warning alert-has-icon">
+                <?php if ($has_expiry) { ?>
+                    <?php
+                    /*
+                     * Both blocks are always rendered so the countdown can swap them
+                     * without a reload; the server decides which one starts visible.
+                     * Neither shows while a payment has arrived: the state blocks
+                     * above take over, and a refresh would re-quote an order that is
+                     * already partly paid.
+                     */
+                    ?>
+                    <p class="ld-quote-validity" data-ld-live <?php echo $state !== 'waiting' ? 'hidden' : ''; ?>>
+                        <?php esc_html_e('This amount is guaranteed for', 'ledger-direct'); ?>
+                        <strong data-ld-countdown><?php echo esc_html($countdown); ?></strong>
+                    </p>
+
+                    <div class="ld-warning" data-ld-expired <?php echo $state !== 'expired' ? 'hidden' : ''; ?>>
+                        <div role="alert" class="alert alert-warning">
                             <div class="alert-content-container">
                                 <div class="alert-content">
-                                    <?php if ($paid_wrong_asset) { ?>
-                                        <?php /* translators: %s: token symbol (RLUSD, USDC) */ ?>
-                                        <?php echo esc_html(sprintf(__('A payment arrived, but not in the requested %s. Please send the amount below in the requested token.', 'ledger-direct'), $base_asset)); ?>
-                                    <?php } else { ?>
-                                        <?php /* translators: 1: amount received, 2: amount requested, 3: amount still missing, 4: asset symbol */ ?>
-                                        <?php echo esc_html(sprintf(__('Received %1$s of %2$s %4$s so far. Please send the remaining %3$s %4$s.', 'ledger-direct'), $amount_paid, $amount_requested, $shortfall, $base_asset)); ?>
-                                    <?php } ?>
+                                    <p><?php esc_html_e('This quote has expired. The exchange rate may have moved since.', 'ledger-direct'); ?></p>
+                                    <p><?php esc_html_e('Already sent the old amount? Do not send it again – use the check button below instead.', 'ledger-direct'); ?></p>
+                                    <form method="post" action="<?php echo esc_url($page_url); ?>">
+                                        <input type="hidden" name="<?php echo esc_attr(LedgerDirect::ORDER_IDENTIFIER); ?>" value="<?php echo esc_attr($order_key); ?>">
+                                        <input type="hidden" name="ledger_direct_refresh" value="1">
+                                        <input type="hidden" name="_wpnonce" value="<?php echo esc_attr((string) $ledger_direct_refresh_nonce); ?>">
+                                        <button type="submit" class="ld-refresh-quote">
+                                            <?php esc_html_e('Get an updated amount', 'ledger-direct'); ?>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -238,10 +322,20 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                 <?php } ?>
 
                 <div class="ld-sync">
-                    <button id="check-payment-button" data-order-id="<?php echo esc_attr((string) $order_id); ?>">
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none"></span>
-                        <?php esc_html_e('Check payment processing', 'ledger-direct'); ?>
-                    </button>
+                    <?php
+                    /*
+                     * The manual path, and the only one a browser without JavaScript
+                     * has: a plain reload of the page, which syncs and settles. The
+                     * script turns the click into the same request the poll makes.
+                     */
+                    ?>
+                    <form method="get" action="<?php echo esc_url($page_url); ?>">
+                        <input type="hidden" name="<?php echo esc_attr(LedgerDirect::ORDER_IDENTIFIER); ?>" value="<?php echo esc_attr($order_key); ?>">
+                        <button type="submit" id="check-payment-button" data-order-id="<?php echo esc_attr((string) $order_id); ?>">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none"></span>
+                            <?php esc_html_e('Check payment processing', 'ledger-direct'); ?>
+                        </button>
+                    </form>
                 </div>
 
             </div>
@@ -255,10 +349,6 @@ $qr_icon_svg = ledger_direct_get_svg_html('qr', ['class' => 'action-svg']);
                 <span><?php esc_html_e('Exchange rate', 'ledger-direct'); ?>: <?php echo esc_html((string) $exchange_rate); ?> <?php echo esc_html($pairing); ?></span>
                 <br/>
                 <span><?php esc_html_e('Network', 'ledger-direct'); ?>: <?php echo esc_html($network_name); ?></span><br/>
-                <?php if ($expires_in !== null && $amount_paid === null) { ?>
-                    <?php /* translators: %d: minutes */ ?>
-                    <span><?php echo esc_html(sprintf(__('Quote valid for %d more minutes', 'ledger-direct'), (int) ceil($expires_in / 60))); ?></span><br/>
-                <?php } ?>
             </div>
 
         </div>
