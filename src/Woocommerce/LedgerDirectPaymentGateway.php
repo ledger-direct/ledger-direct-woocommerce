@@ -193,12 +193,14 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     /**
      * Syncs the order with the XRPL and returns the fulfilled intent when a
      * payment has arrived (settled or not - see is_settled()), null otherwise.
-     * A sync failure is logged, not thrown: the page still renders.
+     * Throttled per receiving account like the status endpoint: a reload
+     * within the interval answers from what is stored. A failure is logged,
+     * not thrown: the page still renders.
      */
     public function sync_payment(WC_Order $order): ?PaymentIntent
     {
         try {
-            return $this->orderTransactionService->syncOrderTransactionWithXrpl($order);
+            return $this->orderTransactionService->syncOrderTransactionThrottled($order);
         } catch (Exception $exception) {
             ServiceFactory::getInstance()->getLogger()->warning('Failed to sync order transaction with XRPL', [
                 'order_id' => $order->get_id(),

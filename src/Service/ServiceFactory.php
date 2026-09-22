@@ -10,6 +10,7 @@ use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Core\Price\PriceService;
 use Hardcastle\LedgerDirect\Core\Xrpl\DestinationTagService;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
+use Hardcastle\LedgerDirect\Core\Xrpl\SyncThrottle;
 use Hardcastle\LedgerDirect\Core\Xrpl\XrplClient;
 use Hardcastle\LedgerDirect\Http\WpHttpClient;
 use Hardcastle\LedgerDirect\Log\WcLoggerAdapter;
@@ -41,6 +42,7 @@ final class ServiceFactory
     private ?PriceService $priceService = null;
     private ?PaymentIntentService $paymentIntentService = null;
     private ?SyncService $syncService = null;
+    private ?SyncThrottle $syncThrottle = null;
     private ?SettlementPolicy $settlementPolicy = null;
     private ?OrderTransactionService $orderTransactionService = null;
 
@@ -148,13 +150,27 @@ final class ServiceFactory
         );
     }
 
+    /**
+     * Keeps the status endpoint and the payment page from syncing the same
+     * receiving account more often than once per interval
+     * (PaymentStatus::MIN_SYNC_INTERVAL_SECONDS). The mark lives in the same
+     * transient store as the rate cache; an object cache that evicts it
+     * degrades to "always sync", never to "never sync".
+     */
+    public function getSyncThrottle(): SyncThrottle
+    {
+        return $this->syncThrottle ??= new SyncThrottle($this->getRateCache(), $this->getLogger());
+    }
+
     public function getOrderTransactionService(): OrderTransactionService
     {
         return $this->orderTransactionService ??= new OrderTransactionService(
             $this->getPaymentIntentService(),
             $this->getSyncService(),
             $this->getSettlementPolicy(),
-            new LegacyPaymentIntentMapper()
+            new LegacyPaymentIntentMapper(),
+            $this->getSyncThrottle(),
+            $this->getLogger()
         );
     }
 
