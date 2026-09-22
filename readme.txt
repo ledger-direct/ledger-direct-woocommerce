@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -71,6 +71,13 @@ LedgerDirect uses minified assets from third party libraries. The source for the
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.2.0 =
+* The payment page now follows the payment on its own: it polls every 8 seconds and shows one of five states - waiting (with a countdown for the quote), partial payment, payment in the wrong token, expired quote, and paid - and leaves for the order confirmation as soon as the order is paid or closed. No more reloading.
+* New status endpoint `/wp-json/ledger-direct/v1/payment-status/<order key>`, the same payload as every other LedgerDirect plugin. Access is by the order key, as on the "Order received" page, so guest orders work without a login.
+* The ledger is synced at most once per five seconds per receiving account, however many customers are waiting; the background job is unaffected.
+* An expired quote is no longer replaced silently on reload; the page says so and offers an updated amount on request.
+* Whether a payment is in the wrong token is decided by the shared library, the same rule as on every other platform.
 
 = 1.1.1 =
 * Fix: an order that received a partial payment could never be completed. The first payment was recorded and the plugin stopped looking, so a customer who then sent the remaining amount was never marked as paid, neither on the payment page nor by the background job. Payments in the quoted asset now add up, and the order is matched until it settles.

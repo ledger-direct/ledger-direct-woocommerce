@@ -54,6 +54,22 @@ To test the plugin, you can configure it to use the XRP Ledger Testnet. This all
 3. Use a test XRP Ledger account to make test payments.
 4. You can create test accounts from the [XRP Testnet faucet](https://xrpl.org/xrp-testnet-faucet.html) for XRP, [RLUSD Testnet faucet](https://tryrlusd.com/) for RLUSD or [Circle Testnet faucet](https://faucet.circle.com/) for USDC.
 
+## Payment page
+
+After checkout the customer lands on `/ledger-direct-payment/<order key>/`, the page that shows the amount, the
+receiving account and the destination tag. It follows the payment on its own: every 8 seconds it asks
+`/wp-json/ledger-direct/v1/payment-status/<order key>` and shows one of five states — *waiting* (with a countdown
+for the quote), *partial*, *wrong asset*, *expired*, *settled* — the same payload every LedgerDirect plugin
+answers (`INVARIANTS.md` in the core, "Payment status"). Once the order is paid or closed the answer carries a
+`redirect` and the page leaves for the order confirmation. Access is by the order key, as on WooCommerce's own
+"Order received" page: guest orders need no login, a wrong key gets a 403 without a hint.
+
+The ledger is synced at most once per five seconds per receiving account, however many pages poll it. A page
+without JavaScript still works: the check button reloads the page, which syncs and settles, and the
+background job (Action Scheduler, every five minutes) settles orders nobody is watching.
+
+The manual test cases for all of this, by the core's case IDs, are in `docs/manual-tests/payment-status.md`.
+
 ## External Services
 LedgerDirect uses public APIs from Coinbase, Coingecko, Binance, and Kraken to retrieve current cryptocurrency exchange rates. These rates are needed to correctly calculate and display payments.
 
