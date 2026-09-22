@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "15afdec37f2545780484cec803852fa8",
+    "content-hash": "85f3e633122b031f9d1ce92b05e7671d",
     "packages": [
         {
             "name": "brick/math",
@@ -67,21 +67,22 @@
         },
         {
             "name": "hardcastle/ledger-direct-core",
-            "version": "0.4.0",
+            "version": "0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ledger-direct/ledger-direct-core-php.git",
-                "reference": "ff832e7e8aa21750ffd8858ba2a0d2ed2a5abb6e"
+                "reference": "6e66ce77a373d0710f7ba4105c5666d7d987cab5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ledger-direct/ledger-direct-core-php/zipball/ff832e7e8aa21750ffd8858ba2a0d2ed2a5abb6e",
-                "reference": "ff832e7e8aa21750ffd8858ba2a0d2ed2a5abb6e",
+                "url": "https://api.github.com/repos/ledger-direct/ledger-direct-core-php/zipball/6e66ce77a373d0710f7ba4105c5666d7d987cab5",
+                "reference": "6e66ce77a373d0710f7ba4105c5666d7d987cab5",
                 "shasum": ""
             },
             "require": {
                 "brick/math": "^0.12 || ^0.13 || ^0.14 || ^0.15 || ^0.16 || ^0.17 || ^0.18 || ^0.19 || ^0.20",
                 "php": "^8.2",
+                "psr/clock": "^1.0",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/log": "^3.0",
@@ -90,6 +91,9 @@
             "require-dev": {
                 "guzzlehttp/guzzle": "^7.9",
                 "phpunit/phpunit": "^11.0"
+            },
+            "suggest": {
+                "phpunit/phpunit": "Required by Hardcastle\\LedgerDirect\\Core\\Testing\\XrplTransactionRepositoryContractTestCase, the contract test for adapter repository implementations"
             },
             "type": "library",
             "autoload": {
@@ -111,9 +115,9 @@
             "description": "LedgerDirect Core - platform-agnostic XRPL/commerce logic shared across all LedgerDirect plugins",
             "support": {
                 "issues": "https://github.com/ledger-direct/ledger-direct-core-php/issues",
-                "source": "https://github.com/ledger-direct/ledger-direct-core-php/tree/0.4.0"
+                "source": "https://github.com/ledger-direct/ledger-direct-core-php/tree/0.7.0"
             },
-            "time": "2026-09-07T11:14:35+00:00"
+            "time": "2026-09-15T10:44:08+00:00"
         },
         {
             "name": "nyholm/psr7",
@@ -192,6 +196,54 @@
                 }
             ],
             "time": "2024-09-09T07:06:30+00:00"
+        },
+        {
+            "name": "psr/clock",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/clock.git",
+                "reference": "e41a24703d4560fd0acb709162f73b8adfc3aa0d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/clock/zipball/e41a24703d4560fd0acb709162f73b8adfc3aa0d",
+                "reference": "e41a24703d4560fd0acb709162f73b8adfc3aa0d",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0 || ^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Clock\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for reading the clock.",
+            "homepage": "https://github.com/php-fig/clock",
+            "keywords": [
+                "clock",
+                "now",
+                "psr",
+                "psr-20",
+                "time"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/clock/issues",
+                "source": "https://github.com/php-fig/clock/tree/1.0.0"
+            },
+            "time": "2022-11-25T14:36:26+00:00"
         },
         {
             "name": "psr/http-client",
