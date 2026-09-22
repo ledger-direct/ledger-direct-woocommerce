@@ -135,7 +135,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
      * Port method: every transaction on this account and tag, newest first
      * (`ORDER BY ledger_index DESC`, tie-broken by primary key). Which of
      * them fulfills an intent is the core's decision
-     * (SyncService::findTransactionFor()), so nothing else is filtered here.
+     * (SyncService::findFulfillmentFor()), so nothing else is filtered here.
      *
      * @return XrplTransaction[]
      */

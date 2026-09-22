@@ -95,15 +95,25 @@ class OrderTransactionService
     }
 
     /**
-     * Syncs the merchant's incoming XRPL transactions and, when one matches
-     * this order's destination tag, records the fulfillment on the intent.
+     * Syncs the merchant's incoming XRPL transactions and, when they pay
+     * this order, records the fulfillment on the intent.
+     *
+     * What pays is the core's decision: every payment in the quoted asset on
+     * the tag counts and they add up, so a top-up of a shortfall settles; a
+     * payment in another asset is the fulfillment only while nothing in the
+     * right one has arrived, so the page can say "wrong token". The intent
+     * records the hash and ctid of the newest contributing transaction.
+     *
+     * A fulfillment that does not settle is stored too - the page shows the
+     * shortfall from it - and the order keeps being matched until one does.
+     * Only a settled intent is final; it is returned as stored, without a
+     * node request.
      *
      * @param bool $sync false to only match against already-synced
      *     transactions (a batch job syncs once, then matches many orders).
-     * @return PaymentIntent|null the fulfilled intent, or null while no
-     *     payment in the quoted asset class has arrived (a stray payment in
-     *     another asset, or something that delivered nothing measurable, is
-     *     logged by the core and skipped).
+     * @return PaymentIntent|null the fulfilled intent (settled or not, see
+     *     isSettled()), or null while nothing payable has arrived: no
+     *     transaction on the tag yet, or only ones the core skips and logs.
      */
     public function syncOrderTransactionWithXrpl(WC_Order $order, bool $sync = true): ?PaymentIntent
     {
@@ -113,7 +123,7 @@ class OrderTransactionService
             return null;
         }
 
-        if ($intent->amountPaid !== null) {
+        if ($intent->hash !== null && $this->settlementPolicy->isSettled($intent)) {
             return $intent;
         }
 
@@ -121,17 +131,17 @@ class OrderTransactionService
             $this->syncService->syncTransactions($intent->destinationAccount, $intent->network);
         }
 
-        // Which of the transactions on this tag pays the intent (asset class,
-        // newest first) is the core's decision; what comes back is decodable.
-        $transaction = $this->syncService->findTransactionFor($intent);
+        $fulfilledIntent = $this->syncService->findFulfillmentFor($intent)?->applyTo($intent);
 
-        if ($transaction === null) {
+        if ($fulfilledIntent === null) {
             return null;
         }
 
-        $fulfilledIntent = $intent->withFulfillment($transaction->hash, $transaction->getDeliveredAmount(), $transaction->ctid);
-
-        $this->persistPaymentIntent($order, $fulfilledIntent);
+        // Save only what changed: a partial payment that is polled again and
+        // again would otherwise rewrite the same record on every request.
+        if ($fulfilledIntent->toArray() !== $intent->toArray()) {
+            $this->persistPaymentIntent($order, $fulfilledIntent);
+        }
 
         return $fulfilledIntent;
     }
