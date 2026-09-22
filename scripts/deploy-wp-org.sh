@@ -146,6 +146,17 @@ rsync "${RSYNC_ARGS[@]}" "${PLUGIN_DIR}/" "${DIST_DIR}/"
 [[ -f "${DIST_DIR}/${PLUGIN_MAIN}" ]] || { err "Main plugin file missing in dist (${PLUGIN_MAIN})"; exit 1; }
 [[ -f "${DIST_DIR}/readme.txt" ]] || { err "readme.txt missing in dist"; exit 1; }
 
+# Developer documents never ship. .gitignore and export-ignore only protect
+# what Composer fetches from Packagist; a path-repository install copies a
+# package directory as it is, ignored files included, and 1.1.0 went out
+# with a handover document under vendor/ that way.
+STRAY_DOCS=$(find "${DIST_DIR}" -type f \( -name 'Handover-*.md' -o -name 'LedgerDirect-*.md' -o -name 'CLAUDE.md' -o -name 'MUSINGS.md' \) -print)
+if [[ -n "${STRAY_DOCS}" ]]; then
+  err "Developer documents in the dist tree; reinstall the package they belong to from Packagist:"
+  echo "${STRAY_DOCS}"
+  exit 1
+fi
+
 # ---------------------------------------------------------------------------
 # Isolate the bundled dependencies (PHP-Scoper). See scoper.inc.php for why.
 # The phar is kept outside the repo, pinned by version and checksum.
