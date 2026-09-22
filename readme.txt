@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -71,6 +71,12 @@ LedgerDirect uses minified assets from third party libraries. The source for the
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.1.1 =
+* Fix: an order that received a partial payment could never be completed. The first payment was recorded and the plugin stopped looking, so a customer who then sent the remaining amount was never marked as paid, neither on the payment page nor by the background job. Payments in the quoted asset now add up, and the order is matched until it settles.
+* Fix: a payment in the right stablecoin from another issuer no longer blocks a later payment from the correct issuer.
+* Core 0.7: the shared library is now required at ^0.7.
+* Release build: a developer document that had been copied into the bundled library was shipped with 1.1.0; it is removed, and the build now refuses to ship such files.
 
 = 1.1.0 =
 * Core 0.4: the sync cursor is now kept per receiving account and network. A mainnet transaction can no longer stall the testnet sync, and a testnet reset no longer requires cleaning the database - the plugin resyncs on its own.
