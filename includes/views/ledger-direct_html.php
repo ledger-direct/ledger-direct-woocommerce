@@ -36,6 +36,29 @@ $allowed_amount_html = [
     'strong' => ['data-ld-paid' => true],
     'span' => ['data-ld-paid' => true, 'data-ld-shortfall' => true, 'data-ld-settled-amount' => true, 'data-ld-redirect-count' => true, 'data-ld-countdown' => true],
 ];
+// The two notices with numbers inside, built here so the markup below stays one line each.
+$partial_notice = '';
+$wrong_asset_notice = '';
+$wrong_asset_send = '';
+if (is_array($v)) {
+    $partial_notice = sprintf(
+        /* translators: 1: amount received so far with asset symbol, 2: amount still missing with asset symbol */
+        __('%1$s have arrived – thank you. %2$s are still missing.', 'ledger-direct'),
+        '<strong><span data-ld-paid>' . esc_html((string) $v['amount_paid']) . '</span> ' . esc_html($asset) . '</strong>',
+        '<strong><span data-ld-shortfall>' . esc_html((string) $v['shortfall']) . '</span> ' . esc_html($asset) . '</strong>'
+    );
+    $wrong_asset_notice = sprintf(
+        /* translators: 1: amount that arrived, 2: the token this order expects */
+        __('A payment of %1$s has arrived, but this order expects %2$s from the issuer named below. It cannot be credited.', 'ledger-direct'),
+        '<strong data-ld-paid>' . esc_html((string) $v['amount_paid']) . '</strong>',
+        '<strong>' . esc_html($asset) . '</strong>'
+    );
+    $wrong_asset_send = sprintf(
+        /* translators: 1: amount still due with asset symbol */
+        __('Please send %1$s – or contact us about the payment you already made.', 'ledger-direct'),
+        '<strong><span data-ld-shortfall>' . esc_html((string) $v['shortfall']) . '</span> ' . esc_html($asset) . '</strong>'
+    );
+}
 $copy_icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 $info_icon = '<svg class="ld-notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
 $copy_labels = '<span data-ld-copy-label="idle">' . esc_html__('Copy', 'ledger-direct') . '</span><span data-ld-copy-label="done" hidden>' . esc_html__('Copied', 'ledger-direct') . '</span>';
@@ -60,59 +83,63 @@ $allowed_icon_html = [
 
 <body class="ld-body">
 
-<?php if (!$ledger_direct_order || !is_a($ledger_direct_order, 'WC_Order')) { ?>
-    <div class="ld-page" data-ld-page>
-        <main class="ld-main"><div class="ld-card">
-            <div class="ld-notice ld-notice--warn" role="status">
-                <?php echo wp_kses($info_icon, $allowed_icon_html); ?>
-                <div>
-                    <p><strong><?php esc_html_e('Order not found', 'ledger-direct'); ?></strong></p>
-                    <p><?php esc_html_e('The requested order could not be found.', 'ledger-direct'); ?></p>
-                </div>
-            </div>
-            <a class="ld-btn ld-btn--secondary" href="<?php echo esc_url(home_url()); ?>"><?php esc_html_e('Return to homepage', 'ledger-direct'); ?></a>
-        </div></main>
-    </div>
-    <?php wp_footer(); ?>
-</body></html>
-<?php return; } ?>
-
 <?php
-$valid_statuses = ['pending', 'on-hold', 'processing'];
-if (!in_array($ledger_direct_order->get_status(), $valid_statuses, true)) { ?>
-    <div class="ld-page" data-ld-page>
-        <main class="ld-main"><div class="ld-card">
-            <div class="ld-notice ld-notice--info" role="status">
-                <?php echo wp_kses($info_icon, $allowed_icon_html); ?>
-                <div>
-                    <p><strong><?php esc_html_e('Payment not required', 'ledger-direct'); ?></strong></p>
-                    <?php /* translators: 1: order number, 2: order status label */ ?>
-                    <p><?php echo esc_html(sprintf(__('Order #%1$s is already %2$s.', 'ledger-direct'), $ledger_direct_order->get_order_number(), wc_get_order_status_name($ledger_direct_order->get_status()))); ?></p>
-                </div>
-            </div>
-            <a class="ld-btn ld-btn--primary" href="<?php echo esc_url($ledger_direct_order->get_view_order_url()); ?>"><?php esc_html_e('View Order', 'ledger-direct'); ?></a>
-        </div></main>
-    </div>
-    <?php wp_footer(); ?>
-</body></html>
-<?php return; } ?>
+/*
+ * The three cases that render no payment page: no such order, an order that no longer
+ * needs one, an order of another gateway. One block, the sentences chosen above it.
+ */
+$ld_error = null;
 
-<?php if ($ledger_direct_order->get_payment_method() !== LedgerDirectPaymentGateway::ID || !is_array($v)) { ?>
+if (!$ledger_direct_order || !is_a($ledger_direct_order, 'WC_Order')) {
+    $ld_error = [
+        'tone' => 'warn',
+        'title' => __('Order not found', 'ledger-direct'),
+        'text' => __('The requested order could not be found.', 'ledger-direct'),
+        'url' => home_url(),
+        'link' => __('Return to homepage', 'ledger-direct'),
+    ];
+} elseif (!in_array($ledger_direct_order->get_status(), ['pending', 'on-hold', 'processing'], true)) {
+    $ld_error = [
+        'tone' => 'info',
+        'title' => __('Payment not required', 'ledger-direct'),
+        /* translators: 1: order number, 2: order status label */
+        'text' => sprintf(__('Order #%1$s is already %2$s.', 'ledger-direct'), $ledger_direct_order->get_order_number(), wc_get_order_status_name($ledger_direct_order->get_status())),
+        'url' => $ledger_direct_order->get_view_order_url(),
+        'link' => __('View Order', 'ledger-direct'),
+    ];
+} elseif ($ledger_direct_order->get_payment_method() !== LedgerDirectPaymentGateway::ID || !is_array($v)) {
+    $ld_error = [
+        'tone' => 'warn',
+        'title' => __('Invalid payment method', 'ledger-direct'),
+        'text' => __('This order was not paid with LedgerDirect.', 'ledger-direct'),
+        'url' => home_url(),
+        'link' => __('Return to homepage', 'ledger-direct'),
+    ];
+}
+
+if ($ld_error !== null) {
+    ?>
     <div class="ld-page" data-ld-page>
-        <main class="ld-main"><div class="ld-card">
-            <div class="ld-notice ld-notice--warn" role="status">
-                <?php echo wp_kses($info_icon, $allowed_icon_html); ?>
-                <div>
-                    <p><strong><?php esc_html_e('Invalid payment method', 'ledger-direct'); ?></strong></p>
-                    <p><?php esc_html_e('This order was not paid with LedgerDirect.', 'ledger-direct'); ?></p>
+        <main class="ld-main">
+            <div class="ld-card">
+                <div class="ld-notice ld-notice--<?php echo esc_attr($ld_error['tone']); ?>" role="status">
+                    <?php echo wp_kses($info_icon, $allowed_icon_html); ?>
+                    <div>
+                        <p><strong><?php echo esc_html($ld_error['title']); ?></strong></p>
+                        <p><?php echo esc_html($ld_error['text']); ?></p>
+                    </div>
                 </div>
+                <a class="ld-btn ld-btn--secondary" href="<?php echo esc_url($ld_error['url']); ?>"><?php echo esc_html($ld_error['link']); ?></a>
             </div>
-            <a class="ld-btn ld-btn--secondary" href="<?php echo esc_url(home_url()); ?>"><?php esc_html_e('Return to homepage', 'ledger-direct'); ?></a>
-        </div></main>
+        </main>
     </div>
-    <?php wp_footer(); ?>
-</body></html>
-<?php return; } ?>
+    <?php
+    wp_footer();
+    echo '</body></html>';
+
+    return;
+}
+?>
 
 <div class="ld-page"
      data-ld-page
@@ -161,14 +188,7 @@ if (!in_array($ledger_direct_order->get_status(), $valid_statuses, true)) { ?>
                         <div class="ld-notice ld-notice--info" data-ld-block="partial" role="status" <?php echo $state !== 'partial' ? 'hidden' : ''; ?>>
                             <?php echo wp_kses($info_icon, $allowed_icon_html); ?>
                             <div>
-                                <p><?php
-                                    echo wp_kses(sprintf(
-                                        /* translators: 1: amount received so far with asset symbol, 2: amount still missing with asset symbol */
-                                        __('%1$s have arrived – thank you. %2$s are still missing.', 'ledger-direct'),
-                                        '<strong><span data-ld-paid>' . esc_html((string) $v['amount_paid']) . '</span> ' . esc_html($asset) . '</strong>',
-                                        '<strong><span data-ld-shortfall>' . esc_html((string) $v['shortfall']) . '</span> ' . esc_html($asset) . '</strong>'
-                                    ), $allowed_amount_html);
-                                ?></p>
+                                <p><?php echo wp_kses($partial_notice, $allowed_amount_html); ?></p>
                                 <div class="ld-progress" aria-hidden="true"><span data-ld-progress style="width: <?php echo (int) $v['paid_share']; ?>%"></span></div>
                                 <p><?php esc_html_e('Please send the rest to the same address with the same destination tag.', 'ledger-direct'); ?></p>
                             </div>
@@ -177,21 +197,8 @@ if (!in_array($ledger_direct_order->get_status(), $valid_statuses, true)) { ?>
                         <div class="ld-notice ld-notice--info" data-ld-block="wrong_asset" role="status" <?php echo $state !== 'wrong_asset' ? 'hidden' : ''; ?>>
                             <?php echo wp_kses($info_icon, $allowed_icon_html); ?>
                             <div>
-                                <p><?php
-                                    echo wp_kses(sprintf(
-                                        /* translators: 1: amount that arrived, 2: the token this order expects */
-                                        __('A payment of %1$s has arrived, but this order expects %2$s from the issuer named below. It cannot be credited.', 'ledger-direct'),
-                                        '<strong data-ld-paid>' . esc_html((string) $v['amount_paid']) . '</strong>',
-                                        '<strong>' . esc_html($asset) . '</strong>'
-                                    ), $allowed_amount_html);
-                                ?></p>
-                                <p><?php
-                                    echo wp_kses(sprintf(
-                                        /* translators: 1: amount still due with asset symbol */
-                                        __('Please send %1$s – or contact us about the payment you already made.', 'ledger-direct'),
-                                        '<strong><span data-ld-shortfall>' . esc_html((string) $v['shortfall']) . '</span> ' . esc_html($asset) . '</strong>'
-                                    ), $allowed_amount_html);
-                                ?></p>
+                                <p><?php echo wp_kses($wrong_asset_notice, $allowed_amount_html); ?></p>
+                                <p><?php echo wp_kses($wrong_asset_send, $allowed_amount_html); ?></p>
                             </div>
                         </div>
 
