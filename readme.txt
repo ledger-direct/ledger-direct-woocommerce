@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -64,13 +64,21 @@ For more information about each service, see:
 - Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
 
 == Source Code of minified assets ==
-LedgerDirect uses minified assets for the WooCommerce blocks checkout. The source for includes/assets/js/frontend/blocks.asset.js is available at https://github.com/ledger-direct/ledger-direct-woocommerce/blob/main/resources/js/frontend/index.js.
 
-LedgerDirect uses minified assets from third party libraries. The source for the QR code library (jquery-qrcode.min.js) is available at https://github.com/jeromeetienne/jquery-qrcode.
+The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/payment-page.js`, `wallets.js`, `public/css/payment-page.css`) are the built files of the package `@ledger-direct/payment-ui`, MIT, whose source and build are at https://github.com/ledger-direct/ledger-direct-payment-ui — the tag is in `public/js/ledger-direct-payment-ui/VERSION`. `wallets.js` bundles XRPL Connect (https://github.com/XRPL-Commons/xrpl-connect) and xrpl.js. The checkout block script `includes/assets/js/frontend/blocks.js` is built from `resources/js/frontend/index.js` with @wordpress/scripts.
 
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.3.0 =
+* The payment page is redesigned on the shared package @ledger-direct/payment-ui: the amount to send is the largest thing on the page with a copy button, the receiving address, the destination tag (marked as required) and, for tokens, the issuer are numbered fields with copy buttons, a countdown with a bar, one column on phones, dark mode follows the system.
+* One QR code with the receiving address, the destination tag and the amount (for tokens also currency and issuer); a server-rendered code stays for browsers without JavaScript.
+* Browser wallets over XRPL Connect (Crossmark, GemWallet, MetaMask Snap, Ledger, Otsu, Xyra) when detected; Xaman and WalletConnect when the merchant enters their public identifier in the settings. The wallet library is loaded only when the wallet list is opened.
+* New settings: the logo of the payment page (site logo, a picture from the media library, or a monogram), an accent colour (refused when too light for white text), the Xaman API key and the WalletConnect project id.
+* The plugin's scripts and styles load on the payment page only, no longer on every page of the site.
+* Icons for XRP, RLUSD and USDC next to the payment options in the checkout.
+* Requires hardcastle/ledger-direct-core 0.8.
 
 = 1.2.0 =
 * The payment page now follows the payment on its own: it polls every 8 seconds and shows one of five states - waiting (with a countdown for the quote), partial payment, payment in the wrong token, expired quote, and paid - and leaves for the order confirmation as soon as the order is paid or closed. No more reloading.
