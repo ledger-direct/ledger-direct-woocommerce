@@ -58,7 +58,7 @@ ld-e2e report pr --repo ledger-direct/ledger-direct-woocommerce --pr <n>
 
 What it does, in this shop's terms — the same steps as above, without a browser:
 
-- **Orders** are created through WP-CLI in the stack's `wpcli` service (a PHP script on stdin): a guest
+- **Orders** are created through WP-CLI in the running `wp` container (a PHP script on stdin): a guest
   order with the 1.00 test article `LD-E2E-001` (created on first use), gateway `ledger-direct`, then
   `OrderTransactionService::prepareOrderForXrpl()` — what `process_payment()` does once WooCommerce has
   validated the checkout. Needs pretty permalinks (the page is `/ledger-direct-payment/<key>/`).
