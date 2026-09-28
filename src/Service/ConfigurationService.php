@@ -25,6 +25,18 @@ class ConfigurationService
 
     public const CONFIG_KEY_EXPIRY = 'xrpl_quote_expiry';
 
+    /** The payment page's look: logo, accent colour, and the public identifiers of the wallet apps. */
+    public const CONFIG_KEY_PAGE_LOGO_MODE = 'xrpl_page_logo_mode';
+    public const CONFIG_KEY_PAGE_LOGO = 'xrpl_page_logo';
+    public const CONFIG_KEY_PAGE_ACCENT = 'xrpl_page_accent';
+    public const CONFIG_KEY_XAMAN_API_KEY = 'xrpl_xaman_api_key';
+    public const CONFIG_KEY_WALLETCONNECT_PROJECT_ID = 'xrpl_walletconnect_project_id';
+
+    public const LOGO_MODE_SHOP = 'shop';
+    public const LOGO_MODE_CUSTOM = 'custom';
+    public const LOGO_MODE_NONE = 'none';
+    public const LOGO_MODES = [self::LOGO_MODE_SHOP, self::LOGO_MODE_CUSTOM, self::LOGO_MODE_NONE];
+
     private LedgerDirectPaymentGateway $gateway;
 
     protected array $config;
@@ -100,6 +112,57 @@ class ConfigurationService
             return $this->get(self::CONFIG_KEY_PAYMENT_PAGE_TITLE);
         } catch (Exception $exception) {
             return '';
+        }
+    }
+
+    /**
+     * Which logo the payment page shows: shop, custom or none.
+     */
+    public function getPaymentPageLogoMode(): string
+    {
+        $mode = (string) $this->getOrDefault(self::CONFIG_KEY_PAGE_LOGO_MODE, self::LOGO_MODE_SHOP);
+
+        return in_array($mode, self::LOGO_MODES, true) ? $mode : self::LOGO_MODE_SHOP;
+    }
+
+    /**
+     * The uploaded logo as a media library attachment id, 0 when none.
+     */
+    public function getPaymentPageLogoAttachmentId(): int
+    {
+        return (int) $this->getOrDefault(self::CONFIG_KEY_PAGE_LOGO, 0);
+    }
+
+    /**
+     * The accent colour as stored; the core's AccentColor decides whether the page uses it.
+     */
+    public function getPaymentPageAccentColor(): string
+    {
+        return trim((string) $this->getOrDefault(self::CONFIG_KEY_PAGE_ACCENT, '#1f5eff'));
+    }
+
+    /**
+     * Xaman's public API key; empty means the "open in wallet app" button is not offered.
+     */
+    public function getXamanApiKey(): string
+    {
+        return trim((string) $this->getOrDefault(self::CONFIG_KEY_XAMAN_API_KEY, ''));
+    }
+
+    /**
+     * The WalletConnect project id; empty means it is not offered.
+     */
+    public function getWalletConnectProjectId(): string
+    {
+        return trim((string) $this->getOrDefault(self::CONFIG_KEY_WALLETCONNECT_PROJECT_ID, ''));
+    }
+
+    private function getOrDefault(string $configIdentifier, mixed $default): mixed
+    {
+        try {
+            return $this->get($configIdentifier, $default);
+        } catch (Exception $exception) {
+            return $default;
         }
     }
 
