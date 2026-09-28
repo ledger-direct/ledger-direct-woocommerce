@@ -43,6 +43,38 @@ it keeps its ID.
   Status → Scheduled Actions → *Run*. Its log lines are under WooCommerce → Status → Logs, source
   `ledger-direct`.
 
+## Automated with ld-e2e
+
+The `ledger-direct-e2e` harness runs PS-01 to PS-09 and PS-11 against this shop unattended (PS-10 waits
+35 minutes and belongs to a nightly run). It pays real testnet transactions from its treasury to a receiving
+account it creates for the run, and writes the checklist lines into the pull request:
+
+```
+ld-e2e run --target woocommerce --base-url http://localhost:8082 \
+  --compose-dir /path/to/wordpress-docker-compose-master \
+  --compose-files docker-compose.yml,docker-compose.ports-local.yml --cases automated
+ld-e2e report pr --repo ledger-direct/ledger-direct-woocommerce --pr <n>
+```
+
+What it does, in this shop's terms — the same steps as above, without a browser:
+
+- **Orders** are created through WP-CLI in the running `wp` container (a PHP script on stdin): a guest
+  order with the 1.00 test article `LD-E2E-001` (created on first use), gateway `ledger-direct`, then
+  `OrderTransactionService::prepareOrderForXrpl()` — what `process_payment()` does once WooCommerce has
+  validated the checkout. Needs pretty permalinks (the page is `/ledger-direct-payment/<key>/`).
+- **Configuration** is written to `woocommerce_ledger-direct_settings` (network, account, RLUSD/USDC,
+  `xrpl_quote_expiry` in minutes — PS-02 sets 1).
+- **The customer's side** is HTTP: the page (state, displayed amount, account, tag), the status endpoint,
+  and the refresh as a POST with the `_wpnonce` the expired block renders.
+- **PS-07:** the order key is the address here, so a wrong key on the page answers 404 (no data), not a
+  redirect; the status endpoint answers 403 only for a key of the right shape — a malformed one is refused by
+  the route pattern first. The harness probes with well-formed wrong keys.
+- **PS-08** reads the core's throttle mark, the transient `ledger_direct_ledger-direct.sync.v1.testnet.<account>`
+  (the time of the last sync): one status call inside the window must not change it.
+- **PS-09** fires the Action Scheduler hook `ledger_direct_settle_pending_orders` directly, counting pending
+  LedgerDirect orders before and after.
+- **PS-11** cancels the order with `update_status('cancelled')`.
+
 ## PS-01 — Waiting
 
 Place an order with *XRP*, send nothing, open the payment page.
