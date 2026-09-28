@@ -3,7 +3,7 @@
  * Plugin Name: Ledger Direct
  * Plugin URI: https://github.com/ledger-direct/ledger-direct-woocommerce
  * Description: A XRP Ledger integration.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Alexander Busse | Hardcastle Technologies
  * Author URI: https://www.ledger-direct.com
  * Text Domain: ledger-direct
@@ -116,45 +116,6 @@ function ledger_direct_get_configuration(): array {
 function ledger_direct_get_public_url(string $url): string {
     $base = plugins_url( '/', __FILE__ );
     return untrailingslashit($base . $url);
-}
-
-/**
- * Get SVG HTML for icon
- *
- * @param string $icon
- * @param array $properties
- * @return string
- */
-function ledger_direct_get_svg_html(string $icon, array $properties = []): string {
-    if (!ctype_alnum($icon)) {
-        die('Forbidden!');
-    }
-
-    $defaultProperties = [
-        'id' => $icon . '-icon',
-        'class' => '',
-        'width' => '24',
-        'height' => '24',
-        'viewBox' => '0 0 24 24',
-    ];
-
-    $svgContent = file_get_contents(LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/partials/' . $icon . '_svg.html');
-
-    foreach ($defaultProperties as $key => $value) {
-        if (isset($properties[$key])) {
-            $defaultProperties[$key] = $properties[$key];
-        }
-    }
-
-    foreach ($defaultProperties as $key => $value) {
-        $svgContent = str_replace(
-            '{' . $key . '}',
-            $key . '="' . $value . '"',
-            $svgContent
-        );
-    }
-
-    return $svgContent;
 }
 
 SettlePendingOrders::register();
