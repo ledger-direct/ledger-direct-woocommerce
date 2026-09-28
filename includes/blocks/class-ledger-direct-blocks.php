@@ -70,7 +70,12 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
             'description' => $this->get_setting( 'description' ),
             'supports'    => array_filter( $this->gateway->supports, [ $this->gateway, 'supports' ] ),
             'rlusd_available' => $configuration[ 'rlusd_available' ] ?? false,
-            'usdc_available' => $configuration[ 'usdc_available' ] ?? false
+            'usdc_available' => $configuration[ 'usdc_available' ] ?? false,
+            'icons' => [
+                'xrp' => ledger_direct_get_public_url('/public/images/xrp_payment.svg'),
+                'rlusd' => ledger_direct_get_public_url('/public/images/rlusd_payment.svg'),
+                'usdc' => ledger_direct_get_public_url('/public/images/usdc_payment.svg'),
+            ],
         ];
     }
 

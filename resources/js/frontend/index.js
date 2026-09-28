@@ -9,6 +9,8 @@ const settings = getSetting( 'ledger-direct_data', {} );
 const defaultLabel = __( 'LedgerDirect Payments', 'ledger-direct' );
 
 const label = decodeEntities( settings.title ) || defaultLabel;
+const icons = settings.icons || {};
+const Icon = ({ asset }) => icons[asset] ? <img className="ld-method-icon" src={icons[asset]} alt="" width="40" height="24" /> : null;
 
 /**
  * Content component
@@ -52,7 +54,7 @@ const Content = (props) => {
                     checked={selected === 'rlusd'}
                     onChange={() => setSelected('rlusd')}
                 />
-                {__('Pay with RLUSD', 'ledger-direct')}
+                <Icon asset="rlusd" /> {__('Pay with RLUSD', 'ledger-direct')}
             </label>
         );
     }
@@ -66,7 +68,7 @@ const Content = (props) => {
                     checked={selected === 'usdc'}
                     onChange={() => setSelected('usdc')}
                 />
-                {__('Pay with USDC', 'ledger-direct')}
+                <Icon asset="usdc" /> {__('Pay with USDC', 'ledger-direct')}
             </label>
         );
     }
@@ -83,7 +85,7 @@ const Content = (props) => {
                     checked={selected === 'xrp'}
                     onChange={() => setSelected('xrp')}
                 />
-                {__('Pay with XRP', 'ledger-direct')}
+                <Icon asset="xrp" /> {__('Pay with XRP', 'ledger-direct')}
             </label>
             <br />
 

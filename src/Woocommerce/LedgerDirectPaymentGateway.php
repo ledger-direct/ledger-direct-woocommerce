@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Exception;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
+use Hardcastle\LedgerDirect\Core\Presentation\AccentColor;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use WC_Order;
@@ -14,6 +15,9 @@ use WC_Payment_Gateway;
 
 class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 {
+    /** The markup of an asset icon in the checkout, for wp_kses. */
+    private const ICON_HTML = ['img' => ['class' => true, 'src' => true, 'alt' => true, 'width' => true, 'height' => true]];
+
     public const ID = 'ledger-direct';
 
     public const XRP_PAYMENT_ID = 'xrp';
@@ -87,6 +91,67 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     }
 
     /**
+     * The accent colour of the payment page: a hex colour that carries white text.
+     * The rule is the core's; a colour that fails it is refused with a message
+     * rather than silently replaced. WC_Settings_API calls this by the field's key.
+     *
+     * @param string $key
+     * @param string|null $value
+     * @return string
+     */
+    public function validate_xrpl_page_accent_field(string $key, ?string $value): string
+    {
+        $stored = trim((string) $value);
+
+        if ($stored === '') {
+            return AccentColor::DEFAULT;
+        }
+
+        $color = AccentColor::normalize($stored);
+
+        if ($color === null) {
+            \WC_Admin_Settings::add_error(__('The accent colour must be a hex colour such as #1f5eff.', 'ledger-direct'));
+
+            return $this->get_option($key, AccentColor::DEFAULT);
+        }
+
+        if (AccentColor::contrastToWhite($color) < AccentColor::MIN_CONTRAST_TO_WHITE) {
+            \WC_Admin_Settings::add_error(__('The accent colour is too light to carry white text (contrast below 4.5:1). Choose a darker colour.', 'ledger-direct'));
+
+            return $this->get_option($key, AccentColor::DEFAULT);
+        }
+
+        return $color;
+    }
+
+    /**
+     * The logo picture: an attachment of this site's media library, given as its ID or URL.
+     * Never a foreign URL - a third-party host would learn the IP of every paying customer.
+     *
+     * @param string $key
+     * @param string|null $value
+     * @return string the attachment id, or an empty string
+     */
+    public function validate_xrpl_page_logo_field(string $key, ?string $value): string
+    {
+        $given = trim((string) $value);
+
+        if ($given === '') {
+            return '';
+        }
+
+        $attachmentId = ctype_digit($given) ? (int) $given : (int) attachment_url_to_postid($given);
+
+        if ($attachmentId <= 0 || !wp_attachment_is_image($attachmentId)) {
+            \WC_Admin_Settings::add_error(__('The payment page picture must be an image from this site\'s media library, given as its attachment ID or URL.', 'ledger-direct'));
+
+            return $this->get_option($key, '');
+        }
+
+        return (string) $attachmentId;
+    }
+
+    /**
      * Display the payment fields on the checkout page. This method is called by
      * WooCommerce to render the payment options.
      *
@@ -104,14 +169,18 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         echo '<div id="ledger-direct-payment-methods">';
         echo '<h4>' . esc_html__('Choose payment method', 'ledger-direct') . '</h4>';
 
+        $icon = static fn (string $asset): string => '<img class="ld-method-icon" src="' . esc_url(ledger_direct_get_public_url('/public/images/' . $asset . '_payment.svg')) . '" alt="" width="40" height="24"> ';
+
         echo '<label>';
         echo '<input type="radio" name="ledger_direct_payment_type" value="xrp" checked> ';
+        echo wp_kses($icon('xrp'), self::ICON_HTML);
         echo esc_html__('XRP', 'ledger-direct');
         echo '</label><br>';
 
         if ($config['rlusd_available']) {
             echo '<label>';
             echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';
+            echo wp_kses($icon('rlusd'), self::ICON_HTML);
             echo esc_html__('RLUSD Stablecoin (XRPL)', 'ledger-direct');
             echo '</label><br>';
         }
@@ -119,6 +188,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         if ($config['usdc_available']) {
             echo '<label>';
             echo '<input type="radio" name="ledger_direct_payment_type" value="usdc"> ';
+            echo wp_kses($icon('usdc'), self::ICON_HTML);
             echo esc_html__('USDC Stablecoin (XRPL)', 'ledger-direct');
             echo '</label>';
         }

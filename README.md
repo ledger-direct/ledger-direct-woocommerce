@@ -68,6 +68,20 @@ The ledger is synced at most once per five seconds per receiving account, howeve
 without JavaScript still works: the check button reloads the page, which syncs and settles, and the
 background job (Action Scheduler, every five minutes) settles orders nobody is watching.
 
+The page's behaviour and design are [`@ledger-direct/payment-ui`](https://github.com/ledger-direct/ledger-direct-payment-ui),
+the package every LedgerDirect plugin shares, shipped as built files under `public/` (`public/js/ledger-direct-payment-ui/VERSION`
+names the package tag). The page script is enqueued only on the payment page; the wallet library (`wallets.js`, 1.6 MB)
+is not enqueued at all — the page fetches it by a native `import()` only when a customer opens the wallet list. To
+move to a new package version: copy `dist/payment-page.js`, `dist/wallets.js` and `dist/payment-page.css` from the
+package at the new tag, write the tag into `VERSION`. The view renders the package's markup contract (`src/README.md`
+there) from an array of scalars the presenter in `src/Presentation/` builds — the view must not name a core class,
+because the release build prefixes the core's namespace.
+
+Under *WooCommerce → Settings → Payments → LedgerDirect* the merchant sets the page's logo (the site logo, a picture
+from the media library, or the first letter of the site name), its accent colour (a hex colour dark enough for white
+text; a lighter one is refused on save), and — optionally — the public Xaman API key and WalletConnect project id that
+give customers on a phone an "Open in wallet app" button.
+
 The manual test cases for all of this, by the core's case IDs, are in `docs/manual-tests/payment-status.md`.
 
 ## External Services

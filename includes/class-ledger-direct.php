@@ -4,6 +4,9 @@ defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
 use Hardcastle\LedgerDirect\Api\PaymentStatusEndpoint;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
+use Hardcastle\LedgerDirect\Port\WpConfigProvider;
+use Hardcastle\LedgerDirect\Service\ConfigurationService;
+use Hardcastle\LedgerDirect\Presentation\PaymentPagePresenter;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 
 class LedgerDirect
@@ -103,8 +106,7 @@ class LedgerDirect
         add_filter( 'template_include', [$this, 'render_payment_page'] );
 
         add_action( 'plugins_loaded', [$this, 'load_translations'] );
-        add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_styles'] );
-        add_action( 'wp_enqueue_scripts', [$this, 'enqueue_public_scripts'] );
+        // The payment page's assets are enqueued by render_payment_page() alone: no other page needs them.
 
         add_filter('query_vars', [$this, 'add_query_vars']);
     }
@@ -301,13 +303,18 @@ class LedgerDirect
                 }
             }
 
-            global $ledger_direct_order, $ledger_direct_intent, $ledger_direct_status, $ledger_direct_shortfall, $ledger_direct_poll_url, $ledger_direct_refresh_nonce;
+            /*
+             * The view under includes/ is not scoped by the release build, so it must not name a
+             * core class: it gets an array of scalars from the presenter in src/ and nothing else.
+             */
+            global $ledger_direct_order, $ledger_direct_view;
             $ledger_direct_order = $order;
-            $ledger_direct_intent = $intent;
-            $ledger_direct_status = $service->paymentStatus($intent);
-            $ledger_direct_shortfall = $service->shortfall($intent);
-            $ledger_direct_poll_url = PaymentStatusEndpoint::url($order);
-            $ledger_direct_refresh_nonce = wp_create_nonce(self::refresh_nonce_action($order));
+            $ledger_direct_view = PaymentPagePresenter::present(
+                $intent,
+                $service->paymentStatus($intent),
+                $service->shortfall($intent),
+                $this->page_platform_values($order, $gateway)
+            );
 
             $this->enqueue_public_styles();
             $this->enqueue_public_scripts();
@@ -323,6 +330,68 @@ class LedgerDirect
         }
 
         return $template;
+    }
+
+    /**
+     * What only the platform knows about the page: the order's numbers and URLs, the
+     * merchant's settings for the page's look. Read here so the presenter stays free of
+     * WordPress and testable on its own.
+     *
+     * @return array<string, mixed>
+     */
+    private function page_platform_values(WC_Order $order, LedgerDirectPaymentGateway $gateway): array {
+        $configuration = new ConfigurationService();
+        $store_name = (string) get_bloginfo('name');
+
+        return [
+            'order_number' => (string) $order->get_order_number(),
+            'order_key' => (string) $order->get_order_key(),
+            'total' => (string) $order->get_total(),
+            'shop_currency' => (string) $order->get_currency(),
+            'fiat_display' => wp_strip_all_tags(html_entity_decode(wc_price($order->get_total(), ['currency' => $order->get_currency()]), ENT_QUOTES, 'UTF-8')),
+            'quote_minutes' => (int) $configuration->get(ConfigurationService::CONFIG_KEY_EXPIRY, WpConfigProvider::DEFAULT_QUOTE_EXPIRY_MINUTES),
+            'poll_url' => PaymentStatusEndpoint::url($order),
+            'page_url' => LedgerDirectPaymentGateway::get_payment_page_url($order),
+            'redirect_url' => $gateway->get_return_url($order),
+            'cart_url' => wc_get_cart_url(),
+            'home_url' => home_url('/'),
+            'store_name' => $store_name,
+            'page_title' => $configuration->getPaymentPageTitle() ?: (string) get_bloginfo('name'),
+            'accent' => $configuration->getPaymentPageAccentColor(),
+            'logo' => $this->page_logo($configuration, $store_name),
+            'xaman_key' => $configuration->getXamanApiKey(),
+            'wc_project' => $configuration->getWalletConnectProjectId(),
+            'wallets_src' => ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/wallets.js'),
+            'refresh_nonce' => wp_create_nonce(self::refresh_nonce_action($order)),
+        ];
+    }
+
+    /**
+     * Which logo the page's header shows: the site's custom logo, a media library picture the
+     * merchant chose, or a monogram. Always a local attachment, never a typed-in URL; when the
+     * picture cannot be resolved, the monogram takes over.
+     *
+     * @return array{mode: string, url: string|null, monogram: string}
+     */
+    private function page_logo(ConfigurationService $configuration, string $store_name): array {
+        $mode = $configuration->getPaymentPageLogoMode();
+        $url = null;
+
+        if ($mode === ConfigurationService::LOGO_MODE_SHOP) {
+            $site_logo_id = (int) get_theme_mod('custom_logo');
+            $url = $site_logo_id > 0 ? (wp_get_attachment_image_url($site_logo_id, 'medium') ?: null) : null;
+        } elseif ($mode === ConfigurationService::LOGO_MODE_CUSTOM) {
+            $attachment_id = $configuration->getPaymentPageLogoAttachmentId();
+            $url = $attachment_id > 0 && wp_attachment_is_image($attachment_id)
+                ? (wp_get_attachment_image_url($attachment_id, 'medium') ?: null)
+                : null;
+        }
+
+        if ($url === null && $mode !== ConfigurationService::LOGO_MODE_NONE) {
+            $mode = ConfigurationService::LOGO_MODE_NONE;
+        }
+
+        return ['mode' => $mode, 'url' => $url, 'monogram' => PaymentPagePresenter::monogram($store_name)];
     }
 
     /**
@@ -384,8 +453,7 @@ class LedgerDirect
      * @return void
      */
     public function enqueue_public_styles(): void {
-        wp_enqueue_style('ledger-direct', ledger_direct_get_public_url('/public/css/ledger-direct.css'), [], self::asset_version('public/css/ledger-direct.css'));
-        wp_enqueue_style('qr-bundle', ledger_direct_get_public_url('/public/css/qr-bundle.min.css'), [], self::asset_version('public/css/qr-bundle.min.css'));
+        wp_enqueue_style('ledger-direct-payment-ui', ledger_direct_get_public_url('/public/css/payment-page.css'), [], self::asset_version('public/css/payment-page.css'));
     }
 
     /**
@@ -394,8 +462,13 @@ class LedgerDirect
      * @return void
      */
     public function enqueue_public_scripts(): void {
-        wp_enqueue_script('jquery-qrcode', ledger_direct_get_public_url('/public/js/jquery-qrcode.min.js'), ['jquery'], self::asset_version('public/js/jquery-qrcode.min.js'), true);
-        wp_enqueue_script('ledger-direct', ledger_direct_get_public_url('/public/js/ledger-direct.js'), ['jquery', 'jquery-qrcode'], self::asset_version('public/js/ledger-direct.js'), true);
+        /*
+         * The page script of @ledger-direct/payment-ui (public/js/ledger-direct-payment-ui/VERSION
+         * names the package tag), a classic script without jQuery. The wallet library
+         * (wallets.js, 1.6 MB) is deliberately not enqueued: the page fetches it by a native
+         * import() from data-ld-wallets-src only when a customer opens the wallet list.
+         */
+        wp_enqueue_script('ledger-direct-payment-ui', ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/payment-page.js'), [], self::asset_version('public/js/ledger-direct-payment-ui/payment-page.js'), true);
     }
 
     /**
