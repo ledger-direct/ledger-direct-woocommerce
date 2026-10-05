@@ -174,3 +174,38 @@ Look for: the next poll carries a `redirect` while `state` is still `waiting`; t
 amount anyway and run the job: the order stays *Cancelled* — neither the job (which only looks at *Pending
 payment* orders) nor the page or the poll (which no longer sync an order that does not need payment) touch it;
 the payment stays in the transaction table for the merchant to deal with by hand.
+
+## PW-01 — Browser wallet
+
+Open the payment page in a desktop browser with Crossmark or GemWallet installed, on the testnet, with a funded
+account. Click "Pay with a browser wallet", pick the wallet, confirm the transaction there. Do it once for an XRP
+order and once for a token order (RLUSD or USDC — the wallet's account needs a trust line to the testnet issuer).
+
+Look for: the wallet shows the receiving address, the destination tag and the amount exactly as the page shows
+them (the token order names currency and issuer); after signing, the page says "Sent – we are checking for it"
+and the next poll settles the order, then the success view and the redirect to "Order received". The order
+*Processing* with the transaction hash in its notes.
+
+## PW-02 — Wallet on the wrong network
+
+The same, but with the wallet set to the mainnet while the shop is on the testnet.
+
+Look for: no transaction is signed; the page says the wallet is set to another network and names the one to
+switch to. (Crossmark switches to the requested network at sign-in on its own — then the case passes as PW-01.)
+
+## PW-03 — Phone
+
+Open the page at 390 px width (device emulation is enough), once without a Xaman API key or WalletConnect
+project id in the LedgerDirect settings, once with one of them.
+
+Look for: one column, the QR code collapsed behind "Show QR code", the amount still the largest thing on the
+page; without identifiers there is no wallet section at all, with one there is a single "Open in wallet app"
+button and no browser-wallet list.
+
+## PW-04 — Scanning the QR code
+
+Scan the page's QR code with Xaman on the testnet, for an XRP order and for a token order.
+
+Look for: Xaman takes over the receiving address, the destination tag and the amount as the page shows them —
+the amount as the XRP decimal, not as drops — and, for a token, currency and issuer; nothing to type. Send, and
+the page settles the order.
