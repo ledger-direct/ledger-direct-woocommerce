@@ -48,6 +48,8 @@ To receive stablecoin payments, ensure you have the corresponding currencies (RL
 The merchant wallet address needs to have the corresponding trust lines set up for the stablecoins you want to accept.
 
 ## Test Payments
+
+How the whole of LedgerDirect is tested across the core, the shared page package and the four plugins — the layers, what each catches, the nightly end-to-end runs and the manual cases — is in [`docs/testing.md` of the core](https://github.com/ledger-direct/ledger-direct-core-php/blob/master/docs/testing.md).
 To test the plugin, you can configure it to use the XRP Ledger Testnet. This allows you to simulate transactions without using real funds. Follow these steps:
 1. Go to the extension settings in WordPress admin (").
 2. Enable the Testnet mode.
