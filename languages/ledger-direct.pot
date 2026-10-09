@@ -2,14 +2,14 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ledger Direct 1.2.0\n"
+"Project-Id-Version: Ledger Direct 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledger-direct\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-28T18:16:16+00:00\n"
+"POT-Creation-Date: 2026-10-09T17:35:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ledger-direct\n"
@@ -39,463 +39,511 @@ msgstr ""
 msgid "https://www.ledger-direct.com"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:12
+#: includes/admin/class-ledger-direct-admin.php:15
 msgid "XRPL Network"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:13
+#: includes/admin/class-ledger-direct-admin.php:16
 msgid "Choose the XRPL Network"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:23
+#: includes/admin/class-ledger-direct-admin.php:26
 msgid "Merchant Account - MAINNET"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:25
+#: includes/admin/class-ledger-direct-admin.php:28
 msgid "Merchant Account address (MAINNET) - receiving account"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:30
+#: includes/admin/class-ledger-direct-admin.php:33
 msgid "Merchant Account - TESTNET"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:32
+#: includes/admin/class-ledger-direct-admin.php:35
 msgid "Merchant Account address (TESTNET) - receiving account"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:37
+#: includes/admin/class-ledger-direct-admin.php:40
 msgid "Enable RLUSD payments title"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:39
+#: includes/admin/class-ledger-direct-admin.php:42
 msgid "Enable RLUSD payments"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:44
+#: includes/admin/class-ledger-direct-admin.php:47
 msgid "Enable USDC payments title"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:46
+#: includes/admin/class-ledger-direct-admin.php:49
 msgid "Enable USDC payments"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:51
+#: includes/admin/class-ledger-direct-admin.php:54
 msgid "LedgerDirect Payment Page Title"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:53
+#: includes/admin/class-ledger-direct-admin.php:56
 msgid "Title for LedgerDirect Payment Page"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:58
+#: includes/admin/class-ledger-direct-admin.php:61
 msgid "XRP quote expiry"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:60
+#: includes/admin/class-ledger-direct-admin.php:63
 msgid "Validity of the quote in minutes"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:65
+#: includes/admin/class-ledger-direct-admin.php:68
 msgid "Payment page: logo"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:68
+#: includes/admin/class-ledger-direct-admin.php:71
 msgid "The site logo"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:69
+#: includes/admin/class-ledger-direct-admin.php:72
 msgid "A picture from the media library"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:70
+#: includes/admin/class-ledger-direct-admin.php:73
 msgid "No logo, the first letter of the site name"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:73
+#: includes/admin/class-ledger-direct-admin.php:76
 msgid "Shown in the header of the payment page, at most 160 by 32 pixels."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:77
+#: includes/admin/class-ledger-direct-admin.php:80
 msgid "Payment page: picture"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:79
+#: includes/admin/class-ledger-direct-admin.php:82
 msgid "The attachment ID or the URL of a picture in this site's media library. Only used with \"A picture from the media library\"."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:84
+#: includes/admin/class-ledger-direct-admin.php:87
 msgid "Payment page: accent colour"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:86
+#: includes/admin/class-ledger-direct-admin.php:89
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:91
+#: includes/admin/class-ledger-direct-admin.php:94
 msgid "Payment page: Xaman API key"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:93
+#: includes/admin/class-ledger-direct-admin.php:96
 msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:98
+#: includes/admin/class-ledger-direct-admin.php:101
 msgid "Payment page: WalletConnect project id"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:100
+#: includes/admin/class-ledger-direct-admin.php:103
 msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
+msgstr ""
+
+#: includes/admin/class-ledger-direct-admin.php:141
+#: includes/class-ledger-direct.php:154
+#: includes/class-ledger-direct.php:155
+msgid "LedgerDirect"
+msgstr ""
+
+#: includes/admin/class-ledger-direct-admin.php:162
+msgid "No payment record on this order."
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:25
+msgid "Requested"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:30
+msgid "Received"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:36
+msgid "Still due"
+msgstr ""
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/admin/views/order_panel_html.php:41
+#: includes/views/ledger-direct_html.php:328
+msgid "Rate"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:45
+msgid "Account"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:49
+#: includes/views/ledger-direct_html.php:257
+msgid "Destination tag"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:54
+msgid "Issuer"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:60
+msgid "Quote valid until"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:66
+#: includes/views/ledger-direct_html.php:360
+msgid "Transaction"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:79
+msgid "Transactions on this destination tag"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:85
+msgid "no delivered amount"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:87
+msgid "(token)"
+msgstr ""
+
+#: includes/admin/views/order_panel_html.php:99
+msgid "Read-only. Settling is the sync's job; to accept a short payment, change the order status as for any other payment method."
 msgstr ""
 
 #: includes/admin/views/settings_html.php:9
 msgid "LedgerDirect for WooCommerce"
 msgstr ""
 
-#: includes/class-ledger-direct.php:149
-#: includes/class-ledger-direct.php:150
-msgid "LedgerDirect"
-msgstr ""
-
-#: includes/class-ledger-direct.php:251
+#: includes/class-ledger-direct.php:256
 msgid "Payment gateway is not available."
 msgstr ""
 
-#: includes/class-ledger-direct.php:271
+#: includes/class-ledger-direct.php:276
 msgid "An error occurred while processing your payment. Please contact support."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:41
-msgid "Copy"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:41
-msgid "Copied"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:69
-msgid "Order not found"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:70
-msgid "The requested order could not be found."
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:73
-#: includes/views/ledger-direct_html.php:110
-msgid "Return to homepage"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:88
-msgid "Payment not required"
-msgstr ""
-
-#. translators: 1: order number, 2: order status label
-#: includes/views/ledger-direct_html.php:90
-#, php-format
-msgid "Order #%1$s is already %2$s."
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:93
-msgid "View Order"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:106
-msgid "Invalid payment method"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:107
-msgid "This order was not paid with LedgerDirect."
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:146
-msgid "Testnet – no real money"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:148
-msgid "Order"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:158
-msgid "Complete your payment"
-msgstr ""
-
 #. translators: 1: amount received so far with asset symbol, 2: amount still missing with asset symbol
-#: includes/views/ledger-direct_html.php:167
+#: includes/views/ledger-direct_html.php:46
 #, php-format
 msgid "%1$s have arrived – thank you. %2$s are still missing."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:173
-msgid "Please send the rest to the same address with the same destination tag."
-msgstr ""
-
 #. translators: 1: amount that arrived, 2: the token this order expects
-#: includes/views/ledger-direct_html.php:183
+#: includes/views/ledger-direct_html.php:52
 #, php-format
 msgid "A payment of %1$s has arrived, but this order expects %2$s from the issuer named below. It cannot be credited."
 msgstr ""
 
 #. translators: 1: amount still due with asset symbol
-#: includes/views/ledger-direct_html.php:191
+#: includes/views/ledger-direct_html.php:58
 #, php-format
 msgid "Please send %1$s – or contact us about the payment you already made."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:201
+#: includes/views/ledger-direct_html.php:64
+msgid "Copy"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:64
+msgid "Copied"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:96
+msgid "Order not found"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:97
+msgid "The requested order could not be found."
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:99
+#: includes/views/ledger-direct_html.php:116
+msgid "Return to homepage"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:104
+msgid "Payment not required"
+msgstr ""
+
+#. translators: 1: order number, 2: order status label
+#: includes/views/ledger-direct_html.php:106
+#, php-format
+msgid "Order #%1$s is already %2$s."
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:108
+msgid "View Order"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:113
+msgid "Invalid payment method"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:114
+msgid "This order was not paid with LedgerDirect."
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:173
+msgid "Testnet – no real money"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:175
+msgid "Order"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:185
+msgid "Complete your payment"
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:193
+msgid "Please send the rest to the same address with the same destination tag."
+msgstr ""
+
+#: includes/views/ledger-direct_html.php:208
 msgid "This amount is no longer valid."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:201
+#: includes/views/ledger-direct_html.php:208
 msgid "The exchange rate may have moved since."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:202
+#: includes/views/ledger-direct_html.php:209
 msgid "Already sent? Then do not send again – we will still recognise the payment."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:207
+#: includes/views/ledger-direct_html.php:214
 msgid "Request a new amount"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:213
+#: includes/views/ledger-direct_html.php:220
 msgid "Amount to send"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:214
+#: includes/views/ledger-direct_html.php:221
 msgid "Still to send"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:219
+#: includes/views/ledger-direct_html.php:226
 msgid "Copy amount"
 msgstr ""
 
 #. translators: %s: the order total in the shop currency
-#: includes/views/ledger-direct_html.php:223
+#: includes/views/ledger-direct_html.php:230
 #, php-format
 msgid "equals %s"
 msgstr ""
 
 #. translators: 1: the requested amount, 2: the asset symbol, 3: the order total in the shop currency
-#: includes/views/ledger-direct_html.php:225
+#: includes/views/ledger-direct_html.php:232
 #, php-format
 msgid "of %1$s %2$s in total (%3$s)"
 msgstr ""
 
 #. translators: %s: the countdown, filled in by the script
-#: includes/views/ledger-direct_html.php:233
+#: includes/views/ledger-direct_html.php:240
 #, php-format
 msgid "Amount guaranteed for %s minutes"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:243
+#: includes/views/ledger-direct_html.php:250
 msgid "Receiving address"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:246
+#: includes/views/ledger-direct_html.php:253
 msgid "Copy address"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:250
-msgid "Destination tag"
-msgstr ""
-
-#: includes/views/ledger-direct_html.php:250
+#: includes/views/ledger-direct_html.php:257
 msgid "Required"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:253
+#: includes/views/ledger-direct_html.php:260
 msgid "Copy destination tag"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:255
+#: includes/views/ledger-direct_html.php:262
 msgid "Without this tag we cannot match the payment to your order."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:259
+#: includes/views/ledger-direct_html.php:266
 msgid "Token and issuer"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:262
+#: includes/views/ledger-direct_html.php:269
 msgid "Copy issuer"
 msgstr ""
 
 #. translators: %s: the token symbol (RLUSD, USDC)
-#: includes/views/ledger-direct_html.php:265
+#: includes/views/ledger-direct_html.php:272
 #, php-format
 msgid "Only %s from exactly this issuer is credited. Your wallet needs a trust line for it."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:271
+#: includes/views/ledger-direct_html.php:278
 msgid "Paying from an exchange?"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:272
+#: includes/views/ledger-direct_html.php:279
 msgid "The destination tag is required, and the amount must still arrive in full after the exchange's fee."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:276
+#: includes/views/ledger-direct_html.php:283
 msgid "Pay with a wallet"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:278
+#: includes/views/ledger-direct_html.php:285
 msgid "Scan with a wallet app"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:278
+#: includes/views/ledger-direct_html.php:285
 msgid "Show QR code ▾"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:281
+#: includes/views/ledger-direct_html.php:288
 msgid "QR code with address, destination tag and amount"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:282
+#: includes/views/ledger-direct_html.php:289
 msgid "Expired – please request a new amount"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:284
+#: includes/views/ledger-direct_html.php:291
 msgid "Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:289
+#: includes/views/ledger-direct_html.php:296
 msgid "or"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:293
+#: includes/views/ledger-direct_html.php:300
 msgid "Pay with a browser wallet"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:296
+#: includes/views/ledger-direct_html.php:303
 msgid "Looking for wallets …"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:298
+#: includes/views/ledger-direct_html.php:305
 msgid "No browser wallet found. Use the QR code or copy the details."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:299
+#: includes/views/ledger-direct_html.php:306
 msgid "The wallet fills in the payment. You confirm it there."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:303
+#: includes/views/ledger-direct_html.php:310
 msgid "Open in wallet app"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:306
+#: includes/views/ledger-direct_html.php:313
 msgid "found"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:307
+#: includes/views/ledger-direct_html.php:314
 msgid "Confirm in your wallet …"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:308
+#: includes/views/ledger-direct_html.php:315
 msgid "Sent – we are checking for it."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:309
+#: includes/views/ledger-direct_html.php:316
 msgid "The wallet does not respond. Is the extension installed and unlocked?"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:310
+#: includes/views/ledger-direct_html.php:317
 msgid "The connection to the wallet failed – please try again."
 msgstr ""
 
 #. translators: %network% is replaced by the script with the network's name
-#: includes/views/ledger-direct_html.php:312
+#: includes/views/ledger-direct_html.php:319
 msgid "Your wallet is set to another network. Please switch to %network%."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:313
+#: includes/views/ledger-direct_html.php:320
 msgid "The payment through the wallet failed. Please use the QR code or copy the details."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:314
-#: includes/views/ledger-direct_html.php:322
+#: includes/views/ledger-direct_html.php:321
+#: includes/views/ledger-direct_html.php:329
 msgid "XRPL Mainnet"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:315
 #: includes/views/ledger-direct_html.php:322
+#: includes/views/ledger-direct_html.php:329
 msgid "XRPL Testnet"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:319
+#: includes/views/ledger-direct_html.php:326
 msgid "Order total"
 msgstr ""
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:321
-msgid "Rate"
-msgstr ""
-
-#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:321
+#: includes/views/ledger-direct_html.php:328
 #, php-format
 msgid "1 %1$s = %2$s %3$s"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:322
+#: includes/views/ledger-direct_html.php:329
 msgid "Network"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:330
+#: includes/views/ledger-direct_html.php:337
 msgid "Waiting for your payment. This page updates by itself."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:331
+#: includes/views/ledger-direct_html.php:338
 msgid "Partial payment received. Waiting for the rest."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:332
+#: includes/views/ledger-direct_html.php:339
 msgid "Payment in the wrong token received. Waiting for the right amount."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:333
+#: includes/views/ledger-direct_html.php:340
 msgid "A late payment of the old amount is still recognised."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:339
+#: includes/views/ledger-direct_html.php:346
 msgid "Check payment now"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:340
+#: includes/views/ledger-direct_html.php:347
 msgid "Checking …"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:343
+#: includes/views/ledger-direct_html.php:350
 msgid "No payment found yet. A transaction usually takes only a few seconds – please check again in a moment."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:350
+#: includes/views/ledger-direct_html.php:357
 msgid "Payment received"
 msgstr ""
 
 #. translators: %s: the settled amount with asset symbol, filled in by the script
-#: includes/views/ledger-direct_html.php:352
+#: includes/views/ledger-direct_html.php:359
 #, php-format
 msgid "%s have arrived."
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:353
-msgid "Transaction"
-msgstr ""
-
 #. translators: %s: the seconds until the redirect, counted down by the script
-#: includes/views/ledger-direct_html.php:355
+#: includes/views/ledger-direct_html.php:362
 #, php-format
 msgid "Continuing to your order in %s s"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:356
+#: includes/views/ledger-direct_html.php:363
 msgid "Continue to your order"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:363
+#: includes/views/ledger-direct_html.php:370
 msgid "Back to cart"
 msgstr ""
 
-#: includes/views/ledger-direct_html.php:364
+#: includes/views/ledger-direct_html.php:371
 msgid "Paid directly on the XRP Ledger, with no intermediary."
 msgstr ""
 
@@ -503,50 +551,100 @@ msgstr ""
 msgid "Ledger Direct requires PHP 8.2 or newer and has been disabled on this site."
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:51
+#: src/Presentation/OrderPanelPresenter.php:125
+msgid "Paid"
+msgstr ""
+
+#: src/Presentation/OrderPanelPresenter.php:126
+msgid "Partially paid"
+msgstr ""
+
+#: src/Presentation/OrderPanelPresenter.php:127
+msgid "Paid in the wrong token, not credited"
+msgstr ""
+
+#: src/Presentation/OrderPanelPresenter.php:128
+msgid "Quote expired, nothing received"
+msgstr ""
+
+#: src/Presentation/OrderPanelPresenter.php:129
+msgid "Waiting for payment"
+msgstr ""
+
+#. translators: 1: amount requested, 2: asset, 3: transaction hash
+#: src/Service/OrderTransactionService.php:185
+#, php-format
+msgid "A payment arrived in another token and was not credited. The full %1$s %2$s is still due. Transaction %3$s."
+msgstr ""
+
+#. translators: 1: amount received, 2: asset, 3: amount requested, 4: amount still due, 5: transaction hash
+#: src/Service/OrderTransactionService.php:193
+#, php-format
+msgid "A payment arrived that does not settle the order: %1$s %2$s received of %3$s %2$s requested, %4$s %2$s still due. Transaction %5$s."
+msgstr ""
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:52
 msgid "Pay directly on XRPL with LedgerDirect"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:113
+#. translators: %s: the value the merchant entered
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:132
+#, php-format
+msgid "\"%s\" is not an XRPL address. An address starts with r and has 25 to 35 letters and digits; the previous value was kept."
+msgstr ""
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:160
 msgid "The accent colour must be a hex colour such as #1f5eff."
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:119
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:166
 msgid "The accent colour is too light to carry white text (contrast below 4.5:1). Choose a darker colour."
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:146
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:193
 msgid "The payment page picture must be an image from this site's media library, given as its attachment ID or URL."
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:165
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:212
 msgid "The XRPL wallet is not configured. Please contact the site administrator."
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:170
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:217
 #: includes/assets/js/frontend/blocks.js:1
 msgid "Choose payment method"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:177
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:224
 msgid "XRP"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:184
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:231
 msgid "RLUSD Stablecoin (XRPL)"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:192
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:239
 msgid "USDC Stablecoin (XRPL)"
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:211
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:258
 msgid "Please select a valid payment method."
 msgstr ""
 
-#: src/Woocommerce/LedgerDirectPaymentGateway.php:238
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:285
 msgid "This payment method is temporarily unavailable. Please try again or choose another payment method."
 msgstr ""
+
+#: src/Woocommerce/PaymentIncompleteStatus.php:43
+msgid "XRPL payment incomplete"
+msgstr ""
+
+#. translators: %s: number of orders
+#: src/Woocommerce/PaymentIncompleteStatus.php:55
+#, php-format
+msgid "XRPL payment incomplete <span class=\"count\">(%s)</span>"
+msgid_plural "XRPL payment incomplete <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
 
 #: includes/assets/js/frontend/blocks.js:1
 msgid "LedgerDirect Payments"

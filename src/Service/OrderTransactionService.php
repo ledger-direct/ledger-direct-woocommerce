@@ -11,6 +11,7 @@ use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncThrottle;
 use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
+use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 use InvalidArgumentException;
 use LedgerDirect;
 use Psr\Log\LoggerInterface;
@@ -154,9 +155,62 @@ class OrderTransactionService
         // again would otherwise rewrite the same record on every request.
         if ($fulfilledIntent->toArray() !== $intent->toArray()) {
             $this->persistPaymentIntent($order, $fulfilledIntent);
+
+            if (!$this->settlementPolicy->isSettled($fulfilledIntent)) {
+                $this->markIncomplete($order, $fulfilledIntent);
+            }
         }
 
         return $fulfilledIntent;
+    }
+
+    /**
+     * Moves the order to "XRPL payment incomplete" when something arrives
+     * that does not pay it, with a note saying what arrived and what is
+     * still due. Once per change: a second short payment that still falls
+     * short adds a second note, a poll that sees nothing new adds none.
+     *
+     * The status is a courtesy to the merchant, not something the
+     * settlement depends on: the intent is saved either way, and the order
+     * keeps being matched until the ledger covers the amount.
+     */
+    private function markIncomplete(WC_Order $order, PaymentIntent $fulfilled): void
+    {
+        $asset = $fulfilled->baseAsset;
+        $hash = (string) $fulfilled->hash;
+
+        if ($this->settlementPolicy->isWrongAsset($fulfilled)) {
+            $note = sprintf(
+                /* translators: 1: amount requested, 2: asset, 3: transaction hash */
+                __('A payment arrived in another token and was not credited. The full %1$s %2$s is still due. Transaction %3$s.', 'ledger-direct'),
+                $fulfilled->amountRequestedValue(),
+                $asset,
+                $hash
+            );
+        } else {
+            $note = sprintf(
+                /* translators: 1: amount received, 2: asset, 3: amount requested, 4: amount still due, 5: transaction hash */
+                __('A payment arrived that does not settle the order: %1$s %2$s received of %3$s %2$s requested, %4$s %2$s still due. Transaction %5$s.', 'ledger-direct'),
+                (string) $fulfilled->amountPaidValue(),
+                $asset,
+                $fulfilled->amountRequestedValue(),
+                (string) $this->settlementPolicy->shortfall($fulfilled),
+                $hash
+            );
+        }
+
+        try {
+            if ($order->has_status(PaymentIncompleteStatus::STATUS)) {
+                $order->add_order_note($note);
+            } else {
+                $order->update_status(PaymentIncompleteStatus::STATUS, $note);
+            }
+        } catch (Throwable $exception) {
+            $this->logger->warning('LedgerDirect: could not mark the order as incompletely paid', [
+                'order_id' => $order->get_id(),
+                'exception' => $exception->getMessage(),
+            ]);
+        }
     }
 
     /**

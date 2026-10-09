@@ -35,7 +35,8 @@ it keeps its ID.
   an order: `wp wc shop_order get <id> --fields=order_key --user=admin --allow-root`, or the *Order received*
   URL after checkout.
 - Order status: WooCommerce → Orders, or `wp wc shop_order get <id> --fields=status,transaction_id --user=admin --allow-root`.
-  An order waits for payment while it is *Pending payment*; *Processing* (or *Completed* for virtual goods)
+  An order waits for payment while it is *Pending payment* or *XRPL payment incomplete* (something arrived that
+  does not pay it; status key `ld-incomplete`); *Processing* (or *Completed* for virtual goods)
   with a transaction ID means paid. The payment record: the order's `_ledger_direct` meta
   (`wp post meta get <id> _ledger_direct --allow-root` on non-HPOS stores, or the *Custom Fields* box).
 - The background job: Action Scheduler, hook `ledger_direct_settle_pending_orders` every five minutes. Run it
@@ -100,8 +101,10 @@ order.
 Place a small XRP order. Send half the displayed amount to account and tag. Do **not** reload.
 
 Look for, within 8 s: the `data-ld-partial` block visible with *X XRP received so far. Y XRP is still
-outstanding*; the poll answers `"state":"partial"` with `amount_paid` and `shortfall`; the order still
-*Pending payment*, its `_ledger_direct` meta carrying the hash and the amount. Then send `Y` to the same account
+outstanding*; the poll answers `"state":"partial"` with `amount_paid` and `shortfall`; the order moves to
+*XRPL payment incomplete* with a note (*X XRP received of Z XRP requested, Y XRP still due*) and its
+`_ledger_direct` meta carrying the hash and the amount; the LedgerDirect panel on the admin order page shows
+*Partially paid*, the amounts and the transaction linked to the explorer. Then send `Y` to the same account
 and tag: the poll answers `redirect`, the page leaves for *Order received*, the order is *Processing* with
 `transaction_id` = the second transaction's hash and `amount_paid` in the meta = the sum.
 
@@ -111,8 +114,9 @@ Place a *USDC* order. Pay the full amount in **RLUSD** to account and tag.
 
 Look for: the `data-ld-wrong-asset` block visible naming the RLUSD amount and the full USDC request; the poll
 answers `"state":"wrong_asset"` with `amount_paid.issuer` the RLUSD issuer and `shortfall` in USDC with the
-full value; the order *Pending payment*. Then send the USDC: `redirect`, *Processing*, and `transaction_id` is
-the USDC transaction.
+full value; the order *XRPL payment incomplete* with a note that the payment was in another token and not
+credited; the panel shows *Paid in the wrong token, not credited*. Then send the USDC: `redirect`, *Processing*,
+and `transaction_id` is the USDC transaction.
 
 ## PS-05 — Settled
 
@@ -172,8 +176,14 @@ Place an XRP order, send nothing, keep the page open. In the admin, cancel the o
 
 Look for: the next poll carries a `redirect` while `state` is still `waiting`; the page leaves. Then send the
 amount anyway and run the job: the order stays *Cancelled* — neither the job (which only looks at *Pending
-payment* orders) nor the page or the poll (which no longer sync an order that does not need payment) touch it;
-the payment stays in the transaction table for the merchant to deal with by hand.
+payment* and *XRPL payment incomplete* orders) nor the page or the poll (which no longer sync an order that does
+not need payment) touch it.
+
+The payment reaches the transaction table, and with it the LedgerDirect panel of the cancelled order, only when
+the receiving account is synced the next time — which the job does for the accounts of *open* orders, so in a
+shop with no other LedgerDirect order waiting it is not visible until one is placed. The ledger has it either
+way; the merchant deals with it by hand. (A sync of the configured account on every job run, open orders or
+not, is noted as a core-wide follow-up.)
 
 ## PW-01 — Browser wallet
 

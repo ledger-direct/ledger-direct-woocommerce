@@ -98,7 +98,8 @@ if (!$ledger_direct_order || !is_a($ledger_direct_order, 'WC_Order')) {
         'url' => home_url(),
         'link' => __('Return to homepage', 'ledger-direct'),
     ];
-} elseif (!in_array($ledger_direct_order->get_status(), ['pending', 'on-hold', 'processing'], true)) {
+} elseif (!$ledger_direct_order->needs_payment()) {
+    // The one rule, WooCommerce's own: it knows the statuses this plugin adds (XRPL payment incomplete).
     $ld_error = [
         'tone' => 'info',
         'title' => __('Payment not required', 'ledger-direct'),

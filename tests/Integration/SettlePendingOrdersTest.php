@@ -5,6 +5,7 @@ namespace Hardcastle\LedgerDirect\Tests\Integration;
 use Hardcastle\LedgerDirect\Cron\SettlePendingOrders;
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
+use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 use LedgerDirect;
 use WC_Order;
 
@@ -110,6 +111,7 @@ class SettlePendingOrdersTest extends TestCase
 
         $order = wc_get_order($order->get_id());
         $this->assertFalse($order->is_paid());
+        $this->assertSame(PaymentIncompleteStatus::STATUS, $order->get_status());
         $this->assertSame('HASH-FIRST', $order->get_meta(LedgerDirect::META_KEY)['hash']);
 
         $this->network->addXrpPayment($intent->destinationTag, '50000000', 'HASH-TOPUP', 90000010);

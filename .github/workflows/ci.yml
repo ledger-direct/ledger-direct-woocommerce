@@ -61,7 +61,12 @@ jobs:
         php: ['8.2', '8.3', '8.4']
     services:
       mysql:
-        image: mysql:8.0
+        # The Docker Official Image from AWS's public mirror: Docker Hub counts
+        # anonymous pulls per IP, and GitHub-hosted runners share theirs with
+        # everyone, so a service container pulled from Docker Hub fails at random
+        # with "toomanyrequests". Service containers start before any step, so a
+        # login step cannot help here; the mirror has no rate limit.
+        image: public.ecr.aws/docker/library/mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
@@ -141,6 +146,16 @@ jobs:
           # build (it has no purpose there), but Plugin Check's own environment needs it
           # to know to install WooCommerce - copy it back in for this build only.
           cp ledger-direct/.wp-env.json /tmp/plugin-build/ledger-direct/.wp-env.json
+
+      # Plugin Check runs wp-env, which pulls WordPress and MariaDB from Docker Hub.
+      # Logged in, the pulls count against the account (200 per six hours), not
+      # against the runner's shared IP. The runner's Docker config is shared, so
+      # the login reaches wp-env's pulls.
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Run WordPress Plugin Check
         uses: WordPress/plugin-check-action@v1
