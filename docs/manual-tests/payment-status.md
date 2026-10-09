@@ -176,8 +176,14 @@ Place an XRP order, send nothing, keep the page open. In the admin, cancel the o
 
 Look for: the next poll carries a `redirect` while `state` is still `waiting`; the page leaves. Then send the
 amount anyway and run the job: the order stays *Cancelled* — neither the job (which only looks at *Pending
-payment* and *XRPL payment incomplete* orders) nor the page or the poll (which no longer sync an order that does not need payment) touch it;
-the payment stays in the transaction table for the merchant to deal with by hand.
+payment* and *XRPL payment incomplete* orders) nor the page or the poll (which no longer sync an order that does
+not need payment) touch it.
+
+The payment reaches the transaction table, and with it the LedgerDirect panel of the cancelled order, only when
+the receiving account is synced the next time — which the job does for the accounts of *open* orders, so in a
+shop with no other LedgerDirect order waiting it is not visible until one is placed. The ledger has it either
+way; the merchant deals with it by hand. (A sync of the configured account on every job run, open orders or
+not, is noted as a core-wide follow-up.)
 
 ## PW-01 — Browser wallet
 
