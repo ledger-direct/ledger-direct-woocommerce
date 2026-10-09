@@ -9,6 +9,7 @@ use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Presentation\AccentColor;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
+use Hardcastle\LedgerDirect\Validation\XrplAddress;
 use WC_Order;
 use WC_Payment_Gateway;
 
@@ -88,6 +89,52 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function admin_options() : void
     {
         apply_filters('ledger_direct_render_plugin_settings', $this);
+    }
+
+    /**
+     * The receiving account on the mainnet: where customer money goes. A string
+     * that cannot be an XRPL address (another chain's address, a destination tag
+     * pasted into the field) is refused with a message and the stored value kept.
+     * A format check, not proof that the merchant controls the account.
+     *
+     * @param string $key
+     * @param string|null $value
+     * @return string
+     */
+    public function validate_xrpl_mainnet_destination_account_field(string $key, ?string $value): string
+    {
+        return $this->validate_destination_account($key, $value);
+    }
+
+    /**
+     * The receiving account on the testnet, same rule.
+     *
+     * @param string $key
+     * @param string|null $value
+     * @return string
+     */
+    public function validate_xrpl_testnet_destination_account_field(string $key, ?string $value): string
+    {
+        return $this->validate_destination_account($key, $value);
+    }
+
+    private function validate_destination_account(string $key, ?string $value): string
+    {
+        $address = trim((string) $value);
+
+        if ($address === '' || XrplAddress::isValid($address)) {
+            return $address;
+        }
+
+        \WC_Admin_Settings::add_error(
+            sprintf(
+                /* translators: %s: the value the merchant entered */
+                __('"%s" is not an XRPL address. An address starts with r and has 25 to 35 letters and digits; the previous value was kept.', 'ledger-direct'),
+                $address
+            )
+        );
+
+        return $this->get_option($key, '');
     }
 
     /**

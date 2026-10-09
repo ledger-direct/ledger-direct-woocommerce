@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -70,6 +70,11 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.4.0 =
+* New order status "XRPL payment incomplete": a payment that arrives but does not pay the order (too little, or another token) moves the order there, with a note saying what arrived, what was requested and what is still due. The order stays open, the page keeps polling, the background job keeps matching, and a top-up settles it. WooCommerce's hold-stock cancellation, which only cancels "Pending payment", leaves such orders alone.
+* A LedgerDirect panel on the admin order page: the payment state, what was quoted (asset, amount, rate, account, destination tag, issuer, quote validity), what arrived, what is still due, the transaction, and every transaction on the order's destination tag linked to the explorer.
+* The receiving accounts are validated as XRPL addresses when the settings are saved; another chain's address or a destination tag in the field is refused and the previous value kept.
 
 = 1.3.0 =
 * The payment page is redesigned on the shared package @ledger-direct/payment-ui: the amount to send is the largest thing on the page with a copy button, the receiving address, the destination tag (marked as required) and, for tokens, the issuer are numbered fields with copy buttons, a countdown with a bar, one column on phones, dark mode follows the system.

@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
+use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 use Throwable;
 use WC_Order;
 
@@ -68,7 +69,8 @@ final class SettlePendingOrders
         $logger = $factory->getLogger();
 
         $orders = wc_get_orders([
-            'status' => 'pending',
+            // Pending, and the orders a short or wrong payment already moved on.
+            'status' => ['pending', PaymentIncompleteStatus::STATUS],
             'payment_method' => LedgerDirectPaymentGateway::ID,
             'limit' => self::BATCH_SIZE,
             'orderby' => 'date',

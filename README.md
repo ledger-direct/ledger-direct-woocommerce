@@ -50,11 +50,17 @@ in place while the customer watches, without reloading.
 
 Once a payment settles the order, WooCommerce's usual `payment_complete()` runs with the transaction
 hash as the transaction id: the order moves to *Processing* (or *Completed* for virtual goods), stock
-is reduced, and the order emails go out. A payment that arrives but does not pay the order leaves
-it *Pending payment*; the plugin does not yet give such orders a status of their own or a panel on
-the admin order view, as the PrestaShop and Magento plugins do. Keep that in mind with
-WooCommerce's *Hold stock* setting: when stock management is on, WooCommerce cancels pending orders
-after that many minutes (60 by default), including one with a partial payment on the ledger.
+is reduced, and the order emails go out.
+
+The merchant sees the same thing from the other side. A payment that arrives but does not pay the
+order moves it to its own status, **XRPL payment incomplete**, visible in the order list, filterable,
+with a note in the order history saying what arrived, what was requested and what is still due. The
+order page carries a LedgerDirect panel with the state, what was quoted, what arrived, what is still
+outstanding, and every transaction on the order's destination tag linked to the explorer. Nothing on
+that panel changes the order; settling remains the sync's job. The status is still an open one: the
+page keeps polling, the background job keeps matching, and a top-up settles the order. Being its own
+status, WooCommerce's *Hold stock* cancellation, which only cancels *Pending payment* orders, leaves
+it alone: there is real money on the ledger for it.
 
 The page asks the server every 8 seconds. That endpoint syncs with the XRPL node at most once every
 5 seconds per receiving account, whatever the number of customers waiting; in between it answers
@@ -93,7 +99,7 @@ WooCommerce → Settings → Payments → LedgerDirect → Manage:
 | Setting | |
 |---|---|
 | XRPL network | `testnet` or `mainnet`. |
-| Merchant account, mainnet and testnet | The shop's receiving address on each network; the one for the selected network is used. |
+| Merchant account, mainnet and testnet | The shop's receiving address on each network; the one for the selected network is used. Validated as an XRPL address when saved; another chain's address or a destination tag in the field is refused and the previous value kept. |
 | Enable RLUSD payments, Enable USDC payments | Stablecoins are off by default — they need a trustline first. LedgerDirect is one payment method at checkout; the customer picks the asset inside it. |
 | Payment page title | The page title shown in the browser tab. |
 | XRP quote expiry | How long a quoted amount stays fixed, in minutes. Default 15. |

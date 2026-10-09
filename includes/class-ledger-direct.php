@@ -8,6 +8,7 @@ use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Presentation\PaymentPagePresenter;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
+use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 
 class LedgerDirect
 {
@@ -99,6 +100,7 @@ class LedgerDirect
      * @return void
      */
     public function public_hooks(): void {
+        PaymentIncompleteStatus::register();
         add_action( 'init', [$this, 'add_rewrite_endpoint'] );
         add_filter( 'woocommerce_payment_gateways', [$this, 'register_gateway'] );
         add_action( 'woocommerce_blocks_loaded', [$this, 'add_block_support_for_gateway'] );
@@ -124,6 +126,9 @@ class LedgerDirect
 
         add_filter('ledger_direct_init_form_fields', [$classAdmin, 'init_form_fields'], 10, 1);
         add_filter('ledger_direct_render_plugin_settings', [$classAdmin, 'render_plugin_settings'], 10, 1);
+
+        // The LedgerDirect panel on the order page, HPOS screen or the classic one.
+        add_action('add_meta_boxes', [$classAdmin, 'add_order_panel'], 10, 2);
     }
 
     /**
