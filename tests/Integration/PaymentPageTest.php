@@ -8,6 +8,7 @@ use Hardcastle\LedgerDirect\Presentation\PaymentPagePresenter;
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
+use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 use LedgerDirect;
 use WC_Order;
 
@@ -89,6 +90,36 @@ class PaymentPageTest extends TestCase
         // No platform ids the contract does not know
         self::assertStringNotContainsString('id="xrp-amount"', $html);
         self::assertStringNotContainsString('id="destination-account"', $html);
+    }
+
+    /**
+     * The view used to list the statuses it would render for by name, so an
+     * order a short payment had moved to "XRPL payment incomplete" got
+     * "Payment not required - order is already XRPL payment incomplete"
+     * instead of its page. The rule is WooCommerce's needs_payment().
+     */
+    public function testAnIncompletelyPaidOrderStillGetsItsPaymentPage(): void
+    {
+        $this->order->set_status(PaymentIncompleteStatus::STATUS);
+        $this->order->save();
+        $this->order = wc_get_order($this->order->get_id());
+
+        $html = $this->renderPage();
+
+        self::assertStringContainsString('data-ld-state="waiting"', $html);
+        self::assertStringNotContainsString('Payment not required', $html);
+    }
+
+    public function testAPaidOrderGetsTheNoticeInsteadOfThePage(): void
+    {
+        $this->order->set_status('processing');
+        $this->order->save();
+        $this->order = wc_get_order($this->order->get_id());
+
+        $html = $this->renderPage();
+
+        self::assertStringContainsString('Payment not required', $html);
+        self::assertStringNotContainsString('data-ld-state=', $html);
     }
 
     public function testThePackageAssetsAreEnqueuedOnThePageOnly(): void
