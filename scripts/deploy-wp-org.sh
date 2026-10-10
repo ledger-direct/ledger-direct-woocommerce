@@ -203,8 +203,13 @@ fi
 # 3. No global symbol was prefixed: WordPress' and WooCommerce's classes,
 #    functions and constants, and the plugin's own global classes, must
 #    stay exactly as they are (a prefixed WC_Order is a fatal error).
+#    A single segment after the prefix is the sign. Two bundled packages
+#    legitimately declare a single-segment root namespace - Composer's own
+#    runtime and bacon/bacon-qr-code (`namespace BaconQrCode;`) - and are
+#    allowed; everything else single-segment is a global that must not have
+#    been touched.
 GLOBALS_PREFIXED=$(grep -rhoE "LedgerDirect\\\\Vendor\\\\[A-Za-z_0-9]+([^A-Za-z_0-9\\\\]|$)" "${SCOPED_DIR}" --include='*.php' --exclude-dir=composer --exclude=scoper-autoload.php --exclude=autoload.php \
-  | sed -E 's/[^A-Za-z_0-9\\]$//' | grep -vE '\\\\Composer$' | sort -u || true)
+  | sed -E 's/[^A-Za-z_0-9\\]$//' | grep -vE '\\(Composer|BaconQrCode)$' | sort -u || true)
 if [[ -n "${GLOBALS_PREFIXED}" ]]; then
   err "Global symbols were prefixed (see exclude-* in scoper.inc.php):"
   echo "${GLOBALS_PREFIXED}" | head -20
