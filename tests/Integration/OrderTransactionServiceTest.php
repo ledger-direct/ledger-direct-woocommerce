@@ -4,6 +4,8 @@ namespace Hardcastle\LedgerDirect\Tests\Integration;
 
 use Hardcastle\LedgerDirect\Core\Payment\AssetNotAcceptedException;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
+use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
@@ -222,11 +224,12 @@ class OrderTransactionServiceTest extends TestCase
     }
 
     /**
-     * The tag already carried a stablecoin payment from before the order
-     * (another shop on the same wallet, an earlier test). That must not
-     * crash the sync, and the later XRP payment must be the one that counts.
+     * A token on an XRP order is a wrong-asset payment since core 0.8.1,
+     * not noise: the customer paid and has to be told nothing was credited.
+     * It must not crash the sync, and the XRP payment that follows must be
+     * the one that counts.
      */
-    public function testAStrayPaymentInAnotherAssetClassIsSkippedInFavourOfTheRealOne(): void
+    public function testATokenOnAnXrpOrderIsTheWrongAssetUntilTheRealPaymentArrives(): void
     {
         $order = $this->order();
         $intent = $this->service->prepareOrderForXrpl($order, 'xrp');
@@ -237,7 +240,14 @@ class OrderTransactionServiceTest extends TestCase
             'issuer' => 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
         ], 'HASH-STRAY', 90000000);
 
-        $this->assertNull($this->service->syncOrderTransactionWithXrpl($order));
+        $wrong = $this->service->syncOrderTransactionWithXrpl($order);
+
+        $this->assertInstanceOf(PaymentIntent::class, $wrong);
+        $this->assertSame('HASH-STRAY', $wrong->hash);
+        $this->assertFalse($this->service->isSettled($wrong));
+        $this->assertSame(PaymentStatus::WRONG_ASSET, $this->service->paymentStatus($wrong)->state());
+        $this->assertSame('200', $this->service->shortfall($wrong), 'nothing credited, the whole request still due');
+        $this->assertSame(PaymentIncompleteStatus::STATUS, wc_get_order($order->get_id())->get_status());
 
         $this->network->addXrpPayment($intent->destinationTag, '200000000', 'HASH-REAL', 90000010);
 

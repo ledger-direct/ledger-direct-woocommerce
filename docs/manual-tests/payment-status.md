@@ -118,6 +118,12 @@ full value; the order *XRPL payment incomplete* with a note that the payment was
 credited; the panel shows *Paid in the wrong token, not credited*. Then send the USDC: `redirect`, *Processing*,
 and `transaction_id` is the USDC transaction.
 
+Run it a second time **across the asset class**: an *XRP* order paid with RLUSD. Look for the same wrong-asset
+block; the poll's `amount_paid` is the token object and `shortfall` the XRP number; the order *XRPL payment
+incomplete* with the "another token, not credited" note; then the XRP in full settles with the XRP hash as
+`transaction_id`. Core 0.8.1 — before, the payment was skipped and the page stayed on *waiting*. (Order 106 in
+the dev shop is a standing example.)
+
 ## PS-05 — Settled
 
 Place an XRP order of about 1.00 in shop currency. Send exactly the amount the page shows.
