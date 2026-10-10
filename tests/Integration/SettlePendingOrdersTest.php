@@ -84,6 +84,41 @@ class SettlePendingOrdersTest extends TestCase
         $this->assertCount(1, $rpcCalls);
     }
 
+    /**
+     * The merchant cancelled, the customer paid anyway, and no other order is
+     * waiting: nothing would ever have looked at the account. The job syncs the
+     * configured account on every run, so the payment is on record - in the
+     * transaction table and on the order's panel - while the order stays as the
+     * merchant left it.
+     */
+    public function testAPaymentOnACancelledOrderReachesTheTableWithoutAnyOpenOrder(): void
+    {
+        $service = ServiceFactory::getInstance()->getOrderTransactionService();
+
+        $order = $this->pendingOrder();
+        $intent = $service->prepareOrderForXrpl($order, 'xrp');
+        $order->update_status('cancelled', 'closed by the merchant');
+
+        $this->network->addXrpPayment($intent->destinationTag, '200000000', 'HASH-LATE');
+        $requestsBefore = count($this->network->requests);
+
+        SettlePendingOrders::run();
+
+        global $wpdb;
+        $this->assertSame(
+            'HASH-LATE',
+            $wpdb->get_var($wpdb->prepare("SELECT hash FROM {$wpdb->prefix}ledger_direct_xrpl_tx WHERE destination_tag = %d", $intent->destinationTag))
+        );
+        $order = wc_get_order($order->get_id());
+        $this->assertSame('cancelled', $order->get_status());
+        $this->assertFalse($order->is_paid());
+        $rpcCalls = array_filter(
+            array_slice($this->network->requests, $requestsBefore),
+            static fn (string $url): bool => str_contains($url, 'rippletest.net')
+        );
+        $this->assertCount(1, $rpcCalls, 'one sync of the configured account');
+    }
+
     public function testIgnoresOrdersOfOtherGateways(): void
     {
         $order = $this->pendingOrder();

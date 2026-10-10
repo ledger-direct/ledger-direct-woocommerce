@@ -5,6 +5,7 @@ namespace Hardcastle\LedgerDirect\Cron;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
+use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
@@ -15,7 +16,9 @@ use WC_Order;
  * Settles LedgerDirect orders in the background, so a customer who closes
  * the payment page after sending funds still gets their order marked paid.
  * Runs on WooCommerce's Action Scheduler every five minutes, like the
- * Magento and PrestaShop plugins' cron jobs.
+ * Magento and PrestaShop plugins' cron jobs. Syncs the configured receiving
+ * account on every run and the accounts of open orders besides, so a
+ * payment on a cancelled order is on record too.
  */
 final class SettlePendingOrders
 {
@@ -78,6 +81,26 @@ final class SettlePendingOrders
         ]);
 
         $synced = [];
+
+        // The configured receiving account is synced on every run, open orders or not: a
+        // payment on an order the merchant has already cancelled would otherwise never
+        // reach the transaction table - and the LedgerDirect panel of that order - until
+        // some other order on the account happened to trigger a sync. One node request.
+        $config = $factory->getConfigProvider();
+        if ($config->hasDestinationAccount()) {
+            $network = $config->getNetwork(WpConfigProvider::CHAIN);
+            $account = $config->getDestinationAccount(WpConfigProvider::CHAIN);
+            try {
+                $factory->getSyncService()->syncTransactions($account, $network);
+                $synced[$network . ':' . $account] = true;
+            } catch (Throwable $exception) {
+                $logger->warning('LedgerDirect: could not sync the configured receiving account', [
+                    'account' => $account,
+                    'network' => $network,
+                    'exception' => $exception->getMessage(),
+                ]);
+            }
+        }
 
         foreach ($orders as $order) {
             if (!$order instanceof WC_Order) {
