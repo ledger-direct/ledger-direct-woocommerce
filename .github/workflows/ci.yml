@@ -59,25 +59,32 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4']
-    services:
-      mysql:
-        # The Docker Official Image from AWS's public mirror: Docker Hub counts
-        # anonymous pulls per IP, and GitHub-hosted runners share theirs with
-        # everyone, so a service container pulled from Docker Hub fails at random
-        # with "toomanyrequests". Service containers start before any step, so a
-        # login step cannot help here; the mirror has no rate limit.
-        image: public.ecr.aws/docker/library/mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     steps:
       - uses: actions/checkout@v4
+
+      # MySQL as a plain container after a Docker Hub login, not as a `services:`
+      # container: a service starts before any step and so can only pull
+      # anonymously, and both anonymous routes fail on shared runners - Docker Hub
+      # by pull count per IP, AWS's public mirror by data volume per month
+      # ("toomanyrequests: Data limit exceeded", seen 2026-10-16). Logged in, the
+      # pull counts against the organisation's account.
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Start MySQL
+        run: |
+          docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root \
+            --health-cmd="mysqladmin ping -uroot -proot" --health-interval=5s --health-timeout=5s --health-retries=20 \
+            mysql:8.0
+          for i in $(seq 1 40); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' mysql)" = "healthy" ] && break
+            sleep 3
+          done
+          docker inspect -f 'mysql: {{.State.Health.Status}}' mysql
+          [ "$(docker inspect -f '{{.State.Health.Status}}' mysql)" = "healthy" ]
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -152,7 +159,7 @@ jobs:
       # against the runner's shared IP. The runner's Docker config is shared, so
       # the login reaches wp-env's pulls.
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
