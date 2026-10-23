@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, woocommerce
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -70,6 +70,10 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.4.1 =
+* Core 0.9: the synced transactions store the CTID in the column tx_ctid instead of ctid, the name every LedgerDirect plugin uses from now on (PostgreSQL reserves ctid for a system column). The column is renamed in place on the first request after the update; nothing changes for customers or merchants.
+* Core 0.9: a transaction whose CTID is malformed is skipped during sync, and logged, instead of being stored truncated.
 
 = 1.4.0 =
 * New order status "XRPL payment incomplete": a payment that arrives but does not pay the order (too little, or another token) moves the order there, with a note saying what arrived, what was requested and what is still due. The order stays open, the page keeps polling, the background job keeps matching, and a top-up settles it. WooCommerce's hold-stock cancellation, which only cancels "Pending payment", leaves such orders alone.

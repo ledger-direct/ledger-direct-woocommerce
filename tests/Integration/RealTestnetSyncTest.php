@@ -59,7 +59,7 @@ class RealTestnetSyncTest extends TestCase
 
         $this->assertNotEmpty($rows, 'The faucet funding payment should have been synced.');
         $this->assertSame(64, strlen($rows[0]['hash']));
-        $this->assertNotEmpty($rows[0]['ctid']);
+        $this->assertNotEmpty($rows[0]['tx_ctid']);
         $this->assertGreaterThan(0, (int) $rows[0]['ledger_index']);
         $this->assertSame('testnet', $rows[0]['network']);
         $this->assertIsString($factory->getTransactionRepository()->getLastSyncedLedgerIndex($account, 'testnet'));

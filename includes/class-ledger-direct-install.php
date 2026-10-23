@@ -21,8 +21,10 @@ class LedgerDirectInstall {
      *     counter instead of a list of issued tags (see upgrade_to_2())
      * 3 - network column on the tx table; the sync cursor is scoped per
      *     account and network (see upgrade_to_3())
+     * 4 - the CTID column is `tx_ctid`, the name core 0.9 fixes for every
+     *     adapter (see upgrade_to_4())
      */
-    public const DB_VERSION = '3';
+    public const DB_VERSION = '4';
 
     /**
      * Install the plugin.
@@ -110,6 +112,10 @@ class LedgerDirectInstall {
             self::upgrade_to_3();
         }
 
+        if ( version_compare( $installedVersion, '4', '<' ) ) {
+            self::upgrade_to_4();
+        }
+
         self::create_tables();
     }
 
@@ -193,6 +199,10 @@ class LedgerDirectInstall {
      * Rows whose CTID is unusable keep '' and are simply ignored by the
      * cursor. Idempotent.
      *
+     * The CTID column is `ctid` when this runs during an upgrade and
+     * `tx_ctid` once upgrade_to_4() has renamed it; a re-run on a current
+     * table reads the new name.
+     *
      * @return void
      */
     private static function upgrade_to_3(): void {
@@ -209,15 +219,43 @@ class LedgerDirectInstall {
             $wpdb->query( "ALTER TABLE {$tx_table} ADD COLUMN network varchar(16) NOT NULL DEFAULT ''" );
         }
 
+        $ctid_column = self::column_exists( $tx_table, 'tx_ctid' ) ? 'tx_ctid' : 'ctid';
+
         $wpdb->query(
             "UPDATE {$tx_table}
-                SET network = CASE CONV(RIGHT(ctid, 4), 16, 10)
+                SET network = CASE CONV(RIGHT({$ctid_column}, 4), 16, 10)
                                 WHEN 0 THEN 'mainnet'
                                 WHEN 1 THEN 'testnet'
                                 ELSE ''
                               END
-              WHERE network = '' AND CHAR_LENGTH(ctid) = 16"
+              WHERE network = '' AND CHAR_LENGTH({$ctid_column}) = 16"
         );
+    }
+
+    /**
+     * Schema version 4 - the CTID lives in `tx_ctid` (core 0.9,
+     * INVARIANTS.md "Tables"). PostgreSQL gives every table a system column
+     * called `ctid`, and no user column may take that name, so the core
+     * fixes `tx_ctid` for every adapter and the plugins follow; the payment
+     * record keeps its `ctid` field.
+     *
+     * Renamed here, before dbDelta runs: dbDelta never drops a column, so it
+     * would add `tx_ctid` next to `ctid` and leave the old NOT NULL column
+     * in the way of every insert. Idempotent.
+     *
+     * @return void
+     */
+    private static function upgrade_to_4(): void {
+        global $wpdb;
+
+        $tx_table = self::tx_table();
+
+        if ( ! self::column_exists( $tx_table, 'ctid' ) || self::column_exists( $tx_table, 'tx_ctid' ) ) {
+            return;
+        }
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
+        $wpdb->query( "ALTER TABLE {$tx_table} CHANGE COLUMN ctid tx_ctid varchar(16) NOT NULL" );
     }
 
     /**
@@ -393,7 +431,7 @@ class LedgerDirectInstall {
                 id int(10) unsigned NOT NULL AUTO_INCREMENT,
                 network varchar(16) NOT NULL DEFAULT '',
                 ledger_index bigint(20) unsigned NOT NULL,
-                ctid varchar(16) NOT NULL,
+                tx_ctid varchar(16) NOT NULL,
                 hash varchar(64) NOT NULL,
                 account varchar(35) NOT NULL,
                 destination varchar(35) NOT NULL,
