@@ -69,6 +69,9 @@ class LedgerDirectInstallTest extends TestCase
         $this->assertContains('hash', $indexes);
         $this->assertContains('destination', $indexes);
 
+        // The CTID column carries its core 0.9 name.
+        $this->assertSame(['tx_ctid'], $this->ctidColumns());
+
         // Tag table is a per-account counter now, legacy tables are gone.
         $this->assertNotEmpty($wpdb->get_var("SHOW COLUMNS FROM {$this->tagTable} LIKE 'sequence'"));
         $this->assertSame(0, (int) $wpdb->get_var("SELECT COUNT(*) FROM {$this->tagTable}"));
@@ -95,7 +98,7 @@ class LedgerDirectInstallTest extends TestCase
 
         LedgerDirectInstall::maybe_upgrade();
 
-        $this->assertSame('3', get_option(LedgerDirectInstall::DB_VERSION_OPTION));
+        $this->assertSame(LedgerDirectInstall::DB_VERSION, get_option(LedgerDirectInstall::DB_VERSION_OPTION));
         $networks = $wpdb->get_results("SELECT hash, network FROM {$this->txTable} ORDER BY id", ARRAY_A);
         $this->assertSame([
             ['hash' => 'HASH-TESTNET', 'network' => 'testnet'],
@@ -111,6 +114,38 @@ class LedgerDirectInstallTest extends TestCase
         LedgerDirectInstall::maybe_upgrade();
         // ($wpdb->get_var()/get_col() map an empty string to null, hence get_results.)
         $this->assertSame([['network' => '']], $wpdb->get_results("SELECT network FROM {$this->txTable} WHERE hash = 'HASH-BROKEN'", ARRAY_A));
+    }
+
+    /**
+     * Schema 3 -> 4: the CTID column is renamed to `tx_ctid` (core 0.9;
+     * PostgreSQL reserves `ctid`), the rows keep their value, and a re-run
+     * finds nothing left to rename.
+     */
+    public function testUpgradeToSchema4RenamesTheCtidColumnAndKeepsTheValues(): void
+    {
+        global $wpdb;
+
+        $this->createSchema3();
+
+        $wpdb->query("INSERT INTO {$this->txTable} (network, ledger_index, ctid, hash, account, destination, destination_tag, date, meta, tx)
+            VALUES ('testnet', 20554421, 'C139B2B500020001', 'HASH-TESTNET', 'rA', 'rDest', 1, 1, '{}', '{}')");
+
+        update_option(LedgerDirectInstall::DB_VERSION_OPTION, '3');
+
+        LedgerDirectInstall::maybe_upgrade();
+
+        $this->assertSame('4', get_option(LedgerDirectInstall::DB_VERSION_OPTION));
+        $this->assertSame(['tx_ctid'], $this->ctidColumns());
+        $this->assertSame(
+            [['hash' => 'HASH-TESTNET', 'tx_ctid' => 'C139B2B500020001', 'network' => 'testnet']],
+            $wpdb->get_results("SELECT hash, tx_ctid, network FROM {$this->txTable}", ARRAY_A)
+        );
+
+        update_option(LedgerDirectInstall::DB_VERSION_OPTION, '3');
+        LedgerDirectInstall::maybe_upgrade();
+
+        $this->assertSame(['tx_ctid'], $this->ctidColumns());
+        $this->assertSame(1, (int) $wpdb->get_var("SELECT COUNT(*) FROM {$this->txTable}"));
     }
 
     public function testUpgradeIsIdempotentAndNeverResetsACounter(): void
@@ -225,6 +260,52 @@ class LedgerDirectInstallTest extends TestCase
             sequence int(10) unsigned NOT NULL,
             PRIMARY KEY (destination_account)
         )");
+    }
+
+    /**
+     * The tables as created by 1.1.0 (schema 3): network column, CTID still in `ctid`.
+     */
+    private function createSchema3(): void
+    {
+        global $wpdb;
+
+        $this->dropAll();
+
+        $wpdb->query("CREATE TABLE {$this->txTable} (
+            id int(10) unsigned NOT NULL AUTO_INCREMENT,
+            network varchar(16) NOT NULL DEFAULT '',
+            ledger_index bigint(20) unsigned NOT NULL,
+            ctid varchar(16) NOT NULL,
+            hash varchar(64) NOT NULL,
+            account varchar(35) NOT NULL,
+            destination varchar(35) NOT NULL,
+            destination_tag int(10) unsigned NULL,
+            date int(10) unsigned NOT NULL,
+            meta text NOT NULL,
+            tx text NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY hash (hash),
+            KEY destination (destination,destination_tag),
+            KEY destination_network (destination,network,ledger_index)
+        )");
+        $wpdb->query("CREATE TABLE {$this->tagTable} (
+            destination_account varchar(64) NOT NULL,
+            sequence int(10) unsigned NOT NULL,
+            PRIMARY KEY (destination_account)
+        )");
+    }
+
+    /**
+     * @return string[] the CTID column(s) the tx table carries, old name and new
+     */
+    private function ctidColumns(): array
+    {
+        global $wpdb;
+
+        return array_column(
+            $wpdb->get_results("SHOW COLUMNS FROM {$this->txTable} WHERE Field IN ('ctid', 'tx_ctid')", ARRAY_A),
+            'Field'
+        );
     }
 
     private function dropAll(): void
