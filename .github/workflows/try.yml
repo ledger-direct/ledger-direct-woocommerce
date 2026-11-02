@@ -1,0 +1,153 @@
+name: Try stack
+
+# The try-it stack in dev/try: every pull request and every push to main builds the image from the
+# checkout, starts the stack the way a visitor does and runs dev/try/smoke.sh against it (storefront,
+# catalogue, guest order through WooCommerce's checkout, payment page markup contract, status endpoint
+# PS-01 and PS-07), then walks the storefront in a real browser with XRP, RLUSD and USDC. It installs
+# the plugin into a fresh WordPress and WooCommerce on Linux, laid out as the release build lays it out.
+#
+# Publishing the image to GHCR (ghcr.io/ledger-direct/try-woocommerce) happens on a version tag only
+# when the repository variable LD_PUBLISH_TRY_IMAGE is "true", or by hand (workflow_dispatch,
+# "publish"). A first publish creates the package private; switch it to public once in the package
+# settings.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['*']
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the image to GHCR as ":edge"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/ledger-direct/try-woocommerce
+
+jobs:
+  smoke:
+    name: Build, start and smoke-test the try stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Secrets are not available in step conditions; their presence is, through the environment.
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The stack pulls MariaDB and the PHP base image from Docker Hub; logged in, the pulls count
+      # against the organisation's account, not the runner's shared IP (see ci.yml). Fork PRs have no
+      # secrets and pull anonymously.
+      - name: Log in to Docker Hub
+        if: env.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@v4
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the shop image from this checkout
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dev/try/Dockerfile
+          tags: ${{ env.IMAGE }}:ci
+          load: true
+          cache-from: type=gha,scope=try-woocommerce
+          cache-to: type=gha,mode=max,scope=try-woocommerce
+
+      - name: Start the stack
+        working-directory: dev/try
+        env:
+          LD_TRY_IMAGE: ${{ env.IMAGE }}:ci
+          # Empty unless set: the shop then takes a fresh account from the testnet faucet.
+          LD_TESTNET_ACCOUNT: ${{ vars.LD_TRY_TESTNET_ACCOUNT }}
+        run: |
+          started=$(date +%s)
+          docker compose up -d --wait --no-build
+          echo "Stack up, shop installed: $(( $(date +%s) - started )) s" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test
+        run: |
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          dev/try/smoke.sh | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # The storefront the way a prospect sees it, in a real browser: home page, cart, guest
+      # checkout with each asset, payment page. GitHub's runners ship Chrome.
+      - name: Browser walk (XRP, RLUSD, USDC)
+        working-directory: dev/try/browser
+        env:
+          CHROME: /usr/bin/google-chrome
+        run: |
+          npm install --no-audit --no-fund
+          mkdir -p screenshots
+          for asset in xrp rlusd usdc; do
+            echo "== $asset"
+            node visitor.mjs http://localhost:8092 screenshots "$asset"
+          done
+
+      - name: Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: try-stack-screenshots
+          path: dev/try/browser/screenshots
+          if-no-files-found: ignore
+
+      - name: Shop log
+        if: always()
+        working-directory: dev/try
+        run: docker compose logs --no-color --tail 200 wp
+
+  publish:
+    name: Publish the try image
+    needs: smoke
+    if: >-
+      (startsWith(github.ref, 'refs/tags/') && vars.LD_PUBLISH_TRY_IMAGE == 'true')
+      || (github.event_name == 'workflow_dispatch' && inputs.publish)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=edge,enable=${{ github.event_name == 'workflow_dispatch' }}
+
+      - name: Build and push (amd64 and arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dev/try/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            LD_VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('dev-{0}', github.sha) }}
+          cache-from: type=gha,scope=try-woocommerce
