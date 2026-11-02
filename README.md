@@ -22,6 +22,48 @@ Project website: https://www.ledger-direct.com · Plugin directory: https://word
 
 ![Payment Page](payment_page.png)
 
+## Try it in five minutes
+
+A complete WooCommerce shop with the plugin, on the XRP Ledger **testnet** — no WordPress setup, no
+real money. You need Docker and about 1.5 GB of disk.
+
+```
+git clone https://github.com/ledger-direct/ledger-direct-woocommerce.git
+cd ledger-direct-woocommerce/dev/try
+docker compose up -d --wait        # first start installs the shop: well under a minute
+```
+
+1. Open http://localhost:8092/: the home page explains the demo and offers three hand-painted
+   **miniatures** (2–4 EUR). They are demo articles: nothing is sold or shipped, and their pictures
+   and texts are not under the MIT licence; see [`dev/try/catalog/NOTICE.md`](dev/try/catalog/NOTICE.md).
+   Put one in the cart and check out as a guest with *LedgerDirect*, then XRP, RLUSD or USDC.
+2. The payment page shows the amount, the receiving account and the destination tag. Pay it from a
+   testnet wallet — [Xaman](https://xaman.app/) in testnet mode or [Crossmark](https://crossmark.io/)
+   — funded from the [XRP Testnet faucet](https://xrpl.org/xrp-testnet-faucet.html); RLUSD and USDC
+   come from the [RLUSD faucet](https://tryrlusd.com/) and the [Circle faucet](https://faucet.circle.com/).
+   Send the amount exactly as shown, **with the destination tag**, or connect the wallet with the
+   buttons on the page.
+3. The page notices the payment within seconds and moves on to the order confirmation; the order is
+   *Processing* in the admin at http://localhost:8092/wp-admin/ (demo login `demo` /
+   `demo-ledgerdirect-1` — a local demo login, never reuse it).
+
+On its first start the shop creates its own testnet wallet from the faucet and sets the trust lines
+to the RLUSD and USDC issuers on it, so all three assets can be paid right away (`docker compose logs
+wp` names the address). The wallet's seed stays in the stack's volume, testnet only. When the testnet
+has been reset, the next start notices and creates a new wallet. To receive into an address of your
+own instead — it then needs the trust lines itself:
+
+```
+LD_TESTNET_ACCOUNT=r... docker compose up -d --wait
+```
+
+Setting `LD_TESTNET_ACCOUNT` later works too: the next `up` applies it to the existing shop.
+`LD_TRY_PORT` moves the shop off port 8092. `docker compose down` stops the stack and keeps the shop
+and its orders; `docker compose down -v` resets everything, and the next `up` installs a fresh shop.
+`docker compose up --build` builds the image from your checkout instead of pulling the published one.
+WordPress and WooCommerce come unmodified from wordpress.org; the image is not an official image of
+either, and the shop is for trying the plugin, not for production.
+
 ## How it works
 
 A customer picks XRP, RLUSD or USDC at checkout — in the classic checkout or the block checkout,
@@ -204,6 +246,12 @@ Every push and pull request runs `.github/workflows/ci.yml`: PHP syntax, WordPre
 (phpcs), PHPStan, the PHPUnit suite on PHP 8.2–8.4 against the current WordPress and WooCommerce,
 and the [WordPress Plugin Check](https://github.com/WordPress/plugin-check-action) on a copy of the
 plugin built the way the release is.
+
+`.github/workflows/try.yml` builds the try stack of `dev/try` from the checkout, starts it, places a
+guest order through WooCommerce's checkout and checks the payment page and the status endpoint
+(`dev/try/smoke.sh`), then walks the storefront in a real browser with XRP, RLUSD and USDC
+(`dev/try/browser/visitor.mjs`). `dev/try` is not part of the release (`.distignore`). The stack also
+serves the end-to-end harness: its shop service is `wp`, with WP-CLI inside.
 
 The release goes to the WordPress.org plugin directory over SVN: `make release-dry-run` builds
 everything the release would ship without touching SVN, `make release` publishes it. The build

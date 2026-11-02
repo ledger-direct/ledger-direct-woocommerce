@@ -71,6 +71,9 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 
 == Changelog ==
 
+= Unreleased =
+* Internal: try it in five minutes. `dev/try` in the plugin's repository starts a complete WooCommerce shop with the plugin on the XRP Ledger testnet (`docker compose up -d --wait`): a home page that explains the demo and offers three miniatures as demo articles, the shop's own testnet wallet with trust lines for RLUSD and USDC, and a demo admin login. A CI job builds it on every pull request, places a guest order through WooCommerce's checkout, checks the payment page and the status endpoint, and walks the storefront in a real browser with XRP, RLUSD and USDC. Not part of the plugin's download.
+
 = 1.4.1 =
 * Core 0.9: the synced transactions store the CTID in the column tx_ctid instead of ctid, the name every LedgerDirect plugin uses from now on (PostgreSQL reserves ctid for a system column). The column is renamed in place on the first request after the update; nothing changes for customers or merchants.
 * Core 0.9: a transaction whose CTID is malformed is skipped during sync, and logged, instead of being stored truncated.
