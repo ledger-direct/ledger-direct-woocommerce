@@ -6,6 +6,7 @@
 .gitattributes export-ignore
 
 bin/ export-ignore
+dev/ export-ignore
 node_modules/ export-ignore
 vendor/bin export-ignore
 tests/ export-ignore
