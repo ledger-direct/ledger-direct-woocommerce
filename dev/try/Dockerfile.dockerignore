@@ -1,0 +1,19 @@
+# The build context is the repository root; only the plugin and the try files are needed. vendor/ is
+# installed in the image from composer.lock, the checkout's own copy stays out.
+.git
+.github
+.build
+.idea
+.vscode
+.phpunit.cache
+.phpunit.result.cache
+node_modules
+vendor
+tests/manual
+dev/try/browser/node_modules
+dev/try/browser/screenshots
+**/.DS_Store
+Handover-*.md
+LedgerDirect-*.md
+CLAUDE.md
+TODO.md
