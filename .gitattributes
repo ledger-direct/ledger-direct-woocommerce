@@ -39,3 +39,4 @@ vendor/**/examples/** export-ignore
 scoper.inc.php export-ignore
 LedgerDirect-*.md export-ignore
 CLAUDE.md export-ignore
+.coderabbit.yaml export-ignore
