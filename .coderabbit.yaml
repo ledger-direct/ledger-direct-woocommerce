@@ -63,6 +63,10 @@ reviews:
       (secrets are absent there). Pin third-party actions by major version at least.
       Publishing steps must stay gated: the repository variable LD_PUBLISH_TRY_IMAGE plus either a
       pushed version tag or a manual run with "publish" (which may also tag ":latest" on purpose).
+      Jobs are gated by the "changes" job (.github/actions/changes): a documentation-only change runs
+      lint alone, the try stack runs only when something the shop runs may have changed. The
+      action and the gating are the same in every LedgerDirect plugin repository; do not ask for a
+      per-repository variant or a third-party path filter.
   - path: public/js/ledger-direct-payment-ui/**
     instructions: |
       Verbatim copy of @ledger-direct/payment-ui (github.com/ledger-direct/ledger-direct-payment-ui),

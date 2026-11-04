@@ -1,11 +1,36 @@
 name: CI
 
+# The "changes" job classifies the pull request or push first. A documentation-only change (Markdown,
+# docs/, changelog, readme.txt, licence, CodeRabbit config) runs lint alone; everything else runs the
+# whole suite. A newer push to the same pull request cancels the run still going.
+
 on:
   push:
     branches: [main]
   pull_request:
 
+# A newer push to the same pull request cancels its run in progress. Every other run (push to main,
+# tag, manual) gets a group of its own: GitHub keeps only one pending run per group, so a shared
+# group would cancel a pending main run whose changes the next run never classifies again.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.changes.outputs.docs_only }}
+      runtime: ${{ steps.changes.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # pull_request: the merge commit and both parents; push: the pushed range
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
+      - id: changes
+        uses: ./.github/actions/changes
+
   lint:
     name: PHP lint
     runs-on: ubuntu-latest
@@ -24,6 +49,10 @@ jobs:
 
   phpcs:
     name: WordPress Coding Standards (phpcs)
+    needs: changes
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +68,10 @@ jobs:
 
   phpstan:
     name: Static analysis (phpstan)
+    needs: changes
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +87,10 @@ jobs:
 
   phpunit:
     name: PHPUnit (PHP ${{ matrix.php }})
+    needs: changes
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -122,6 +159,10 @@ jobs:
 
   plugin-check:
     name: WordPress Plugin Check
+    needs: changes
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
       # Checked out under the plugin's actual WordPress.org slug (ledger-direct) rather
