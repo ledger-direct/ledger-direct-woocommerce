@@ -13,13 +13,15 @@ changed_files() {
   case "${EVENT-}" in
     pull_request)
       # actions/checkout checks out the merge commit; its first parent is the base branch.
-      git diff --name-only HEAD^1 HEAD ;;
+      # --no-renames lists a renamed file under both paths, so a runtime file moved into docs/
+      # still counts as a runtime change.
+      git diff --no-renames --name-only HEAD^1 HEAD ;;
     push)
       if [ -z "${BEFORE-}" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
          || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
         echo "::notice::no base to diff against; classifying as runtime" >&2; echo '*'; return
       fi
-      git diff --name-only "$BEFORE" "$AFTER" ;;
+      git diff --no-renames --name-only "$BEFORE" "$AFTER" ;;
     *) echo '*' ;;
   esac
 }
