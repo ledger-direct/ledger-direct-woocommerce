@@ -16,6 +16,11 @@ diff_range() {
       # actions/checkout checks out the merge commit; its first parent is the base branch.
       echo 'HEAD^1 HEAD' ;;
     push)
+      # A version tag always counts as runtime, even when it was moved onto a docs-only commit:
+      # the try workflow publishes the image for it.
+      case "${GITHUB_REF-}" in
+        refs/tags/*) echo "::notice::tag push; classifying as runtime" >&2; return ;;
+      esac
       if [ -z "${BEFORE-}" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
          || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
         echo "::notice::no base to diff against; classifying as runtime" >&2; return
