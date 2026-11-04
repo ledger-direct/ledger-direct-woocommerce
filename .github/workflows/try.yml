@@ -7,8 +7,9 @@ name: Try stack
 # the plugin into a fresh WordPress and WooCommerce on Linux, laid out as the release build lays it out.
 #
 # Publishing the image to GHCR (ghcr.io/ledger-direct/try-woocommerce):
-# - on a version tag, when the repository variable LD_PUBLISH_TRY_IMAGE is "true": tagged with the
-#   version and ":latest", the image `docker compose up` pulls;
+# only when the repository variable LD_PUBLISH_TRY_IMAGE is "true" (it switches publishing off as a
+# whole), and then
+# - on a version tag: tagged with the version and ":latest", the image `docker compose up` pulls;
 # - by hand (workflow_dispatch, "publish"): tagged ":edge" and "dev-<short sha>". With "latest" ticked
 #   as well it also becomes ":latest", so the try image can follow a catalogue or base-image change
 #   without a plugin release. "latest" without "publish" publishes nothing.
@@ -121,8 +122,8 @@ jobs:
     name: Publish the try image
     needs: smoke
     if: >-
-      (startsWith(github.ref, 'refs/tags/') && vars.LD_PUBLISH_TRY_IMAGE == 'true')
-      || (github.event_name == 'workflow_dispatch' && inputs.publish)
+      vars.LD_PUBLISH_TRY_IMAGE == 'true'
+      && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
