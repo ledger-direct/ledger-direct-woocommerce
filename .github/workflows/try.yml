@@ -16,6 +16,11 @@ name: Try stack
 #   as well it also becomes ":latest", so the try image can follow a catalogue or base-image change
 #   without a plugin release. "latest" without "publish" publishes nothing.
 # A first publish creates the package private; switch it to public once in the package settings.
+#
+# The "changes" job classifies the run first: the stack is built and tested only when something the
+# shop runs may have changed (plugin code, Composer, dev/try, this workflow). Documentation, tests
+# and the other workflows skip it; tags and manual runs always run it. A newer push to the same pull
+# request cancels the run still going; the publish job keeps its own queue below.
 
 on:
   pull_request:
@@ -37,12 +42,32 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   IMAGE: ghcr.io/ledger-direct/try-woocommerce
 
 jobs:
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.changes.outputs.docs_only }}
+      runtime: ${{ steps.changes.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # pull_request: the merge commit and both parents; push: the pushed range
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
+      - id: changes
+        uses: ./.github/actions/changes
+
   smoke:
     name: Build, start and smoke-test the try stack
+    needs: changes
+    if: needs.changes.outputs.runtime == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
