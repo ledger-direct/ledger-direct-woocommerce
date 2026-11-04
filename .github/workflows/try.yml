@@ -67,7 +67,9 @@ jobs:
   smoke:
     name: Build, start and smoke-test the try stack
     needs: changes
-    if: needs.changes.outputs.runtime == 'true'
+    # Fail-safe: if the "changes" job fails, the stack is built and tested anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.runtime == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:

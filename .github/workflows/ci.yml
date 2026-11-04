@@ -47,7 +47,9 @@ jobs:
   phpcs:
     name: WordPress Coding Standards (phpcs)
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true'
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +66,9 @@ jobs:
   phpstan:
     name: Static analysis (phpstan)
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true'
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +85,9 @@ jobs:
   phpunit:
     name: PHPUnit (PHP ${{ matrix.php }})
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true'
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -151,7 +157,9 @@ jobs:
   plugin-check:
     name: WordPress Plugin Check
     needs: changes
-    if: needs.changes.outputs.docs_only != 'true'
+    # Fail-safe: if the "changes" job fails, its output is empty and this job runs anyway
+    # (a skipped job would count as passed).
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
       # Checked out under the plugin's actual WordPress.org slug (ledger-direct) rather
