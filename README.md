@@ -260,6 +260,21 @@ installs the Composer dependencies without dev packages, prefixes them with
 of the same package cannot clash with ours, and leaves out everything in `.distignore`. The
 `readme.txt` next to this file is the plugin directory's page; this README is not shipped.
 
+`ci.yml` and `try.yml` each end in one job that sums up the others, *CI passed* and *Try passed*.
+These two are the checks a merge into `main` requires. A job skipped on purpose (a pull request that
+changes only documentation) counts as passed, a failed or cancelled one does not. `ci.yml` also runs
+the whole suite every Monday.
+
+The rules for `main` are a GitHub ruleset, kept in `.github/rulesets/main.json`: changes only
+through a pull request, no approval needed, *CI passed* and *Try passed* green on its last commit,
+merged as a squash or a merge commit; no force push, no deletion. Repository admins may merge a pull
+request without the checks, never push to `main` directly. A change to the rules is a pull request
+that changes the file; after the merge it is applied on GitHub (`gh api -X PUT
+repos/<owner>/<repo>/rulesets/<id> --input .github/rulesets/main.json`, the first time `-X POST
+repos/<owner>/<repo>/rulesets`). Every Monday, and on demand, `ci.yml` checks that the ruleset on
+GitHub matches the file (`.github/rulesets/check.sh`). Who may bypass the rules is not part of that
+check: GitHub shows the bypass list only to admins of the repository.
+
 ## License
 
 MIT — see [LICENSE.md](LICENSE.md).
