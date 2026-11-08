@@ -29,6 +29,9 @@ class OrderTransactionServiceTest extends TestCase
         global $wpdb;
         $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}ledger_direct_xrpl_tx");
         $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}ledger_direct_xrpl_destination_tag");
+        $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}ledger_direct_xahau_tx");
+        $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}ledger_direct_xahau_destination_tag");
+        delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.XAH.EUR');
         delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.XRP.EUR');
         delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.RLUSD.EUR');
 
@@ -39,6 +42,10 @@ class OrderTransactionServiceTest extends TestCase
             WpConfigProvider::KEY_RLUSD_ENABLED => 'yes',
             WpConfigProvider::KEY_USDC_ENABLED => 'no',
             WpConfigProvider::KEY_QUOTE_EXPIRY => '15',
+            // Xahau on the same address: the one case where a tag reused across chains could collide.
+            WpConfigProvider::KEY_XAHAU_ENABLED => 'yes',
+            WpConfigProvider::KEY_XAHAU_NETWORK => 'testnet',
+            WpConfigProvider::KEY_XAHAU_TESTNET_ACCOUNT => XrplNetworkStub::ACCOUNT,
         ]);
 
         $this->network = new XrplNetworkStub(xrpRate: 0.5, stablecoinRate: 0.9);
@@ -120,6 +127,30 @@ class OrderTransactionServiceTest extends TestCase
 
         $requoted = $this->service->prepareOrderForXrpl($secondOrder, 'xrp');
         $this->assertSame($second->destinationTag, $requoted->destinationTag);
+    }
+
+    /**
+     * An order paid for again with another chain's asset starts over: a Xahau quote keeps nothing
+     * of the XRPL intent, because the tag it would keep was reserved in the XRPL counter and the
+     * same address receives on both chains here. The Xahau tag comes from Xahau's own counter.
+     */
+    public function testAQuoteOnAnotherChainDoesNotKeepTheStoredIntentsTag(): void
+    {
+        global $wpdb;
+        $order = $this->order();
+        $xrp = $this->service->prepareOrderForXrpl($order, 'xrp');
+
+        $xah = $this->service->prepareOrderForXrpl($order, 'xah');
+
+        $this->assertSame('XAHAU', $xah->chain);
+        $this->assertSame('xahau-xah-payment', $xah->type);
+        $this->assertSame(XrplNetworkStub::ACCOUNT, $xah->destinationAccount);
+        $this->assertNotSame($xrp->destinationTag, $xah->destinationTag, 'a tag from the Xahau counter, not the XRPL one');
+        $this->assertSame(1, (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ledger_direct_xahau_destination_tag"));
+        $this->assertSame('XAHAU', $this->service->readPaymentIntent($order)->chain);
+
+        // Back on the same chain the stored intent is continued, tag and all.
+        $this->assertSame($xah->destinationTag, $this->service->prepareOrderForXrpl($order, 'xah')->destinationTag);
     }
 
     public function testReadsALegacyRecordWrittenBeforeTheRetrofit(): void

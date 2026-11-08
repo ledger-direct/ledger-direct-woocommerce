@@ -77,7 +77,7 @@ class OrderTransactionService
             (float) $order->get_total(),
             $order->get_currency(),
             $asset->code,
-            $this->readReusablePaymentIntent($order)
+            $this->readReusablePaymentIntent($order, $chain->chain)
         );
 
         $this->persistPaymentIntent($order, $intent);
@@ -298,10 +298,19 @@ class OrderTransactionService
      * Like readPaymentIntent(), but for the quoting path, where an
      * unreadable record simply means "quote from scratch".
      */
-    private function readReusablePaymentIntent(WC_Order $order): ?PaymentIntent
+    /**
+     * The stored intent, when it is one the new quote may continue: on the same chain, so
+     * the destination tag it keeps was reserved in that chain's counter. An order paid for
+     * again with another chain's asset starts over - the same address may receive on the
+     * XRP Ledger and on Xahau, and a tag reused across the two could collide with another
+     * order's there.
+     */
+    private function readReusablePaymentIntent(WC_Order $order, string $chain): ?PaymentIntent
     {
         try {
-            return $this->readPaymentIntent($order);
+            $intent = $this->readPaymentIntent($order);
+
+            return $intent !== null && $intent->chain === $chain ? $intent : null;
         } catch (InvalidArgumentException) {
             return null;
         }

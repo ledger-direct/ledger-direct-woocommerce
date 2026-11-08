@@ -682,6 +682,10 @@ msgstr "Mit Xaman scannen. Adresse, Destination Tag und Betrag sind vorausgefül
 msgid "XAH (Xahau)"
 msgstr "XAH (Xahau)"
 
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with XAH (Xahau)"
+msgstr "Mit XAH (Xahau) bezahlen"
+
 #: xahau
 msgid "Xahau"
 msgstr "Xahau"
