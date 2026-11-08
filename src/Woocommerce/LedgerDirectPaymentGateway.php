@@ -141,6 +141,8 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         $address = trim((string) $value);
 
         if ($address === '' || ChainCatalog::chain(ChainCatalog::XAHAU)->isValidAccount($address)) {
+            $this->warn_when_shared_with_the_xrp_ledger($key, $address);
+
             return $address;
         }
 
@@ -153,6 +155,35 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         );
 
         return $this->get_option($key, '');
+    }
+
+    /**
+     * The same r-address is a different account on each chain, and a payment sent on the wrong one
+     * reaches no order. The core's contract asks the adapter to warn; it cannot refuse, the formats
+     * are identical (INVARIANTS.md, "Xahau"). Compared with the XRPL field of the same network as
+     * posted in this save, else as stored.
+     */
+    private function warn_when_shared_with_the_xrp_ledger(string $key, string $address): void
+    {
+        if ($address === '') {
+            return;
+        }
+
+        $xrplKey = str_replace('xahau_', 'xrpl_', $key);
+        $fieldKey = $this->get_field_key($xrplKey);
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verified the settings form before calling the validators.
+        $posted = isset($_POST[$fieldKey]) ? sanitize_text_field(wp_unslash($_POST[$fieldKey])) : null;
+        $xrplAddress = trim((string) ($posted ?? $this->get_option($xrplKey, '')));
+
+        if ($address === $xrplAddress) {
+            \WC_Admin_Settings::add_message(
+                sprintf(
+                    /* translators: %s: the account address */
+                    __('The Xahau account %s is also the XRP Ledger account on this network. The two are different accounts on different chains; use one account per chain.', 'ledger-direct'),
+                    $address
+                )
+            );
+        }
     }
 
     private function validate_destination_account(string $key, ?string $value): string
