@@ -103,6 +103,10 @@ function configure(): void
         'xrpl_testnet_destination_account' => $account,
         'xrpl_is_rlusd_enabled' => $stablecoins ? 'yes' : 'no',
         'xrpl_is_usdc_enabled' => $stablecoins ? 'yes' : 'no',
+        // Xahau stays off, on its testnet: whoever switches it on in the settings pays on the
+        // Xahau testnet, with an account they enter there.
+        'xahau_enabled' => 'no',
+        'xahau_network' => 'testnet',
         'xrpl_quote_expiry' => 5,
     ]));
 

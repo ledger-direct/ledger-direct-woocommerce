@@ -4,7 +4,9 @@ namespace Hardcastle\LedgerDirect\Port;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+use Hardcastle\LedgerDirect\Core\ChainCatalog;
 use Hardcastle\LedgerDirect\Core\Port\XrplTransactionRepositoryInterface;
+use Hardcastle\LedgerDirect\Core\Xrpl\Schema;
 use Hardcastle\LedgerDirect\Core\Xrpl\XrplTransaction;
 use RuntimeException;
 
@@ -15,12 +17,21 @@ use RuntimeException;
  * Physical table names are the core's logical names behind $wpdb->prefix
  * (INVARIANTS.md, "Tables"); the schema itself is owned by
  * LedgerDirectInstall.
+ *
+ * One instance per chain: Xahau's transactions and tag counter live in tables
+ * of their own (the core's Schema names them), shared with the XRP Ledger's in
+ * nothing, not even for an account that exists on both chains.
  */
 class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterface
 {
-    private const TX_TABLE = 'ledger_direct_xrpl_tx';
+    private string $txTable;
 
-    private const TAG_TABLE = 'ledger_direct_xrpl_destination_tag';
+    private string $tagTable;
+
+    public function __construct(string $chain = ChainCatalog::XRPL)
+    {
+        [$this->txTable, $this->tagTable] = array_keys(Schema::tables($chain));
+    }
 
     /** Highest 1-based value a fresh counter may start at (2^31). */
     private const SEQUENCE_START_MAX = 2147483648;
@@ -40,7 +51,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     {
         global $wpdb;
 
-        $table = self::table(self::TAG_TABLE);
+        $table = self::table($this->tagTable);
 
         $result = $wpdb->query(
             $wpdb->prepare(
@@ -72,7 +83,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
             return [];
         }
 
-        $table = self::table(self::TX_TABLE);
+        $table = self::table($this->txTable);
         $placeholders = implode(',', array_fill(0, count($hashes), '%s'));
 
         $matches = $wpdb->get_col(
@@ -94,7 +105,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     {
         global $wpdb;
 
-        $table = self::table(self::TX_TABLE);
+        $table = self::table($this->txTable);
 
         foreach ($transactions as $transaction) {
             $suppress = $wpdb->suppress_errors();
@@ -143,7 +154,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     {
         global $wpdb;
 
-        $table = self::table(self::TX_TABLE);
+        $table = self::table($this->txTable);
 
         $rows = $wpdb->get_results(
             $wpdb->prepare(
@@ -168,7 +179,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     {
         global $wpdb;
 
-        $table = self::table(self::TX_TABLE);
+        $table = self::table($this->txTable);
 
         $max = $wpdb->get_var(
             $wpdb->prepare(
@@ -186,7 +197,7 @@ class WpdbXrplTransactionRepository implements XrplTransactionRepositoryInterfac
     {
         global $wpdb;
 
-        $table = self::table(self::TX_TABLE);
+        $table = self::table($this->txTable);
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $wpdb->query("TRUNCATE TABLE {$table}");

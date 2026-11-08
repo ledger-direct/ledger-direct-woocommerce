@@ -28,11 +28,6 @@ use Hardcastle\LedgerDirect\Core\Xrpl\XrplAmount;
  */
 final class PaymentPagePresenter
 {
-    private const EXPLORER = [
-        'mainnet' => 'https://livenet.xrpl.org/transactions/',
-        'testnet' => 'https://testnet.xrpl.org/transactions/',
-    ];
-
     /** Decimals of the exchange rate: an oracle average with a float tail, cosmetic beyond a few places. */
     private const RATE_DECIMALS = 6;
 
@@ -64,7 +59,8 @@ final class PaymentPagePresenter
             'asset' => $intent->baseAsset,
             'network' => $intent->network,
             'is_testnet' => $intent->network !== 'mainnet',
-            'explorer_base' => self::EXPLORER[$intent->network] ?? self::EXPLORER['testnet'],
+            'chain' => $intent->chain,
+            'explorer_base' => Explorer::transactionBase($intent->chain, $intent->network),
             'destination_account' => $intent->destinationAccount,
             'destination_tag' => $intent->destinationTag,
             'issuer' => $isToken ? (string) ($intent->amountRequested['issuer'] ?? '') : null,

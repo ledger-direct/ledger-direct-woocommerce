@@ -34,8 +34,31 @@ class PaymentPagePresenterTest extends TestCase
         self::assertSame('XRP', $view['asset']);
         self::assertSame(900, $view['quote_seconds']);
         self::assertSame('https://testnet.xrpl.org/transactions/', $view['explorer_base']);
+        self::assertSame('XRPL', $view['chain']);
         self::assertSame(0, $view['paid_share']);
         self::assertSame('#1f5eff', $view['accent']);
+    }
+
+    /**
+     * A Xahau order is native like XRP (drops, no issuer), named by its chain, with Xahau's
+     * explorer and a payment request that names the network so Xaman offers to switch.
+     */
+    public function testAXahauOrderIsNamedByItsChain(): void
+    {
+        $intent = PaymentIntent::quote(
+            type: 'xahau-xah-payment', chain: 'XAHAU', network: 'testnet', baseAsset: 'XAH', quoteCurrency: 'EUR',
+            pairing: 'XAH/EUR', exchangeRate: 0.0091, amountRequested: 109.89011,
+            destinationAccount: self::ACCOUNT, destinationTag: 123456, expiry: self::NOW + 200,
+        );
+
+        $view = $this->present($intent);
+
+        self::assertSame('XAHAU', $view['chain']);
+        self::assertSame('XAH', $view['asset']);
+        self::assertSame('109890110', $view['amount_drops']);
+        self::assertNull($view['issuer']);
+        self::assertSame('https://explorer.xahau-test.net/tx/', $view['explorer_base']);
+        self::assertStringContainsString('network=XAHAUTESTNET', $view['payment_uri']);
     }
 
     public function testAPartialPaymentAsksForTheShortfall(): void

@@ -48,7 +48,23 @@ final class OrderPanelPresenterTest extends TestCase
         self::assertNull($panel['issuer']);
         self::assertFalse($panel['is_token']);
         self::assertSame('https://testnet.xrpl.org/transactions/', $panel['explorer']);
+        self::assertSame('XRPL', $panel['chain']);
         self::assertSame([], $panel['transactions']);
+    }
+
+    public function testAXahauOrderLinksXahausExplorer(): void
+    {
+        $intent = PaymentIntent::quote(
+            type: 'xahau-xah-payment', chain: 'XAHAU', network: 'testnet', baseAsset: 'XAH', quoteCurrency: 'EUR',
+            pairing: 'XAH/EUR', exchangeRate: 0.0091, amountRequested: 109.89011,
+            destinationAccount: self::ACCOUNT, destinationTag: 123456, expiry: time() + 600,
+        );
+
+        $panel = OrderPanelPresenter::present($intent, new SettlementPolicy(), [$this->transaction('HASH-XAH', ['delivered_amount' => '109890110'])]);
+
+        self::assertSame('XAHAU', $panel['chain']);
+        self::assertSame('https://explorer.xahau-test.net/tx/', $panel['explorer']);
+        self::assertSame('https://explorer.xahau-test.net/tx/HASH-XAH', $panel['transactions'][0]['explorer_url']);
     }
 
     public function testAShortPaymentShowsWhatArrivedAndTheShortfallWithTheTransactions(): void

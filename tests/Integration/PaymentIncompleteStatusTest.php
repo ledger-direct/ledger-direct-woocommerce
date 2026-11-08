@@ -32,7 +32,7 @@ class PaymentIncompleteStatusTest extends TestCase
         $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}ledger_direct_xrpl_destination_tag");
         delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.XRP.EUR');
         delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.RLUSD.EUR');
-        delete_transient('ledger_direct_ledger-direct.sync.v1.testnet.' . XrplNetworkStub::ACCOUNT);
+        delete_transient(XrplNetworkStub::throttleTransient());
 
         update_option(WpConfigProvider::OPTION_NAME, [
             'enabled' => 'yes',
@@ -54,7 +54,7 @@ class PaymentIncompleteStatusTest extends TestCase
     {
         $this->network->remove();
         ServiceFactory::setInstance(null);
-        delete_transient('ledger_direct_ledger-direct.sync.v1.testnet.' . XrplNetworkStub::ACCOUNT);
+        delete_transient(XrplNetworkStub::throttleTransient());
 
         parent::tearDown();
     }
@@ -125,13 +125,13 @@ class PaymentIncompleteStatusTest extends TestCase
         self::assertStringContainsString('HASH-HALF', $notes[0]);
 
         // A poll that sees nothing new adds no second note
-        delete_transient('ledger_direct_ledger-direct.sync.v1.testnet.' . XrplNetworkStub::ACCOUNT);
+        delete_transient(XrplNetworkStub::throttleTransient());
         $this->poll($order);
         self::assertCount(count($notes), $this->notes(wc_get_order($order->get_id())));
 
         // The top-up settles from the incomplete status
         $this->network->addXrpPayment($intent->destinationTag, '50000000', 'HASH-TOPUP', 90000010);
-        delete_transient('ledger_direct_ledger-direct.sync.v1.testnet.' . XrplNetworkStub::ACCOUNT);
+        delete_transient(XrplNetworkStub::throttleTransient());
         $payload = $this->poll($order);
 
         self::assertSame('settled', $payload['state']);

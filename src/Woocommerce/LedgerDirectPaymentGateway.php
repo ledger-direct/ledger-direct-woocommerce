@@ -5,6 +5,7 @@ namespace Hardcastle\LedgerDirect\Woocommerce;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Exception;
+use Hardcastle\LedgerDirect\Core\ChainCatalog;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Presentation\AccentColor;
 use Hardcastle\LedgerDirect\Service\OrderTransactionService;
@@ -27,6 +28,9 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
     public const USDC_PAYMENT_ID = 'usdc';
 
+    /** XAH on Xahau (1.5.0). */
+    public const XAH_PAYMENT_ID = 'xah';
+
     public static self|null $_instance = null;
 
     public string $account;
@@ -48,7 +52,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     {
         $this->id = self::ID;
         $this->method_title = 'LedgerDirect';
-        $this->method_description = 'Accept payments (XRP, RLUSD, USDC) on your XRPL wallet';
+        $this->method_description = 'Accept payments (XRP, RLUSD, USDC) on your XRPL wallet, and XAH on Xahau';
         $this->title = esc_html__('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
         $this->description = 'Choose your preferred XRPL payment method';
         $this->icon = ledger_direct_get_public_url('/public/images/checkout.png');
@@ -116,6 +120,70 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     public function validate_xrpl_testnet_destination_account_field(string $key, ?string $value): string
     {
         return $this->validate_destination_account($key, $value);
+    }
+
+    /**
+     * Xahau's accounts have the XRP Ledger's form; the core's catalogue checks them,
+     * checksum included.
+     */
+    public function validate_xahau_mainnet_destination_account_field(string $key, ?string $value): string
+    {
+        return $this->validate_xahau_account($key, $value);
+    }
+
+    public function validate_xahau_testnet_destination_account_field(string $key, ?string $value): string
+    {
+        return $this->validate_xahau_account($key, $value);
+    }
+
+    private function validate_xahau_account(string $key, ?string $value): string
+    {
+        $address = trim((string) $value);
+
+        if ($address === '' || ChainCatalog::chain(ChainCatalog::XAHAU)->isValidAccount($address)) {
+            $this->warn_when_shared_with_the_xrp_ledger($key, $address);
+
+            return $address;
+        }
+
+        \WC_Admin_Settings::add_error(
+            sprintf(
+                /* translators: %s: the value the merchant entered */
+                __('"%s" is not a Xahau account address. It starts with r, like an XRP Ledger address; the previous value was kept.', 'ledger-direct'),
+                $address
+            )
+        );
+
+        return $this->get_option($key, '');
+    }
+
+    /**
+     * The same r-address is a different account on each chain, and a payment sent on the wrong one
+     * reaches no order. The core's contract asks the adapter to warn; it cannot refuse, the formats
+     * are identical (INVARIANTS.md, "Xahau"). Compared with the XRPL field of the same network as
+     * posted in this save, else as stored.
+     */
+    private function warn_when_shared_with_the_xrp_ledger(string $key, string $address): void
+    {
+        if ($address === '') {
+            return;
+        }
+
+        $xrplKey = str_replace('xahau_', 'xrpl_', $key);
+        $fieldKey = $this->get_field_key($xrplKey);
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verified the settings form before calling the validators.
+        $posted = isset($_POST[$fieldKey]) ? sanitize_text_field(wp_unslash($_POST[$fieldKey])) : null;
+        $xrplAddress = trim((string) ($posted ?? $this->get_option($xrplKey, '')));
+
+        if ($address === $xrplAddress) {
+            \WC_Admin_Settings::add_message(
+                sprintf(
+                    /* translators: %s: the account address */
+                    __('The Xahau account %s is also the XRP Ledger account on this network. The two are different accounts on different chains; use one account per chain.', 'ledger-direct'),
+                    $address
+                )
+            );
+        }
     }
 
     private function validate_destination_account(string $key, ?string $value): string
@@ -218,26 +286,21 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
 
         $icon = static fn (string $asset): string => '<img class="ld-method-icon" src="' . esc_url(ledger_direct_get_public_url('/public/images/' . $asset . '_payment.svg')) . '" alt="" width="40" height="24"> ';
 
-        echo '<label>';
-        echo '<input type="radio" name="ledger_direct_payment_type" value="xrp" checked> ';
-        echo wp_kses($icon('xrp'), self::ICON_HTML);
-        echo esc_html__('XRP', 'ledger-direct');
-        echo '</label><br>';
-
-        if ($config['rlusd_available']) {
+        // One radio per payment type the configuration offers, in catalogue order; the first is preselected.
+        $labels = [
+            self::XRP_PAYMENT_ID => __('XRP', 'ledger-direct'),
+            self::RLUSD_PAYMENT_ID => __('RLUSD Stablecoin (XRPL)', 'ledger-direct'),
+            self::USDC_PAYMENT_ID => __('USDC Stablecoin (XRPL)', 'ledger-direct'),
+            self::XAH_PAYMENT_ID => __('XAH (Xahau)', 'ledger-direct'),
+        ];
+        $first = true;
+        foreach (self::available_payment_types($config) as $type) {
             echo '<label>';
-            echo '<input type="radio" name="ledger_direct_payment_type" value="rlusd"> ';
-            echo wp_kses($icon('rlusd'), self::ICON_HTML);
-            echo esc_html__('RLUSD Stablecoin (XRPL)', 'ledger-direct');
+            echo '<input type="radio" name="ledger_direct_payment_type" value="' . esc_attr($type) . '"' . ($first ? ' checked' : '') . '> ';
+            echo wp_kses($icon($type), self::ICON_HTML);
+            echo esc_html($labels[$type]);
             echo '</label><br>';
-        }
-
-        if ($config['usdc_available']) {
-            echo '<label>';
-            echo '<input type="radio" name="ledger_direct_payment_type" value="usdc"> ';
-            echo wp_kses($icon('usdc'), self::ICON_HTML);
-            echo esc_html__('USDC Stablecoin (XRPL)', 'ledger-direct');
-            echo '</label>';
+            $first = false;
         }
 
         echo '</div>';
@@ -249,12 +312,39 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
      *
      * @return bool True if the fields are valid, false otherwise.
      */
+    /**
+     * The payment types the configuration offers: the XRP Ledger's with its account,
+     * Xahau's when switched on with an account. The checkout (classic and blocks)
+     * and the validation read the same list.
+     *
+     * @param array<string, mixed> $config ledger_direct_get_configuration()
+     * @return string[] 'xrp' | 'rlusd' | 'usdc' | 'xah'
+     */
+    public static function available_payment_types(array $config): array
+    {
+        $types = [];
+        if (!empty($config['xrpl_available'])) {
+            $types[] = self::XRP_PAYMENT_ID;
+            if (!empty($config['rlusd_available'])) {
+                $types[] = self::RLUSD_PAYMENT_ID;
+            }
+            if (!empty($config['usdc_available'])) {
+                $types[] = self::USDC_PAYMENT_ID;
+            }
+        }
+        if (!empty($config['xah_available'])) {
+            $types[] = self::XAH_PAYMENT_ID;
+        }
+
+        return $types;
+    }
+
     public function validate_fields(): bool
     {
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling this gateway method.
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        if (!array_key_exists($payment_type, OrderTransactionService::BASE_ASSET_BY_PAYMENT_TYPE)) {
+        if (!in_array($payment_type, self::available_payment_types(ledger_direct_get_configuration()), true)) {
             wc_add_notice(__('Please select a valid payment method.', 'ledger-direct'), 'error');
             return false;
         }

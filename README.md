@@ -8,8 +8,8 @@
 [![Tested up to WordPress](https://img.shields.io/wordpress/plugin/tested/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/)
 [![Requires PHP](https://img.shields.io/wordpress/plugin/required-php/ledger-direct.svg)](https://wordpress.org/plugins/ledger-direct/)
 
-Accept XRP, RLUSD and USDC directly on the XRP Ledger — no payment processor, no custody, funds
-land in the merchant's own wallet.
+Accept XRP, RLUSD and USDC directly on the XRP Ledger, and XAH on [Xahau](https://xahau.network) — no
+payment processor, no custody, funds land in the merchant's own wallet.
 
 The plugin is the WooCommerce adapter over
 [`hardcastle/ledger-direct-core`](https://packagist.org/packages/hardcastle/ledger-direct-core), the
@@ -115,6 +115,8 @@ login is required.
 - PHP 8.2 or newer
 - An XRP Ledger account. Accepting RLUSD or USDC additionally requires a **trustline** to the
   respective issuer on that account, or payments will fail on the ledger.
+- For XAH, an account on Xahau. Use one that receives on Xahau alone: the same address is a different
+  account on each chain, and the plugin keeps the two apart.
 
 ## Installation
 
@@ -143,6 +145,7 @@ WooCommerce → Settings → Payments → LedgerDirect → Manage:
 | XRPL network | `testnet` or `mainnet`. |
 | Merchant account, mainnet and testnet | The shop's receiving address on each network; the one for the selected network is used. Validated as an XRPL address when saved; another chain's address or a destination tag in the field is refused and the previous value kept. |
 | Enable RLUSD payments, Enable USDC payments | Stablecoins are off by default — they need a trustline first. LedgerDirect is one payment method at checkout; the customer picks the asset inside it. |
+| Xahau: Accept XAH on Xahau, Xahau network, Xahau account mainnet and testnet | Off by default. Xahau speaks the XRP Ledger's protocol on a network of its own: payments in XAH by destination tag, priced from Coingecko and Bitrue (XAH trades on Bitrue alone; a euro price rests on Coingecko). The accounts are validated like the XRPL ones. XAH appears in the checkout once the switch is on and the account for the selected network is set. |
 | Payment page title | The page title shown in the browser tab. |
 | XRP quote expiry | How long a quoted amount stays fixed, in minutes. Default 15. |
 | Payment page: logo | What the payment page shows in its header: the site logo, a picture from the media library (its attachment ID or URL in the field below), or the first letter of the site name. |
@@ -151,6 +154,11 @@ WooCommerce → Settings → Payments → LedgerDirect → Manage:
 
 Issuer addresses are not configurable. They are fixed in the core: a wrong issuer would send
 customer funds to a dead trustline.
+
+On a Xahau payment page the payment request behind the QR code names the Xahau network, so Xaman
+offers to switch if it is set to another one; the browser-wallet buttons stay off there. Xahau's
+transactions and tag counter live in tables of their own (`ledger_direct_xahau_tx`,
+`ledger_direct_xahau_destination_tag`), shared with the XRP Ledger's in nothing.
 
 The settlement job runs every five minutes on the Action Scheduler, which WooCommerce drives from
 WP-Cron. On a site where WP-Cron is disabled in favour of a system cron, make sure that cron calls
@@ -202,7 +210,8 @@ plain form that syncs and settles on reload.
 
 ## External services
 
-Exchange rates come from the public APIs of Coingecko, Binance and Kraken, through the core. No
+Exchange rates come from the public APIs of Coingecko, Binance and Kraken, and for XAH from Coingecko and
+Bitrue, through the core. No
 personal or payment data is sent to them; only the current rate is requested when a payment is
 quoted or displayed, and rates are cached briefly so a short outage of one source does not
 interrupt checkout.
@@ -210,6 +219,7 @@ interrupt checkout.
 - Coingecko API: [Terms of Service](https://www.coingecko.com/en/terms), [Privacy Policy](https://www.coingecko.com/en/privacy)
 - Binance API: [Terms of Use](https://www.binance.com/en/terms), [Privacy Policy](https://www.binance.com/en/privacy)
 - Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
+- Bitrue API: [Terms of Use](https://support.bitrue.com/hc/en-001/articles/4405473110681-Bitrue-Terms-of-Use), [Privacy Policy](https://support.bitrue.com/hc/en-001/articles/4405473185945-Bitrue-Privacy-Policy)
 
 ## Development
 

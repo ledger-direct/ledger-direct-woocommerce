@@ -13,6 +13,16 @@ final class XrplNetworkStub
 {
     public const ACCOUNT = 'rL7DjHoSvkn8TXYPcv6sBsJRwqdzAc6VxK';
 
+    /**
+     * The transient the core's SyncThrottle (0.11) keeps the last-sync mark under: chain,
+     * network and the account as a digest, behind the rate cache's prefix. Deleting it
+     * lets the next poll hit the (stubbed) node again.
+     */
+    public static function throttleTransient(string $account = self::ACCOUNT, string $chain = 'XRPL', string $network = 'testnet'): string
+    {
+        return 'ledger_direct_' . implode('.', ['ledger-direct.sync.v2', strtolower($chain), $network, substr(hash('sha256', $account), 0, 16)]);
+    }
+
     /** @var callable|null */
     private $filter = null;
 

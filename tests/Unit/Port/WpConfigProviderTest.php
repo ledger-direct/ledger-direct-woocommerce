@@ -3,7 +3,6 @@
 namespace Hardcastle\LedgerDirect\Tests\Unit\Port;
 
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class WpConfigProviderTest extends TestCase
@@ -95,10 +94,54 @@ class WpConfigProviderTest extends TestCase
         $this->assertSame(60 * 60, $this->provider([WpConfigProvider::KEY_QUOTE_EXPIRY => '900'])->getQuoteExpirySeconds());
     }
 
-    public function testRejectsAnyOtherChain(): void
+    /**
+     * Xahau has keys of its own; the XRPL keys stay as they were. XAH is on with the chain's
+     * switch and its account for the selected network; an XRPL asset is never a Xahau asset.
+     */
+    public function testXahauIsReadFromItsOwnKeys(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $provider = $this->provider([
+            WpConfigProvider::KEY_XAHAU_ENABLED => 'yes',
+            WpConfigProvider::KEY_XAHAU_NETWORK => 'mainnet',
+            WpConfigProvider::KEY_XAHAU_MAINNET_ACCOUNT => ' rwYmPjiRVns1zvemcK5DhDrTxNBV7bSsMk ',
+            WpConfigProvider::KEY_XAHAU_TESTNET_ACCOUNT => 'rXahauTestnet',
+        ]);
 
-        $this->provider()->getNetwork('XLM');
+        $this->assertSame('mainnet', $provider->getNetwork('XAHAU'));
+        $this->assertSame('rwYmPjiRVns1zvemcK5DhDrTxNBV7bSsMk', $provider->getDestinationAccount('XAHAU'), 'trimmed');
+        $this->assertTrue($provider->hasDestinationAccount('XAHAU'));
+        $this->assertTrue($provider->isAssetEnabled('XAHAU', 'XAH'));
+        $this->assertFalse($provider->isAssetEnabled('XAHAU', 'XRP'), 'XRP is not an asset of Xahau');
+        $this->assertFalse($provider->isAssetEnabled('XRPL', 'XAH'), 'XAH is not an asset of the XRP Ledger');
+        $this->assertSame('testnet', $provider->getNetwork('XRPL'), 'the XRPL keys are untouched');
+        $this->assertSame(self::TESTNET_ACCOUNT, $provider->getDestinationAccount('XRPL'));
+    }
+
+    public function testXahauIsOffUntilSwitchedOn(): void
+    {
+        $provider = $this->provider([WpConfigProvider::KEY_XAHAU_TESTNET_ACCOUNT => 'rwYmPjiRVns1zvemcK5DhDrTxNBV7bSsMk']);
+
+        $this->assertSame('testnet', $provider->getNetwork('XAHAU'), 'testnet by default');
+        $this->assertFalse($provider->isChainEnabled('XAHAU'));
+        $this->assertFalse($provider->isAssetEnabled('XAHAU', 'XAH'));
+        $this->assertTrue($provider->hasDestinationAccount('XAHAU'), 'the account is there, the switch decides');
+        $this->assertTrue($provider->isChainEnabled('XRPL'), 'the XRP Ledger has no switch of its own');
+    }
+
+    /**
+     * A chain the plugin carries nothing on (Stellar in the catalogue, anything else) gets no
+     * settings, never another chain's: its testnet, no account, no asset.
+     */
+    public function testAChainWithoutPaymentTypesHasNoSettings(): void
+    {
+        $provider = $this->provider([WpConfigProvider::KEY_XAHAU_ENABLED => 'yes']);
+
+        foreach (['STELLAR', 'XLM'] as $chain) {
+            $this->assertSame('testnet', $provider->getNetwork($chain));
+            $this->assertSame('', $provider->getDestinationAccount($chain));
+            $this->assertFalse($provider->isChainEnabled($chain));
+            $this->assertFalse($provider->isAssetEnabled($chain, 'XLM'));
+            $this->assertFalse($provider->isAssetEnabled($chain, 'XRP'));
+        }
     }
 }

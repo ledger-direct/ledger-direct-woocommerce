@@ -29,6 +29,8 @@ global $ledger_direct_order, $ledger_direct_view;
 $v = is_array($ledger_direct_view) ? $ledger_direct_view : null;
 $state = is_array($v) ? (string) $v['state'] : '';
 $asset = is_array($v) ? (string) $v['asset'] : '';
+// Xahau speaks the XRP Ledger's protocol on a network of its own: the same page, with its own names.
+$isXahau = is_array($v) && ($v['chain'] ?? 'XRPL') === 'XAHAU';
 $has_wallet_app = is_array($v) && ($v['xaman_key'] !== '' || $v['wc_project'] !== '');
 
 // The sentences with markup inside: the numbers are escaped, the tags are these and no others.
@@ -146,6 +148,7 @@ if ($ld_error !== null) {
      data-ld-page
      data-ld-state="<?php echo esc_attr($state); ?>"
      data-ld-poll-url="<?php echo esc_url($v['poll_url']); ?>"
+     data-ld-chain="<?php echo esc_attr($v['chain']); ?>"
      data-ld-asset="<?php echo esc_attr($asset); ?>"
      data-ld-network="<?php echo esc_attr($v['network']); ?>"
      data-ld-explorer-base="<?php echo esc_url($v['explorer_base']); ?>"
@@ -289,7 +292,7 @@ if ($ld_error !== null) {
                                 <div data-ld-qr data-ld-qr-label="<?php esc_attr_e('QR code with address, destination tag and amount', 'ledger-direct'); ?>"><img src="<?php echo esc_attr($v['qr_data_uri']); ?>" alt="<?php esc_attr_e('QR code with address, destination tag and amount', 'ledger-direct'); ?>" width="220" height="220"></div>
                                 <div class="ld-qr-void" data-ld-qr-void <?php echo $state !== 'expired' ? 'hidden' : ''; ?>><?php esc_html_e('Expired – please request a new amount', 'ledger-direct'); ?></div>
                             </div>
-                            <p class="ld-qr-caption"><?php esc_html_e('Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending.', 'ledger-direct'); ?></p>
+                            <p class="ld-qr-caption"><?php echo $isXahau ? esc_html__('Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending.', 'ledger-direct') : esc_html__('Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending.', 'ledger-direct'); ?></p>
                         </details>
 
                         <?php /* Browser wallets, loaded only on click. Every sentence the module can show is rendered here. */ ?>
@@ -319,15 +322,15 @@ if ($ld_error !== null) {
                             <?php /* translators: %network% is replaced by the script with the network's name */ ?>
                             <span hidden data-ld-wallet-text="error-mismatch"><?php esc_html_e('Your wallet is set to another network. Please switch to %network%.', 'ledger-direct'); ?></span>
                             <span hidden data-ld-wallet-text="error-other"><?php esc_html_e('The payment through the wallet failed. Please use the QR code or copy the details.', 'ledger-direct'); ?></span>
-                            <span hidden data-ld-wallet-text="network-mainnet"><?php esc_html_e('XRPL Mainnet', 'ledger-direct'); ?></span>
-                            <span hidden data-ld-wallet-text="network-testnet"><?php esc_html_e('XRPL Testnet', 'ledger-direct'); ?></span>
+                            <span hidden data-ld-wallet-text="network-mainnet"><?php echo $isXahau ? esc_html__('Xahau Mainnet', 'ledger-direct') : esc_html__('XRPL Mainnet', 'ledger-direct'); ?></span>
+                            <span hidden data-ld-wallet-text="network-testnet"><?php echo $isXahau ? esc_html__('Xahau Testnet', 'ledger-direct') : esc_html__('XRPL Testnet', 'ledger-direct'); ?></span>
                         </div>
 
                         <dl class="ld-details">
                             <dt><?php esc_html_e('Order total', 'ledger-direct'); ?></dt><dd><?php echo esc_html($v['fiat_display']); ?></dd>
                             <?php /* translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency */ ?>
                             <dt><?php esc_html_e('Rate', 'ledger-direct'); ?></dt><dd><?php echo esc_html(sprintf(__('1 %1$s = %2$s %3$s', 'ledger-direct'), $asset, $v['rate_display'], $v['shop_currency'])); ?></dd>
-                            <dt><?php esc_html_e('Network', 'ledger-direct'); ?></dt><dd><?php echo $v['is_testnet'] ? esc_html__('XRPL Testnet', 'ledger-direct') : esc_html__('XRPL Mainnet', 'ledger-direct'); ?></dd>
+                            <dt><?php esc_html_e('Network', 'ledger-direct'); ?></dt><dd><?php echo esc_html($isXahau ? ($v['is_testnet'] ? __('Xahau Testnet', 'ledger-direct') : __('Xahau Mainnet', 'ledger-direct')) : ($v['is_testnet'] ? __('XRPL Testnet', 'ledger-direct') : __('XRPL Mainnet', 'ledger-direct'))); ?></dd>
                         </dl>
                     </aside>
                 </div>
@@ -369,7 +372,7 @@ if ($ld_error !== null) {
 
     <footer class="ld-foot">
         <a href="<?php echo esc_url($v['cart_url']); ?>"><?php esc_html_e('Back to cart', 'ledger-direct'); ?></a>
-        <span><?php esc_html_e('Paid directly on the XRP Ledger, with no intermediary.', 'ledger-direct'); ?></span>
+        <span><?php echo $isXahau ? esc_html__('Paid directly on the Xahau network, with no intermediary.', 'ledger-direct') : esc_html__('Paid directly on the XRP Ledger, with no intermediary.', 'ledger-direct'); ?></span>
     </footer>
 </div>
 

@@ -45,6 +45,43 @@ class GatewaySettingsValidationTest extends TestCase
         );
     }
 
+    /**
+     * The same r-address is a different account on each chain (core INVARIANTS.md, "Xahau"): a Xahau
+     * account that is the XRP Ledger's on the same network is kept, with a message for the merchant.
+     */
+    public function testAXahauAccountThatIsTheXrpLedgersIsKeptWithAMessage(): void
+    {
+        $gateway = new LedgerDirectPaymentGateway();
+
+        $kept = $gateway->validate_xahau_testnet_destination_account_field('xahau_testnet_destination_account', ' ' . XrplNetworkStub::ACCOUNT . ' ');
+
+        self::assertSame(XrplNetworkStub::ACCOUNT, $kept);
+        self::assertNotEmpty(
+            array_filter($this->adminMessages(), static fn (string $m): bool => str_contains($m, XrplNetworkStub::ACCOUNT)),
+            'a message that names the account'
+        );
+    }
+
+    public function testADifferentXahauAccountPassesWithoutAMessage(): void
+    {
+        $gateway = new LedgerDirectPaymentGateway();
+        $before = count($this->adminMessages());
+
+        self::assertSame('rDF9bEuYAmkEfeQgf7C64BsJWJoWqS5NaV', $gateway->validate_xahau_mainnet_destination_account_field('xahau_mainnet_destination_account', 'rDF9bEuYAmkEfeQgf7C64BsJWJoWqS5NaV'));
+        self::assertCount($before, $this->adminMessages());
+    }
+
+    /**
+     * WC_Admin_Settings keeps its messages in a private static and renders them only when no
+     * error is queued, which other tests in this process have done; the array is the observable.
+     *
+     * @return string[]
+     */
+    private function adminMessages(): array
+    {
+        return (new \ReflectionClass(\WC_Admin_Settings::class))->getStaticPropertyValue('messages');
+    }
+
     public function testEmptyClearsTheAccount(): void
     {
         $gateway = new LedgerDirectPaymentGateway();

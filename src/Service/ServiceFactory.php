@@ -5,6 +5,7 @@ namespace Hardcastle\LedgerDirect\Service;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Hardcastle\LedgerDirect\Cache\TransientRateCache;
+use Hardcastle\LedgerDirect\Core\ChainCatalog;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntentService;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Core\Price\PriceService;
@@ -34,15 +35,19 @@ final class ServiceFactory
     private static ?self $instance = null;
 
     private ?WpConfigProvider $configProvider = null;
-    private ?WpdbXrplTransactionRepository $transactionRepository = null;
+    /** @var array<string, WpdbXrplTransactionRepository> by chain */
+    private array $transactionRepositories = [];
     private ?LoggerInterface $logger = null;
     private ?ClientInterface $httpClient = null;
     private ?Psr17Factory $httpFactory = null;
     private ?CacheInterface $rateCache = null;
     private ?PriceService $priceService = null;
-    private ?PaymentIntentService $paymentIntentService = null;
-    private ?SyncService $syncService = null;
-    private ?SyncThrottle $syncThrottle = null;
+    /** @var array<string, PaymentIntentService> by chain */
+    private array $paymentIntentServices = [];
+    /** @var array<string, SyncService> by chain */
+    private array $syncServices = [];
+    /** @var array<string, SyncThrottle> by chain */
+    private array $syncThrottles = [];
     private ?SettlementPolicy $settlementPolicy = null;
     private ?OrderTransactionService $orderTransactionService = null;
 
@@ -73,8 +78,12 @@ final class ServiceFactory
         ?WpConfigProvider $configProvider = null
     ): self {
         $factory = new self();
-        $factory->paymentIntentService = $paymentIntentService;
-        $factory->syncService = $syncService;
+        if ($paymentIntentService !== null) {
+            $factory->paymentIntentServices[ChainCatalog::XRPL] = $paymentIntentService;
+        }
+        if ($syncService !== null) {
+            $factory->syncServices[ChainCatalog::XRPL] = $syncService;
+        }
         $factory->settlementPolicy = $settlementPolicy;
         $factory->configProvider = $configProvider;
 
@@ -86,9 +95,15 @@ final class ServiceFactory
         return $this->configProvider ??= new WpConfigProvider();
     }
 
-    public function getTransactionRepository(): WpdbXrplTransactionRepository
+    /**
+     * The core's services come per chain. Xahau speaks the XRP Ledger's protocol
+     * on a network of its own, so the same classes serve it, built for the chain:
+     * another node, another transaction table and tag counter, another throttle
+     * mark. Without a chain the XRP Ledger's set is meant, as before.
+     */
+    public function getTransactionRepository(string $chain = ChainCatalog::XRPL): WpdbXrplTransactionRepository
     {
-        return $this->transactionRepository ??= new WpdbXrplTransactionRepository();
+        return $this->transactionRepositories[$chain] ??= new WpdbXrplTransactionRepository($chain);
     }
 
     public function getLogger(): LoggerInterface
@@ -122,12 +137,13 @@ final class ServiceFactory
         );
     }
 
-    public function getPaymentIntentService(): PaymentIntentService
+    public function getPaymentIntentService(string $chain = ChainCatalog::XRPL): PaymentIntentService
     {
-        return $this->paymentIntentService ??= new PaymentIntentService(
+        return $this->paymentIntentServices[$chain] ??= new PaymentIntentService(
             $this->getPriceService(),
-            new DestinationTagService($this->getTransactionRepository()),
-            $this->getConfigProvider()
+            new DestinationTagService($this->getTransactionRepository($chain)),
+            $this->getConfigProvider(),
+            chain: $chain
         );
     }
 
@@ -141,13 +157,19 @@ final class ServiceFactory
         return $this->settlementPolicy ??= new SettlementPolicy();
     }
 
-    public function getSyncService(): SyncService
+    public function getSyncService(string $chain = ChainCatalog::XRPL): SyncService
     {
-        return $this->syncService ??= new SyncService(
-            new XrplClient($this->getHttpClient(), $this->getHttpFactory(), $this->getHttpFactory()),
-            $this->getTransactionRepository(),
+        return $this->syncServices[$chain] ??= new SyncService(
+            $this->getXrplClient($chain),
+            $this->getTransactionRepository($chain),
             $this->getLogger()
         );
+    }
+
+    /** The node client of a chain: the XRP Ledger's or Xahau's nodes, fixed in the core. */
+    public function getXrplClient(string $chain = ChainCatalog::XRPL): XrplClient
+    {
+        return new XrplClient($this->getHttpClient(), $this->getHttpFactory(), $this->getHttpFactory(), $chain);
     }
 
     /**
@@ -157,19 +179,17 @@ final class ServiceFactory
      * transient store as the rate cache; an object cache that evicts it
      * degrades to "always sync", never to "never sync".
      */
-    public function getSyncThrottle(): SyncThrottle
+    public function getSyncThrottle(string $chain = ChainCatalog::XRPL): SyncThrottle
     {
-        return $this->syncThrottle ??= new SyncThrottle($this->getRateCache(), $this->getLogger());
+        return $this->syncThrottles[$chain] ??= new SyncThrottle($this->getRateCache(), $this->getLogger(), chain: $chain);
     }
 
     public function getOrderTransactionService(): OrderTransactionService
     {
         return $this->orderTransactionService ??= new OrderTransactionService(
-            $this->getPaymentIntentService(),
-            $this->getSyncService(),
+            $this,
             $this->getSettlementPolicy(),
             new LegacyPaymentIntentMapper(),
-            $this->getSyncThrottle(),
             $this->getLogger()
         );
     }
