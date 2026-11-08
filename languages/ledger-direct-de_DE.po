@@ -10,6 +10,7 @@ msgstr ""
 "POT-Creation-Date: 2026-09-07T09:31:11+00:00\n"
 "PO-Revision-Date: 2026-10-09 12:00+0200\n"
 "Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.1\n"
 "X-Domain: ledger-direct\n"
 
@@ -660,3 +661,63 @@ msgid "XRPL payment incomplete <span class=\"count\">(%s)</span>"
 msgid_plural "XRPL payment incomplete <span class=\"count\">(%s)</span>"
 msgstr[0] "XRPL-Zahlung unvollständig <span class=\"count\">(%s)</span>"
 msgstr[1] "XRPL-Zahlung unvollständig <span class=\"count\">(%s)</span>"
+
+#: xahau
+msgid "Xahau Mainnet"
+msgstr "Xahau Mainnet"
+
+#: xahau
+msgid "Xahau Testnet"
+msgstr "Xahau Testnet"
+
+#: xahau
+msgid "Paid directly on the Xahau network, with no intermediary."
+msgstr "Zahlung direkt im Xahau-Netzwerk, ohne Zwischenhändler."
+
+#: xahau
+msgid "Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending."
+msgstr "Mit Xaman scannen. Adresse, Destination Tag und Betrag sind vorausgefüllt, und Xaman bietet den Wechsel ins Xahau-Netzwerk an, falls ein anderes eingestellt ist – bitte vor dem Senden prüfen."
+
+#: xahau
+msgid "XAH (Xahau)"
+msgstr "XAH (Xahau)"
+
+#: xahau
+msgid "Xahau"
+msgstr "Xahau"
+
+#: xahau
+msgid "Accept XAH on Xahau"
+msgstr "XAH auf Xahau akzeptieren"
+
+#: xahau
+msgid "Xahau is a network of its own that speaks the XRP Ledger's protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger."
+msgstr "Xahau ist ein eigenes Netzwerk mit dem Protokoll des XRP Ledger: Zahlungen in XAH, per Destination Tag, an ein Konto derselben Form. Verwenden Sie ein Konto, das nur auf Xahau empfängt, nicht eines, das auch auf dem XRP Ledger empfängt."
+
+#: xahau
+msgid "Xahau Network"
+msgstr "Xahau-Netzwerk"
+
+#: xahau
+msgid "Choose the Xahau network"
+msgstr "Wählen Sie das Xahau-Netzwerk"
+
+#: xahau
+msgid "Xahau Account - MAINNET"
+msgstr "Xahau-Konto – MAINNET"
+
+#: xahau
+msgid "Receiving account on the Xahau mainnet"
+msgstr "Empfangskonto im Xahau-Mainnet"
+
+#: xahau
+msgid "Xahau Account - TESTNET"
+msgstr "Xahau-Konto – TESTNET"
+
+#: xahau
+msgid "Receiving account on the Xahau testnet"
+msgstr "Empfangskonto im Xahau-Testnet"
+
+#: xahau
+msgid "\"%s\" is not a Xahau account address. It starts with r, like an XRP Ledger address; the previous value was kept."
+msgstr "„%s“ ist keine Xahau-Kontoadresse. Sie beginnt mit r, wie eine XRP-Ledger-Adresse; der vorherige Wert wurde behalten."

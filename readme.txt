@@ -1,6 +1,6 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
-Tags: xrpl, xrp, rlusd, usdc, woocommerce
+Tags: xrpl, xrp, rlusd, usdc, xahau
 Stable tag: 1.4.1
 Requires at least: 6.7
 Tested up to: 7.1
@@ -70,6 +70,10 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.5.0 =
+* Xahau: XAH on the Xahau network, a chain of its own that speaks the XRP Ledger's protocol, paid by destination tag. New settings "Accept XAH on Xahau", the Xahau network and one receiving account per network, off by default; the checkout offers XAH once they are set. The payment request behind the QR code names the Xahau network, so Xaman offers to switch if it is set to another one; the browser-wallet buttons stay off on a Xahau page. Xahau has its own tables (ledger_direct_xahau_tx, ledger_direct_xahau_destination_tag, created on update) and shares nothing with the XRP Ledger, also for an account that exists on both. The background job syncs the configured account of each chain. Needs core 0.11.
+* The payment types come from the core's chain catalogue: one per chain and asset, and a test that turns red when the core adds a chain the plugin has not decided on.
 
 = 1.4.1 =
 * Core 0.9: the synced transactions store the CTID in the column tx_ctid instead of ctid, the name every LedgerDirect plugin uses from now on (PostgreSQL reserves ctid for a system column). The column is renamed in place on the first request after the update; nothing changes for customers or merchants.

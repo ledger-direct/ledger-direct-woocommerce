@@ -134,7 +134,7 @@ class LedgerDirectInstallTest extends TestCase
 
         LedgerDirectInstall::maybe_upgrade();
 
-        $this->assertSame('4', get_option(LedgerDirectInstall::DB_VERSION_OPTION));
+        $this->assertSame(LedgerDirectInstall::DB_VERSION, get_option(LedgerDirectInstall::DB_VERSION_OPTION));
         $this->assertSame(['tx_ctid'], $this->ctidColumns());
         $this->assertSame(
             [['hash' => 'HASH-TESTNET', 'tx_ctid' => 'C139B2B500020001', 'network' => 'testnet']],
@@ -179,6 +179,29 @@ class LedgerDirectInstallTest extends TestCase
 
         $this->assertNull($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $this->txTable)));
         $this->assertSame(99, (int) $wpdb->get_var("SELECT sequence FROM {$this->tagTable} WHERE destination_account = 'rDest'"));
+    }
+
+    /**
+     * Schema version 5: a site from 1.4.x has the XRPL tables and no Xahau ones; the upgrade
+     * creates them without touching the XRPL counter.
+     */
+    public function testUpgradeToSchema5CreatesTheXahauTables(): void
+    {
+        global $wpdb;
+
+        $this->dropAll();
+        LedgerDirectInstall::create_tables();
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}ledger_direct_xahau_tx");
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}ledger_direct_xahau_destination_tag");
+        $wpdb->query("INSERT INTO {$this->tagTable} (destination_account, sequence) VALUES ('rDest', 41)");
+        update_option(LedgerDirectInstall::DB_VERSION_OPTION, '4');
+
+        LedgerDirectInstall::maybe_upgrade();
+
+        $this->assertSame($wpdb->prefix . 'ledger_direct_xahau_tx', $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}ledger_direct_xahau_tx'"));
+        $this->assertSame($wpdb->prefix . 'ledger_direct_xahau_destination_tag', $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}ledger_direct_xahau_destination_tag'"));
+        $this->assertSame(41, (int) $wpdb->get_var("SELECT sequence FROM {$this->tagTable} WHERE destination_account = 'rDest'"));
+        $this->assertSame(LedgerDirectInstall::DB_VERSION, get_option(LedgerDirectInstall::DB_VERSION_OPTION));
     }
 
     public function testMaybeUpgradeIsANoopWhenAlreadyCurrent(): void
@@ -315,6 +338,8 @@ class LedgerDirectInstallTest extends TestCase
         foreach ([
             $this->txTable,
             $this->tagTable,
+            $wpdb->prefix . 'ledger_direct_xahau_tx',
+            $wpdb->prefix . 'ledger_direct_xahau_destination_tag',
             $wpdb->prefix . 'xrpl_destination_tag',
             $wpdb->prefix . 'ledger_direct_destination_tag',
         ] as $table) {

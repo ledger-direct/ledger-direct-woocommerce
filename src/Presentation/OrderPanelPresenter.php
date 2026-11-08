@@ -26,11 +26,6 @@ use UnexpectedValueException;
  */
 final class OrderPanelPresenter
 {
-    private const EXPLORER = [
-        'mainnet' => 'https://livenet.xrpl.org/transactions/',
-        'testnet' => 'https://testnet.xrpl.org/transactions/',
-    ];
-
     /** Seconds between the Unix epoch and the Ripple epoch (2000-01-01). */
     private const RIPPLE_EPOCH_OFFSET = 946684800;
 
@@ -48,7 +43,7 @@ final class OrderPanelPresenter
     {
         $status = PaymentStatus::fromIntent($intent, $policy);
         $state = $status->state();
-        $explorer = self::EXPLORER[$intent->network] ?? null;
+        $explorer = Explorer::transactionBase($intent->chain, $intent->network) ?: null;
 
         $rows = [];
         foreach ($transactions as $transaction) {
@@ -59,6 +54,7 @@ final class OrderPanelPresenter
             'state' => $state,
             'state_label' => self::stateLabel($state),
             'asset' => $intent->baseAsset,
+            'chain' => $intent->chain,
             'network' => $intent->network,
             'is_token' => is_array($intent->amountRequested),
             'amount_requested' => $intent->amountRequestedValue(),

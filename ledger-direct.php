@@ -94,15 +94,22 @@ function ledger_direct_get_configuration(): array {
     $settings = is_array($settings) ? $settings : [];
 
     $config = ServiceFactory::getInstance()->getConfigProvider();
-    $wallet_available = $config->hasDestinationAccount();
+    $xrpl_available = $config->hasDestinationAccount();
+    // Xahau: switched on and with an account for its network; the XRP Ledger's account is not needed for it.
+    $xahau_available = $config->isAssetEnabled(WpConfigProvider::CHAIN_XAHAU, 'XAH')
+        && $config->hasDestinationAccount(WpConfigProvider::CHAIN_XAHAU);
 
     return [
         'enabled' => $settings['enabled'] ?? 'no',
         'xrpl_network' => $config->getNetwork(WpConfigProvider::CHAIN),
-        'wallet_available' => $wallet_available,
+        // At least one chain can receive; the per-chain flags say which.
+        'wallet_available' => $xrpl_available || $xahau_available,
+        'xrpl_available' => $xrpl_available,
         'destination_account' => $config->getDestinationAccount(WpConfigProvider::CHAIN),
-        'rlusd_available' => $wallet_available && $config->isAssetEnabled(WpConfigProvider::CHAIN, 'RLUSD'),
-        'usdc_available' => $wallet_available && $config->isAssetEnabled(WpConfigProvider::CHAIN, 'USDC'),
+        'rlusd_available' => $xrpl_available && $config->isAssetEnabled(WpConfigProvider::CHAIN, 'RLUSD'),
+        'usdc_available' => $xrpl_available && $config->isAssetEnabled(WpConfigProvider::CHAIN, 'USDC'),
+        'xah_available' => $xahau_available,
+        'xahau_network' => $config->getNetwork(WpConfigProvider::CHAIN_XAHAU),
         'quote_expiry_seconds' => $config->getQuoteExpirySeconds(),
     ];
 }

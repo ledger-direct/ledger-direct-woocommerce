@@ -1,4 +1,4 @@
-import { sprintf, __ } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { decodeEntities } from '@wordpress/html-entities';
 import { getSetting } from '@woocommerce/settings';
@@ -16,7 +16,15 @@ const Icon = ({ asset }) => icons[asset] ? <img className="ld-method-icon" src={
  * Content component
  */
 const Content = (props) => {
-    const [selected, setSelected] = useState('xrp');
+    // The payment types the shop offers, in the order the server lists them; the first is preselected.
+    const types = settings.payment_types || ['xrp'];
+    const labels = {
+        xrp: __('Pay with XRP', 'ledger-direct'),
+        rlusd: __('Pay with RLUSD', 'ledger-direct'),
+        usdc: __('Pay with USDC', 'ledger-direct'),
+        xah: __('Pay with XAH (Xahau)', 'ledger-direct'),
+    };
+    const [selected, setSelected] = useState(types[0]);
 
     const { eventRegistration, emitResponse } = props;
     const { onPaymentSetup } = eventRegistration;
@@ -42,57 +50,22 @@ const Content = (props) => {
         selected
     ] );
 
-    let rlusdRadio = null
-    let usdcRadio = null;
-    if ( settings.rlusd_available ) {
-        rlusdRadio = (
-            <label>
-                <input
-                    type="radio"
-                    name="ledger_direct_payment_type"
-                    value="rlusd"
-                    checked={selected === 'rlusd'}
-                    onChange={() => setSelected('rlusd')}
-                />
-                <Icon asset="rlusd" /> {__('Pay with RLUSD', 'ledger-direct')}
-            </label>
-        );
-    }
-    if ( settings.usdc_available ) {
-        usdcRadio = (
-            <label>
-                <input
-                    type="radio"
-                    name="ledger_direct_payment_type"
-                    value="usdc"
-                    checked={selected === 'usdc'}
-                    onChange={() => setSelected('usdc')}
-                />
-                <Icon asset="usdc" /> {__('Pay with USDC', 'ledger-direct')}
-            </label>
-        );
-    }
-
     return (
         <div id="ledger-direct-payment-methods-block">
             <h4>{__('Choose payment method', 'ledger-direct')}</h4>
 
-            <label>
-                <input
-                    type="radio"
-                    name="ledger_direct_payment_type"
-                    value="xrp"
-                    checked={selected === 'xrp'}
-                    onChange={() => setSelected('xrp')}
-                />
-                <Icon asset="xrp" /> {__('Pay with XRP', 'ledger-direct')}
-            </label>
-            <br />
-
-            {rlusdRadio}
-            <br/>
-            {usdcRadio}
-
+            {types.map((type) => (
+                <label key={type} style={{ display: 'block' }}>
+                    <input
+                        type="radio"
+                        name="ledger_direct_payment_type"
+                        value={type}
+                        checked={selected === type}
+                        onChange={() => setSelected(type)}
+                    />
+                    <Icon asset={type} /> {labels[type] || type.toUpperCase()}
+                </label>
+            ))}
         </div>
     );
 };

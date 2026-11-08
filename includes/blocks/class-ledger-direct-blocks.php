@@ -71,10 +71,14 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
             'supports'    => array_filter( $this->gateway->supports, [ $this->gateway, 'supports' ] ),
             'rlusd_available' => $configuration[ 'rlusd_available' ] ?? false,
             'usdc_available' => $configuration[ 'usdc_available' ] ?? false,
+            'xah_available' => $configuration[ 'xah_available' ] ?? false,
+            // The payment types the shop offers, in order; the block renders one radio per entry.
+            'payment_types' => LedgerDirectPaymentGateway::available_payment_types( $configuration ),
             'icons' => [
                 'xrp' => ledger_direct_get_public_url('/public/images/xrp_payment.svg'),
                 'rlusd' => ledger_direct_get_public_url('/public/images/rlusd_payment.svg'),
                 'usdc' => ledger_direct_get_public_url('/public/images/usdc_payment.svg'),
+                'xah' => ledger_direct_get_public_url('/public/images/xah_payment.svg'),
             ],
         ];
     }

@@ -5,7 +5,7 @@ namespace Hardcastle\LedgerDirect\Cron;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
-use Hardcastle\LedgerDirect\Port\WpConfigProvider;
+use Hardcastle\LedgerDirect\Chain\SupportedChains;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
@@ -82,19 +82,24 @@ final class SettlePendingOrders
 
         $synced = [];
 
-        // The configured receiving account is synced on every run, open orders or not: a
-        // payment on an order the merchant has already cancelled would otherwise never
-        // reach the transaction table - and the LedgerDirect panel of that order - until
-        // some other order on the account happened to trigger a sync. One node request.
+        // The configured receiving account of every carried chain is synced on every run,
+        // open orders or not: a payment on an order the merchant has already cancelled would
+        // otherwise never reach the transaction table - and the LedgerDirect panel of that
+        // order - until some other order on the account happened to trigger a sync. One node
+        // request per account.
         $config = $factory->getConfigProvider();
-        if ($config->hasDestinationAccount()) {
-            $network = $config->getNetwork(WpConfigProvider::CHAIN);
-            $account = $config->getDestinationAccount(WpConfigProvider::CHAIN);
+        foreach (SupportedChains::chains() as $chain) {
+            if (!$config->hasDestinationAccount($chain)) {
+                continue;
+            }
+            $network = $config->getNetwork($chain);
+            $account = $config->getDestinationAccount($chain);
             try {
-                $factory->getSyncService()->syncTransactions($account, $network);
-                $synced[$network . ':' . $account] = true;
+                $factory->getSyncService($chain)->syncTransactions($account, $network);
+                $synced[$chain . ':' . $network . ':' . $account] = true;
             } catch (Throwable $exception) {
                 $logger->warning('LedgerDirect: could not sync the configured receiving account', [
+                    'chain' => $chain,
                     'account' => $account,
                     'network' => $network,
                     'exception' => $exception->getMessage(),
@@ -116,9 +121,9 @@ final class SettlePendingOrders
 
                 // One sync per destination account per run, however many
                 // orders are waiting on it.
-                $syncKey = $intent->network . ':' . $intent->destinationAccount;
+                $syncKey = $intent->chain . ':' . $intent->network . ':' . $intent->destinationAccount;
                 if (!isset($synced[$syncKey])) {
-                    $factory->getSyncService()->syncTransactions($intent->destinationAccount, $intent->network);
+                    $factory->getSyncService($intent->chain)->syncTransactions($intent->destinationAccount, $intent->network);
                     $synced[$syncKey] = true;
                 }
 

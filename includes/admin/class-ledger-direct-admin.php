@@ -2,6 +2,7 @@
 
 defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
+use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Presentation\OrderPanelPresenter;
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
@@ -48,6 +49,41 @@ class LedgerDirectAdmin
                 'type'        => 'checkbox',
                 'label'       => __('Enable USDC payments', 'ledger-direct'),
                 'default'     => 'no',
+                'desc_tip'    => true
+            ],
+            // Xahau: a network of its own that speaks the XRP Ledger's protocol. Its
+            // keys follow the pattern every chain after the XRP Ledger takes.
+            WpConfigProvider::KEY_XAHAU_ENABLED => [
+                'title'       => __('Xahau', 'ledger-direct'),
+                'type'        => 'checkbox',
+                'label'       => __('Accept XAH on Xahau', 'ledger-direct'),
+                'description' => __('Xahau is a network of its own that speaks the XRP Ledger\'s protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger.', 'ledger-direct'),
+                'default'     => 'no',
+                'desc_tip'    => true
+            ],
+            WpConfigProvider::KEY_XAHAU_NETWORK => [
+                'title'       => __('Xahau Network', 'ledger-direct'),
+                'description' => __('Choose the Xahau network', 'ledger-direct'),
+                'type'        => 'select',
+                'options'     => [
+                    'mainnet' => 'Mainnet',
+                    'testnet' => 'Testnet',
+                ],
+                'default'     => 'testnet',
+                'desc_tip'    => true
+            ],
+            WpConfigProvider::KEY_XAHAU_MAINNET_ACCOUNT => [
+                'title'       => __('Xahau Account - MAINNET', 'ledger-direct'),
+                'type'        => 'text',
+                'description' => __('Receiving account on the Xahau mainnet', 'ledger-direct'),
+                'default'     => '',
+                'desc_tip'    => true
+            ],
+            WpConfigProvider::KEY_XAHAU_TESTNET_ACCOUNT => [
+                'title'       => __('Xahau Account - TESTNET', 'ledger-direct'),
+                'type'        => 'text',
+                'description' => __('Receiving account on the Xahau testnet', 'ledger-direct'),
+                'default'     => '',
                 'desc_tip'    => true
             ],
             ConfigurationService::CONFIG_KEY_PAYMENT_PAGE_TITLE => [
@@ -193,7 +229,7 @@ class LedgerDirectAdmin
 
         $transactions = [];
         try {
-            $transactions = $services->getSyncService()->findTransactions($intent->destinationAccount, $intent->destinationTag);
+            $transactions = $services->getSyncService($intent->chain)->findTransactions($intent->destinationAccount, $intent->destinationTag);
         } catch (\Throwable $exception) {
             // The panel still shows the intent; the list is a bonus.
             $services->getLogger()->warning('LedgerDirect: could not list the transactions for the order panel', [

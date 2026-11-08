@@ -30,7 +30,7 @@ class PaymentStatusEndpointTest extends TestCase
         $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}ledger_direct_xrpl_destination_tag");
         delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.XRP.EUR');
         delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.RLUSD.EUR');
-        delete_transient('ledger_direct_ledger-direct.sync.v1.testnet.' . XrplNetworkStub::ACCOUNT);
+        delete_transient(XrplNetworkStub::throttleTransient());
 
         update_option(WpConfigProvider::OPTION_NAME, [
             'enabled' => 'yes',
@@ -52,7 +52,7 @@ class PaymentStatusEndpointTest extends TestCase
     {
         $this->network->remove();
         ServiceFactory::setInstance(null);
-        delete_transient('ledger_direct_ledger-direct.sync.v1.testnet.' . XrplNetworkStub::ACCOUNT);
+        delete_transient(XrplNetworkStub::throttleTransient());
 
         parent::tearDown();
     }

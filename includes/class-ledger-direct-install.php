@@ -23,8 +23,10 @@ class LedgerDirectInstall {
      *     account and network (see upgrade_to_3())
      * 4 - the CTID column is `tx_ctid`, the name core 0.9 fixes for every
      *     adapter (see upgrade_to_4())
+     * 5 - Xahau's two tables, the same shape under names of their own
+     *     (core 0.11)
      */
-    public const DB_VERSION = '4';
+    public const DB_VERSION = '5';
 
     /**
      * Install the plugin.
@@ -116,6 +118,9 @@ class LedgerDirectInstall {
             self::upgrade_to_4();
         }
 
+        // Schema version 5 (core 0.11): Xahau's two tables. Nothing to migrate,
+        // dbDelta below creates them; the version bump is what makes an upgraded
+        // site run create_tables() at all.
         self::create_tables();
     }
 
@@ -305,6 +310,7 @@ class LedgerDirectInstall {
         // a re-syncable cache and can go.
         $tables = [
             self::tx_table(),
+            self::tx_table( 'XAHAU' ),
             // Legacy table names from before the destination-tag table naming
             // was unified; drop them too in case an install was removed before
             // ever running the upgrade routine.
@@ -334,10 +340,10 @@ class LedgerDirectInstall {
      *
      * @return string
      */
-    public static function tx_table(): string {
+    public static function tx_table( string $chain = 'XRPL' ): string {
         global $wpdb;
 
-        return $wpdb->prefix . 'ledger_direct_xrpl_tx';
+        return $wpdb->prefix . ( $chain === 'XAHAU' ? 'ledger_direct_xahau_tx' : 'ledger_direct_xrpl_tx' );
     }
 
     /**
@@ -345,10 +351,10 @@ class LedgerDirectInstall {
      *
      * @return string
      */
-    public static function destination_tag_table(): string {
+    public static function destination_tag_table( string $chain = 'XRPL' ): string {
         global $wpdb;
 
-        return $wpdb->prefix . 'ledger_direct_xrpl_destination_tag';
+        return $wpdb->prefix . ( $chain === 'XAHAU' ? 'ledger_direct_xahau_destination_tag' : 'ledger_direct_xrpl_destination_tag' );
     }
 
     /**
@@ -424,9 +430,13 @@ class LedgerDirectInstall {
             $collate = $wpdb->get_charset_collate();
         }
 
-        $tx_table = self::tx_table();
-        $dest_tag_table = self::destination_tag_table();
-        $tables = "
+        // The same shape for both chains the core serves with its XRPL classes;
+        // only the names differ (INVARIANTS.md, "Xahau").
+        $tables = '';
+        foreach ( [ 'XRPL', 'XAHAU' ] as $chain ) {
+            $tx_table = self::tx_table( $chain );
+            $dest_tag_table = self::destination_tag_table( $chain );
+            $tables .= "
             CREATE TABLE {$tx_table} (
                 id int(10) unsigned NOT NULL AUTO_INCREMENT,
                 network varchar(16) NOT NULL DEFAULT '',
@@ -449,7 +459,8 @@ class LedgerDirectInstall {
                 sequence int(10) unsigned NOT NULL,
                 PRIMARY KEY  (destination_account)
             ) $collate;
-        ";
+            ";
+        }
 
         return $tables;
     }

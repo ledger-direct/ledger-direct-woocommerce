@@ -4,12 +4,10 @@ namespace Hardcastle\LedgerDirect\Service;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+use Hardcastle\LedgerDirect\Chain\SupportedChains;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
-use Hardcastle\LedgerDirect\Core\Payment\PaymentIntentService;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
-use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
-use Hardcastle\LedgerDirect\Core\Xrpl\SyncThrottle;
 use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
 use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 use InvalidArgumentException;
@@ -26,42 +24,30 @@ use WC_Order;
  *
  * Everything about *what* is owed - exchange rate, requested amount,
  * destination tag, matching an on-ledger payment, whether it settles -
- * comes from hardcastle/ledger-direct-core and is not recomputed here.
+ * comes from hardcastle/ledger-direct-core and is not recomputed here. The
+ * core's services come per chain from the {@see ServiceFactory}: the payment
+ * type names the chain an order is quoted on, the stored intent the chain it
+ * is synced and matched on.
  */
 class OrderTransactionService
 {
-    /** Checkout radio value → core base asset. */
-    public const BASE_ASSET_BY_PAYMENT_TYPE = [
-        'xrp' => 'XRP',
-        'rlusd' => 'RLUSD',
-        'usdc' => 'USDC',
-    ];
-
-    private PaymentIntentService $paymentIntentService;
-
-    private SyncService $syncService;
+    private ServiceFactory $services;
 
     private SettlementPolicy $settlementPolicy;
 
     private LegacyPaymentIntentMapper $legacyMapper;
 
-    private ?SyncThrottle $syncThrottle;
-
     private LoggerInterface $logger;
 
     public function __construct(
-        PaymentIntentService $paymentIntentService,
-        SyncService $syncService,
+        ServiceFactory $services,
         SettlementPolicy $settlementPolicy,
         LegacyPaymentIntentMapper $legacyMapper,
-        ?SyncThrottle $syncThrottle = null,
         ?LoggerInterface $logger = null
     ) {
-        $this->paymentIntentService = $paymentIntentService;
-        $this->syncService = $syncService;
+        $this->services = $services;
         $this->settlementPolicy = $settlementPolicy;
         $this->legacyMapper = $legacyMapper;
-        $this->syncThrottle = $syncThrottle;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -74,18 +60,23 @@ class OrderTransactionService
      * the customer may already be looking at those, or have a payment in
      * flight.
      *
-     * @param string $paymentType 'xrp' | 'rlusd' | 'usdc' (checkout value), or a core base asset.
+     * @param string $paymentType 'xrp' | 'rlusd' | 'usdc' | 'xah' (checkout value), or a core base asset.
+     * @throws InvalidArgumentException for a payment type no carried chain has
      * @throws \Hardcastle\LedgerDirect\Core\Payment\AssetNotAcceptedException
      * @throws \Hardcastle\LedgerDirect\Core\Price\PriceUnavailableException
      */
     public function prepareOrderForXrpl(WC_Order $order, string $paymentType): PaymentIntent
     {
-        $baseAsset = self::BASE_ASSET_BY_PAYMENT_TYPE[strtolower($paymentType)] ?? strtoupper($paymentType);
+        $chainAndAsset = SupportedChains::chainAndAssetFor($paymentType);
+        if ($chainAndAsset === null) {
+            throw new InvalidArgumentException('Unsupported payment type: ' . esc_html($paymentType));
+        }
+        [$chain, $asset] = $chainAndAsset;
 
-        $intent = $this->paymentIntentService->quoteForOrder(
+        $intent = $this->services->getPaymentIntentService($chain->chain)->quoteForOrder(
             (float) $order->get_total(),
             $order->get_currency(),
-            $baseAsset,
+            $asset->code,
             $this->readReusablePaymentIntent($order)
         );
 
@@ -141,11 +132,12 @@ class OrderTransactionService
             return $intent;
         }
 
+        $syncService = $this->services->getSyncService($intent->chain);
         if ($sync) {
-            $this->syncService->syncTransactions($intent->destinationAccount, $intent->network);
+            $syncService->syncTransactions($intent->destinationAccount, $intent->network);
         }
 
-        $fulfilledIntent = $this->syncService->findFulfillmentFor($intent)?->applyTo($intent);
+        $fulfilledIntent = $syncService->findFulfillmentFor($intent)?->applyTo($intent);
 
         if ($fulfilledIntent === null) {
             return null;
@@ -234,14 +226,14 @@ class OrderTransactionService
             return null;
         }
 
-        $due = $this->syncThrottle === null
-            || $this->syncThrottle->shouldSync($intent->network, $intent->destinationAccount);
+        $throttle = $this->services->getSyncThrottle($intent->chain);
+        $due = $throttle->shouldSync($intent->network, $intent->destinationAccount);
 
         if ($due && !($intent->hash !== null && $this->settlementPolicy->isSettled($intent))) {
-            $this->syncThrottle?->markSynced($intent->network, $intent->destinationAccount);
+            $throttle->markSynced($intent->network, $intent->destinationAccount);
 
             try {
-                $this->syncService->syncTransactions($intent->destinationAccount, $intent->network);
+                $this->services->getSyncService($intent->chain)->syncTransactions($intent->destinationAccount, $intent->network);
             } catch (Throwable $exception) {
                 $this->logger->warning('LedgerDirect: ledger sync failed, matching against the stored transactions', [
                     'order_id' => $order->get_id(),
