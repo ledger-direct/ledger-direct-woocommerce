@@ -11,10 +11,10 @@ License URI: https://opensource.org/license/mit/
 Accept XRP, EUR, USD directly on the XRP Ledger, using LedgerDirect!
 
 == Description ==
-LedgerDirect is a WordPress plugin that allows you to accept direct payments in XRP, USDC, and RLUSD on the XRP Ledger. It provides a seamless integration with WooCommerce, enabling merchants to receive payments directly in their XRP Ledger accounts without the need for intermediaries.
+LedgerDirect is a WordPress plugin that allows you to accept direct payments in XRP, USDC, and RLUSD on the XRP Ledger, and in XAH on Xahau. It provides a seamless integration with WooCommerce, enabling merchants to receive payments directly in their XRP Ledger accounts without the need for intermediaries.
 
 == Features ==
-- Accept payments in XRP, USDC and RLUSD.
+- Accept payments in XRP, USDC and RLUSD on the XRP Ledger, and in XAH on Xahau.
 - Receive payments directly to your wallet without any intermediaries.
 
 = How do I know if my XRP account is setup correctly? =
@@ -53,7 +53,7 @@ To test the plugin, you can configure it to use the XRP Ledger Testnet. This all
 
 == External services ==
 
-LedgerDirect uses public APIs from Coinbase, Coingecko, Binance, and Kraken to retrieve current cryptocurrency exchange rates. These rates are needed to correctly calculate and display payments.
+LedgerDirect uses public APIs from Coinbase, Coingecko, Binance, Kraken and Bitrue to retrieve current cryptocurrency exchange rates (Bitrue for XAH alone). These rates are needed to correctly calculate and display payments.
 
 No personal or payment data is sent to these services. Only requests for current rates are made when a payment is processed or displayed.
 
@@ -62,6 +62,7 @@ For more information about each service, see:
 - Coingecko API: [Terms of Service](https://www.coingecko.com/en/terms), [Privacy Policy](https://www.coingecko.com/en/privacy)
 - Binance API: [Terms of Use](https://www.binance.com/en/terms), [Privacy Policy](https://www.binance.com/en/privacy)
 - Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
+- Bitrue API: [Terms of Use](https://support.bitrue.com/hc/en-001/articles/4405473110681-Bitrue-Terms-of-Use), [Privacy Policy](https://support.bitrue.com/hc/en-001/articles/4405473185945-Bitrue-Privacy-Policy)
 
 == Source Code of minified assets ==
 

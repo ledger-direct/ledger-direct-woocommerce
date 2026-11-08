@@ -210,7 +210,8 @@ plain form that syncs and settles on reload.
 
 ## External services
 
-Exchange rates come from the public APIs of Coingecko, Binance and Kraken, through the core. No
+Exchange rates come from the public APIs of Coingecko, Binance and Kraken, and for XAH from Coingecko and
+Bitrue, through the core. No
 personal or payment data is sent to them; only the current rate is requested when a payment is
 quoted or displayed, and rates are cached briefly so a short outage of one source does not
 interrupt checkout.
@@ -218,6 +219,7 @@ interrupt checkout.
 - Coingecko API: [Terms of Service](https://www.coingecko.com/en/terms), [Privacy Policy](https://www.coingecko.com/en/privacy)
 - Binance API: [Terms of Use](https://www.binance.com/en/terms), [Privacy Policy](https://www.binance.com/en/privacy)
 - Kraken API: [Terms of Service](https://www.kraken.com/legal), [Privacy Policy](https://www.kraken.com/privacy)
+- Bitrue API: [Terms of Use](https://support.bitrue.com/hc/en-001/articles/4405473110681-Bitrue-Terms-of-Use), [Privacy Policy](https://support.bitrue.com/hc/en-001/articles/4405473185945-Bitrue-Privacy-Policy)
 
 ## Development
 
