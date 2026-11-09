@@ -299,8 +299,12 @@ class LedgerDirect
                 $intent = $fulfilled;
 
                 if ($gateway->is_settled($fulfilled)) {
-                    $service->completePayment($order, $fulfilled);
-                    if (WC()->cart) {
+                    $booked = $service->completePayment($order, $fulfilled);
+                    $current = wc_get_order($order->get_id());
+
+                    // Booked here or by another run, or about to be: not for an order that was
+                    // closed in the meantime, whose cart the customer may still want.
+                    if (WC()->cart && ($booked || ($current && ($current->is_paid() || $current->needs_payment())))) {
                         WC()->cart->empty_cart();
                     }
                     wp_safe_redirect($gateway->get_return_url($order));

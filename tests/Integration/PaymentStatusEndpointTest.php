@@ -186,6 +186,27 @@ class PaymentStatusEndpointTest extends TestCase
         $this->assertSame('HASH-PAID', $order->get_transaction_id());
     }
 
+    public function testAPollThatFindsAnotherRunBookingStillMovesThePageOn(): void
+    {
+        $order = $this->order();
+        $intent = ServiceFactory::getInstance()->getOrderTransactionService()->prepareOrderForXrpl($order, 'xrp');
+        $this->network->addXrpPayment($intent->destinationTag, '200000000', 'HASH-LOCKED', 90000000);
+        $lock = OrderTransactionService::paymentLockName($order->get_id());
+        $otherConnection = new \wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+        $otherConnection->get_var($otherConnection->prepare('SELECT GET_LOCK(%s, 0)', $lock));
+
+        try {
+            $data = $this->poll($order->get_order_key())->get_data();
+        } finally {
+            $otherConnection->get_var($otherConnection->prepare('SELECT RELEASE_LOCK(%s)', $lock));
+            $otherConnection->close();
+        }
+
+        $this->assertSame('settled', $data['state']);
+        $this->assertArrayHasKey('redirect', $data);
+        $this->assertTrue(wc_get_order($order->get_id())->needs_payment(), 'the booking is left to the other run');
+    }
+
     public function testTwoPollsInsideTheIntervalMakeOneNodeRequest(): void
     {
         $first = $this->order();
