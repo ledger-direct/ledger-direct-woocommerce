@@ -104,7 +104,7 @@ final class PaymentStatusEndpoint
                     $intent = $fulfilled;
 
                     if ($service->isSettled($fulfilled)) {
-                        $order->payment_complete((string) $fulfilled->hash);
+                        $service->completePayment($order, $fulfilled);
                     }
                 }
             } catch (Throwable $exception) {

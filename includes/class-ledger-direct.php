@@ -299,7 +299,7 @@ class LedgerDirect
                 $intent = $fulfilled;
 
                 if ($gateway->is_settled($fulfilled)) {
-                    $order->payment_complete((string) $fulfilled->hash);
+                    $service->completePayment($order, $fulfilled);
                     if (WC()->cart) {
                         WC()->cart->empty_cart();
                     }

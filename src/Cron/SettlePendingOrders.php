@@ -130,7 +130,7 @@ final class SettlePendingOrders
                 $fulfilled = $service->syncOrderTransactionWithXrpl($order, false);
 
                 if ($fulfilled instanceof PaymentIntent && $service->isSettled($fulfilled)) {
-                    $order->payment_complete((string) $fulfilled->hash);
+                    $service->completePayment($order, $fulfilled);
                 }
             } catch (Throwable $exception) {
                 $logger->warning('Background settlement failed for an order', [
