@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, xahau
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
