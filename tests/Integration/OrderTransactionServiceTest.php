@@ -308,6 +308,51 @@ class OrderTransactionServiceTest extends TestCase
         $this->assertSame($refreshed, $this->service->refreshExpiredQuote($order, $refreshed));
     }
 
+    public function testAPaymentIsBookedOnceEvenFromAnObjectLoadedBeforeTheBooking(): void
+    {
+        $paidIntent = $this->service->prepareOrderForXrpl($this->order(), 'xrp')->withFulfillment('HASH', 200.0, 'CTID');
+        $order = $this->order();
+        $loadedEarlier = wc_get_order($order->get_id());
+        $before = did_action('woocommerce_payment_complete');
+
+        $this->assertTrue($this->service->completePayment($order, $paidIntent));
+        $this->assertFalse($this->service->completePayment($loadedEarlier, $paidIntent));
+
+        $this->assertSame($before + 1, did_action('woocommerce_payment_complete'));
+    }
+
+    public function testAnOrderUnderAnotherRunsLockIsLeftToThatRun(): void
+    {
+        $paidIntent = $this->service->prepareOrderForXrpl($this->order(), 'xrp')->withFulfillment('HASH', 200.0, 'CTID');
+        $order = $this->order();
+        $lock = OrderTransactionService::paymentLockName($order->get_id());
+        $otherConnection = new \wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+        $this->assertSame('1', $otherConnection->get_var($otherConnection->prepare('SELECT GET_LOCK(%s, 0)', $lock)));
+        $before = did_action('woocommerce_payment_complete');
+
+        try {
+            $this->assertFalse($this->service->completePayment($order, $paidIntent));
+            $this->assertSame($before, did_action('woocommerce_payment_complete'));
+        } finally {
+            $otherConnection->get_var($otherConnection->prepare('SELECT RELEASE_LOCK(%s)', $lock));
+            $otherConnection->close();
+        }
+
+        $this->assertTrue($this->service->completePayment($order, $paidIntent));
+        $this->assertTrue(wc_get_order($order->get_id())->is_paid());
+    }
+
+    public function testACancelledOrderIsNotBooked(): void
+    {
+        $paidIntent = $this->service->prepareOrderForXrpl($this->order(), 'xrp')->withFulfillment('HASH', 200.0, 'CTID');
+        $order = $this->order();
+        $loadedEarlier = wc_get_order($order->get_id());
+        $order->update_status('cancelled');
+
+        $this->assertFalse($this->service->completePayment($loadedEarlier, $paidIntent));
+        $this->assertTrue(wc_get_order($order->get_id())->has_status('cancelled'));
+    }
+
     /**
      * The bug shipped in 1.1.0: a first, short payment was recorded and then
      * the guard "amountPaid !== null" returned that record for ever. Neither

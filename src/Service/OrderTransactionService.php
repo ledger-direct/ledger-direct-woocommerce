@@ -9,6 +9,8 @@ use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
+use Automattic\WooCommerce\Caches\OrderCache;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Hardcastle\LedgerDirect\Woocommerce\PaymentIncompleteStatus;
 use InvalidArgumentException;
 use LedgerDirect;
@@ -90,6 +92,80 @@ class OrderTransactionService
      * account and tag, fresh rate, amount and expiry. Returns the intent
      * to display, which is the existing one while it is valid or fulfilled.
      */
+    /**
+     * Marks the order paid, exactly once. Every path to "paid" comes through here.
+     *
+     * Holds a per-order database lock from the check to the booking and reads the order again
+     * inside it, so the decision does not rest on an object loaded earlier. Without the lock
+     * another run is booking this order right now: nothing to do, the next status check reports
+     * the result. A server that cannot give the lock at all (GET_LOCK answers NULL) must not leave
+     * paid orders open, so the booking then goes ahead unprotected, with a warning.
+     *
+     * @return bool whether this call booked the order
+     */
+    public function completePayment(WC_Order $order, PaymentIntent $fulfilled): bool
+    {
+        global $wpdb;
+
+        $lock = self::paymentLockName($order->get_id());
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a lock, not data
+        $acquired = $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, 0)', $lock));
+
+        if ($acquired === '0') {
+            return false;
+        }
+
+        if ($acquired === null) {
+            $this->logger->warning('LedgerDirect: no database lock available, booking the payment without one', [
+                'order_id' => $order->get_id(),
+            ]);
+        }
+
+        try {
+            $current = $this->freshOrder($order->get_id());
+
+            if (!$current instanceof WC_Order || !$current->needs_payment()) {
+                return false;
+            }
+
+            $current->payment_complete((string) $fulfilled->hash);
+
+            return true;
+        } finally {
+            if ($acquired !== null) {
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a lock, not data
+                $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lock));
+            }
+        }
+    }
+
+    /**
+     * The lock is server-wide, so its name carries the database and table prefix as a digest:
+     * two shops on one database server must not block each other. MySQL allows 64 characters.
+     */
+    public static function paymentLockName(int $orderId): string
+    {
+        global $wpdb;
+
+        return 'ld_pay_' . substr(md5(DB_NAME . '|' . $wpdb->prefix), 0, 12) . '_' . $orderId;
+    }
+
+    /**
+     * The order as the database has it now, past this request's object caches.
+     */
+    private function freshOrder(int $orderId): WC_Order|false
+    {
+        clean_post_cache($orderId);
+
+        if (class_exists(OrderCache::class) && OrderUtil::orders_cache_usage_is_enabled()) {
+            wc_get_container()->get(OrderCache::class)->remove($orderId);
+        }
+
+        $order = wc_get_order($orderId);
+
+        return $order instanceof WC_Order ? $order : false;
+    }
+
     public function refreshExpiredQuote(WC_Order $order, PaymentIntent $intent): PaymentIntent
     {
         if ($intent->amountPaid !== null || $intent->expiry === null || $intent->expiry > time()) {

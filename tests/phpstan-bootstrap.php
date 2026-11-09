@@ -8,3 +8,7 @@
 if (!defined('LEDGER_DIRECT_PLUGIN_FILE_PATH')) {
     define('LEDGER_DIRECT_PLUGIN_FILE_PATH', __DIR__ . '/../');
 }
+
+if (!defined('DB_NAME')) {
+    define('DB_NAME', 'wordpress');
+}

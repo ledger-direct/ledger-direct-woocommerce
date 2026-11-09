@@ -4,6 +4,7 @@ namespace Hardcastle\LedgerDirect\Api;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Woocommerce\LedgerDirectPaymentGateway;
 use InvalidArgumentException;
@@ -104,7 +105,7 @@ final class PaymentStatusEndpoint
                     $intent = $fulfilled;
 
                     if ($service->isSettled($fulfilled)) {
-                        $order->payment_complete((string) $fulfilled->hash);
+                        $service->completePayment($order, $fulfilled);
                     }
                 }
             } catch (Throwable $exception) {
@@ -121,7 +122,9 @@ final class PaymentStatusEndpoint
         // Read fresh, not from the object above: a settlement in this very request leaves it stale.
         $order = wc_get_order($order->get_id());
 
-        if ($order instanceof WC_Order && !$order->needs_payment()) {
+        // A settled payment always moves the page on: its poll ends here, also while another run
+        // is still booking the order or a failed booking waits for the background job.
+        if ($order instanceof WC_Order && (!$order->needs_payment() || $payload['state'] === PaymentStatus::SETTLED)) {
             $payload['redirect'] = LedgerDirectPaymentGateway::instance()->get_return_url($order);
         }
 
