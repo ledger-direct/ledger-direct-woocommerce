@@ -93,7 +93,7 @@ jobs:
       - name: Install composer dependencies
         run: composer install --no-interaction --prefer-dist
       - name: Run phpstan
-        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
 
   phpunit:
     name: PHPUnit (PHP ${{ matrix.php }})
