@@ -157,12 +157,20 @@ final class ServiceFactory
         return $this->settlementPolicy ??= new SettlementPolicy();
     }
 
+    /**
+     * The sync remembers a testnet reset in the rate cache, so after one only
+     * the first sync per account sends the request the node rejects, not every
+     * sync. The chain keeps the note apart where the same account exists on
+     * the XRP Ledger and on Xahau.
+     */
     public function getSyncService(string $chain = ChainCatalog::XRPL): SyncService
     {
         return $this->syncServices[$chain] ??= new SyncService(
             $this->getXrplClient($chain),
             $this->getTransactionRepository($chain),
-            $this->getLogger()
+            $this->getLogger(),
+            $this->getRateCache(),
+            $chain
         );
     }
 
