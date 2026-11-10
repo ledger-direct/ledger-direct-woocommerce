@@ -8,6 +8,7 @@ use Hardcastle\LedgerDirect\Chain\SupportedChains;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
+use Hardcastle\LedgerDirect\Core\Price\PriceUnavailableException;
 use Hardcastle\LedgerDirect\Storage\LegacyPaymentIntentMapper;
 use Automattic\WooCommerce\Caches\OrderCache;
 use Automattic\WooCommerce\Utilities\OrderUtil;
@@ -164,6 +165,17 @@ class OrderTransactionService
         $order = wc_get_order($orderId);
 
         return $order instanceof WC_Order ? $order : false;
+    }
+
+    /**
+     * Whether a failed quote failed for want of a price - no oracle answered, or
+     * they disagreed - rather than for anything else. The page then tells the
+     * customer to try again shortly. Here and not in the controller, which is
+     * not scoped by the release build and must not name a core class.
+     */
+    public static function isPriceUnavailable(Throwable $exception): bool
+    {
+        return $exception instanceof PriceUnavailableException;
     }
 
     public function refreshExpiredQuote(WC_Order $order, PaymentIntent $intent): PaymentIntent
