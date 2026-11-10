@@ -36,7 +36,8 @@ final class PaymentPagePresenter
      *   order_number: string, total: float|string, shop_currency: string, fiat_display: string,
      *   quote_minutes: int, poll_url: string, page_url: string, redirect_url: string, cart_url: string, home_url: string,
      *   store_name: string, page_title: string, accent: string, logo: array{mode: string, url: string|null, monogram: string},
-     *   xaman_key: string, wc_project: string, wallets_src: string, refresh_nonce: string, order_key: string
+     *   xaman_key: string, wc_project: string, wallets_src: string, refresh_nonce: string, order_key: string,
+     *   price_unavailable?: bool
      * } $platform what only the platform knows - read by the caller from the order and the settings
      *
      * @return array<string, mixed>

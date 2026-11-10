@@ -210,6 +210,9 @@ if ($ld_error !== null) {
                             <svg class="ld-notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
                             <div>
                                 <p><strong><?php esc_html_e('This amount is no longer valid.', 'ledger-direct'); ?></strong> <?php esc_html_e('The exchange rate may have moved since.', 'ledger-direct'); ?></p>
+                                <?php if ($state === 'expired' && !empty($v['price_unavailable'])) { ?>
+                                    <p><?php esc_html_e('A new amount is temporarily unavailable because the price cannot be determined right now. Please try again in a moment.', 'ledger-direct'); ?></p>
+                                <?php } ?>
                                 <p><?php esc_html_e('Already sent? Then do not send again – we will still recognise the payment.', 'ledger-direct'); ?></p>
                                 <form method="post" action="<?php echo esc_url($v['page_url']); ?>">
                                     <input type="hidden" name="<?php echo esc_attr(LedgerDirect::ORDER_IDENTIFIER); ?>" value="<?php echo esc_attr($v['order_key']); ?>">

@@ -250,6 +250,10 @@ msgstr "Dieser Betrag ist nicht mehr gültig."
 msgid "The exchange rate may have moved since."
 msgstr "Der Kurs kann sich seitdem bewegt haben."
 
+#: includes/views/ledger-direct_html.php:214
+msgid "A new amount is temporarily unavailable because the price cannot be determined right now. Please try again in a moment."
+msgstr "Ein neuer Betrag ist gerade nicht verfügbar, weil sich der Kurs im Moment nicht bestimmen lässt. Bitte versuchen Sie es gleich noch einmal."
+
 #: includes/views/ledger-direct_html.php:209
 msgid "Already sent? Then do not send again – we will still recognise the payment."
 msgstr "Schon gesendet? Dann nicht erneut senden – wir erkennen die Zahlung trotzdem."

@@ -72,6 +72,9 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 
 == Changelog ==
 
+= Unreleased =
+* When no price is available for a new amount on an expired payment page, the page now says so and asks the customer to try again in a moment. Before, the button seemed to do nothing.
+
 = 1.5.1 =
 * An order is booked as paid exactly once. Overlapping checks of the same order could repeat the confirmation mails and the stock reduction.
 

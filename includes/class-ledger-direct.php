@@ -3,6 +3,7 @@
 defined( 'ABSPATH' ) || exit(); // Exit if accessed directly
 
 use Hardcastle\LedgerDirect\Api\PaymentStatusEndpoint;
+use Hardcastle\LedgerDirect\Service\OrderTransactionService;
 use Hardcastle\LedgerDirect\Service\ServiceFactory;
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
@@ -14,6 +15,8 @@ class LedgerDirect
 {
     public const META_KEY = '_ledger_direct';
     public const ORDER_IDENTIFIER = 'ledger-direct-payment';
+    /** Query flag on the payment page after a refresh that got no price. */
+    public const PRICE_UNAVAILABLE_FLAG = 'ld_price_unavailable';
 
     public static self|null $_instance = null;
 
@@ -283,13 +286,7 @@ class LedgerDirect
             // customer may have sent the old amount already, and the page
             // has to be able to say "expired" before it changes the number.
             if ($this->is_refresh_request($order)) {
-                try {
-                    $service->refreshExpiredQuote($order, $intent);
-                } catch (Exception $e) {
-                    self::log('Could not refresh the quote for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
-                }
-
-                wp_safe_redirect(LedgerDirectPaymentGateway::get_payment_page_url($order));
+                wp_safe_redirect($this->refresh_quote($order, $intent));
                 exit;
             }
 
@@ -342,6 +339,41 @@ class LedgerDirect
     }
 
     /**
+     * Refreshes the expired quote of the page's order and returns where the customer goes
+     * next: back to the payment page. When no price is available, the quote stays as it was
+     * (the page still says "expired" and keeps its button), and the URL carries a flag so the
+     * page can say why nothing changed. Any other failure is logged and redirects as before.
+     *
+     * @param \Hardcastle\LedgerDirect\Core\Payment\PaymentIntent $intent the order's current quote
+     */
+    public function refresh_quote(WC_Order $order, $intent): string {
+        $page_url = LedgerDirectPaymentGateway::get_payment_page_url($order);
+
+        try {
+            ServiceFactory::getInstance()->getOrderTransactionService()->refreshExpiredQuote($order, $intent);
+        } catch (Exception $e) {
+            if (OrderTransactionService::isPriceUnavailable($e)) {
+                self::log('No price to refresh the quote for order ' . $order->get_id() . ': ' . $e->getMessage(), 'warning');
+
+                return add_query_arg(self::PRICE_UNAVAILABLE_FLAG, '1', $page_url);
+            }
+
+            self::log('Could not refresh the quote for order ' . $order->get_id() . ': ' . $e->getMessage(), 'error');
+        }
+
+        return $page_url;
+    }
+
+    /**
+     * Whether the page was reached from a refresh that got no price. A display flag only:
+     * it changes no state, so a forged one shows the notice and nothing else.
+     */
+    public static function price_unavailable_requested(): bool {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only flag, changes nothing
+        return isset($_GET[self::PRICE_UNAVAILABLE_FLAG]) && sanitize_key(wp_unslash($_GET[self::PRICE_UNAVAILABLE_FLAG])) === '1';
+    }
+
+    /**
      * What only the platform knows about the page: the order's numbers and URLs, the
      * merchant's settings for the page's look. Read here so the presenter stays free of
      * WordPress and testable on its own.
@@ -372,6 +404,7 @@ class LedgerDirect
             'wc_project' => $configuration->getWalletConnectProjectId(),
             'wallets_src' => ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/wallets.js'),
             'refresh_nonce' => wp_create_nonce(self::refresh_nonce_action($order)),
+            'price_unavailable' => self::price_unavailable_requested(),
         ];
     }
 

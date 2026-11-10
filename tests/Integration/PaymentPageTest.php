@@ -3,6 +3,7 @@
 namespace Hardcastle\LedgerDirect\Tests\Integration;
 
 use Hardcastle\LedgerDirect\Api\PaymentStatusEndpoint;
+use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Port\WpConfigProvider;
 use Hardcastle\LedgerDirect\Presentation\PaymentPagePresenter;
 use Hardcastle\LedgerDirect\Service\ConfigurationService;
@@ -142,10 +143,97 @@ class PaymentPageTest extends TestCase
     }
 
     /**
+     * A refresh that gets no price - the oracles disagree or none answers - keeps
+     * the expired quote and sends the customer back with the flag the page reads.
+     */
+    public function testARefreshWithoutAPriceKeepsTheQuoteAndFlagsThePage(): void
+    {
+        $expired = $this->expireQuote();
+        $this->withoutPrices();
+
+        $url = LedgerDirect::instance()->refresh_quote($this->order, $expired);
+
+        self::assertStringStartsWith(LedgerDirectPaymentGateway::get_payment_page_url($this->order), $url);
+        self::assertStringContainsString(LedgerDirect::PRICE_UNAVAILABLE_FLAG . '=1', $url);
+        $stored = ServiceFactory::getInstance()->getOrderTransactionService()->readPaymentIntent($this->order);
+        self::assertSame($expired->toArray(), $stored->toArray(), 'the expired quote is left as it was');
+    }
+
+    /**
+     * Any other failure keeps the old behaviour: logged, back to the page, no price notice.
+     */
+    public function testARefreshFailingForAnotherReasonDoesNotClaimAMissingPrice(): void
+    {
+        $expired = $this->expireQuote();
+        // RLUSD is switched off in setUp(): the core refuses the asset, a failure that is not about the price.
+        $broken = PaymentIntent::fromArray(array_merge($expired->toArray(), [
+            'base_asset' => 'RLUSD',
+            'amount_requested' => ['currency' => '524C555344000000000000000000000000000000', 'issuer' => 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De', 'value' => '10'],
+        ]));
+
+        $url = LedgerDirect::instance()->refresh_quote($this->order, $broken);
+
+        self::assertSame(LedgerDirectPaymentGateway::get_payment_page_url($this->order), $url);
+    }
+
+    /**
+     * Back on the page after the redirect: still expired, still the button to try
+     * again, and a sentence saying why nothing changed.
+     */
+    public function testTheExpiredPageSaysThePriceIsTemporarilyUnavailable(): void
+    {
+        $this->expireQuote();
+        $notice = 'A new amount is temporarily unavailable';
+
+        $_GET[LedgerDirect::PRICE_UNAVAILABLE_FLAG] = '1';
+        try {
+            $html = $this->renderPage(['price_unavailable' => LedgerDirect::price_unavailable_requested()]);
+        } finally {
+            unset($_GET[LedgerDirect::PRICE_UNAVAILABLE_FLAG]);
+        }
+
+        self::assertStringContainsString('data-ld-state="expired"', $html);
+        self::assertStringContainsString('name="ledger_direct_refresh"', $html);
+        self::assertStringContainsString($notice, $html);
+
+        // Without the flag the expired page is as it was.
+        self::assertStringNotContainsString($notice, $this->renderPage(['price_unavailable' => LedgerDirect::price_unavailable_requested()]));
+    }
+
+    private function expireQuote(): PaymentIntent
+    {
+        $service = ServiceFactory::getInstance()->getOrderTransactionService();
+        $data = $service->readPaymentIntent($this->order)->toArray();
+        $data['expiry'] = time() - 10;
+        $this->order->update_meta_data(LedgerDirect::META_KEY, $data);
+        $this->order->save();
+
+        return $service->readPaymentIntent($this->order);
+    }
+
+    /**
+     * Every price oracle fails and no rate is cached: the core has no price to quote.
+     */
+    private function withoutPrices(): void
+    {
+        delete_transient('ledger_direct_ledger-direct.rate.v1.testnet.XRP.EUR');
+        add_filter('pre_http_request', static function ($preempt, array $args, string $url) {
+            if (str_contains($url, 'binance.com') || str_contains($url, 'coingecko.com') || str_contains($url, 'kraken.com')) {
+                return ['headers' => [], 'body' => '', 'response' => ['code' => 503, 'message' => 'Service Unavailable'], 'cookies' => [], 'filename' => null];
+            }
+
+            return $preempt;
+        }, 20, 3); // after the network stub, which answers every request at priority 10
+    }
+
+    /**
      * The view with the presenter's array, the way render_payment_page() hands it over -
      * without the controller, whose redirects exit the process.
      */
-    private function renderPage(): string
+    /**
+     * @param array<string, mixed> $platform platform values beyond the defaults below
+     */
+    private function renderPage(array $platform = []): string
     {
         global $ledger_direct_order, $ledger_direct_view;
 
@@ -174,7 +262,7 @@ class PaymentPageTest extends TestCase
             'wc_project' => $configuration->getWalletConnectProjectId(),
             'wallets_src' => ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/wallets.js'),
             'refresh_nonce' => 'n',
-        ]);
+        ] + $platform);
 
         ob_start();
         include LEDGER_DIRECT_PLUGIN_FILE_PATH . 'includes/views/ledger-direct_html.php';
