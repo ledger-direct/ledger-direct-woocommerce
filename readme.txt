@@ -72,6 +72,10 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 
 == Changelog ==
 
+= Unreleased =
+* Core 0.11.1: when the price oracles disagree, no price is quoted, instead of a rate up to five minutes old. An older rate stands in only when no oracle answers.
+* Core 0.11.1: after a reset of the XRP Ledger testnet, only the first sync per receiving account sends a request the node rejects; the plugin remembers the reset, so later syncs continue without it.
+
 = 1.5.1 =
 * An order is booked as paid exactly once. Overlapping checks of the same order could repeat the confirmation mails and the stock reduction.
 
