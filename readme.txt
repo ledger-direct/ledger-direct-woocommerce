@@ -73,6 +73,8 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Changelog ==
 
 = Unreleased =
+* Core 0.11.1: when the price oracles disagree, no price is quoted, instead of a rate up to five minutes old. An older rate stands in only when no oracle answers.
+* Core 0.11.1: after a reset of the XRP Ledger testnet, only the first sync per receiving account sends a request the node rejects; the plugin remembers the reset, so later syncs continue without it.
 * When no price is available for a new amount on an expired payment page, the page now says so and asks the customer to try again in a moment. Before, the button seemed to do nothing.
 
 = 1.5.1 =

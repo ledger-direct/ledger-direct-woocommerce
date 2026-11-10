@@ -23,8 +23,23 @@ final class XrplNetworkStub
         return 'ledger_direct_' . implode('.', ['ledger-direct.sync.v2', strtolower($chain), $network, substr(hash('sha256', $account), 0, 16)]);
     }
 
+    /**
+     * The transient the core's SyncService (0.11.1) remembers a testnet reset's cursor under:
+     * chain, network and the account as a digest, behind the rate cache's prefix.
+     */
+    public static function cursorTransient(string $account = self::ACCOUNT, string $chain = 'XRPL', string $network = 'testnet'): string
+    {
+        return 'ledger_direct_' . implode('.', ['ledger_direct.cursor.v1', strtolower($chain), $network, substr(hash('sha256', $account), 0, 16)]);
+    }
+
     /** @var callable|null */
     private $filter = null;
+
+    /** Highest ledger the network has; null for no limit. */
+    private ?int $liveLedger = null;
+
+    /** account_tx calls answered with lgrIdxsInvalid, for assertions. */
+    public int $invalidCursorRequests = 0;
 
     /** @var array<int, array<string, mixed>> account_tx transactions to return */
     private array $transactions = [];
@@ -96,6 +111,16 @@ final class XrplNetworkStub
     }
 
     /**
+     * Simulates a testnet reset: the history is gone and the ledger index starts over, so
+     * account_tx with a cursor above the live ledger fails like rippled does.
+     */
+    public function reset(int $liveLedger): void
+    {
+        $this->transactions = [];
+        $this->liveLedger = $liveLedger;
+    }
+
+    /**
      * @param array<string, mixed> $args
      * @return array<string, mixed>
      */
@@ -125,6 +150,13 @@ final class XrplNetworkStub
         if ($method === 'account_tx') {
             $params = $request['params'][0] ?? [];
             $min = (int) ($params['ledger_index_min'] ?? 0);
+
+            if ($this->liveLedger !== null && $min > $this->liveLedger) {
+                $this->invalidCursorRequests++;
+
+                return self::json(['result' => ['status' => 'error', 'error' => 'lgrIdxsInvalid']]);
+            }
+
             $transactions = array_values(array_filter(
                 $this->transactions,
                 static fn (array $t): bool => (int) $t['tx']['ledger_index'] >= $min
