@@ -133,6 +133,10 @@ jobs:
     # (a skipped job would count as passed).
     if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
+    # Empty in a Dependabot pull request, which runs without the repository's secrets; the Docker Hub
+    # login below is then skipped and the images are pulled anonymously.
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -149,6 +153,7 @@ jobs:
       # ("toomanyrequests: Data limit exceeded", seen 2026-10-16). Logged in, the
       # pull counts against the organisation's account.
       - name: Log in to Docker Hub
+        if: env.DOCKERHUB_USERNAME != ''
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -211,6 +216,10 @@ jobs:
       contents: read
       pull-requests: write
     runs-on: ubuntu-latest
+    # Empty in a Dependabot pull request, which runs without the repository's secrets; the Docker Hub
+    # login below is then skipped and the images are pulled anonymously.
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     steps:
       # Checked out under the plugin's actual WordPress.org slug (ledger-direct) rather
       # than the GitHub repo name (ledger-direct-woocommerce) - Plugin Check derives the
@@ -248,6 +257,7 @@ jobs:
       # against the runner's shared IP. The runner's Docker config is shared, so
       # the login reaches wp-env's pulls.
       - name: Log in to Docker Hub
+        if: env.DOCKERHUB_USERNAME != ''
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
