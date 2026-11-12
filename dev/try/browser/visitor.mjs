@@ -4,7 +4,7 @@
 // first failure.
 //
 //   npm install
-//   CHROME=/path/to/chrome node visitor.mjs [base url] [screenshot dir] [xrp|rlusd|usdc]
+//   CHROME=/path/to/chrome node visitor.mjs [base url] [screenshot dir] [xrp|rlusd|usdc|xah]
 import puppeteer from 'puppeteer-core';
 import { readFileSync } from 'node:fs';
 // The article to buy: the first miniature of the catalogue, found on the home page by its slug —
