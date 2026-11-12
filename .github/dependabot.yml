@@ -1,3 +1,6 @@
+# New releases wait a week before Dependabot proposes them (cooldown), so a release that is pulled
+# again within days never reaches a pull request; security updates are not delayed. Updates within a
+# major come as one pull request a week, a new major on its own.
 version: 2
 updates:
   # The actions in the workflows, pinned to commit SHAs with the version in a comment. Dependabot
@@ -6,6 +9,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ['*']
@@ -15,9 +20,17 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      composer:
+        patterns: ['*']
+        update-types: [minor, patch]
 
   # The base images of the try image, pinned by tag and digest in the FROM lines.
   - package-ecosystem: docker
     directory: /dev/try
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
