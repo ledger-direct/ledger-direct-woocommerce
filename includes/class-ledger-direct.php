@@ -402,7 +402,7 @@ class LedgerDirect
             'logo' => $this->page_logo($configuration, $store_name),
             'xaman_key' => $configuration->getXamanApiKey(),
             'wc_project' => $configuration->getWalletConnectProjectId(),
-            'wallets_src' => ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/wallets.js'),
+            'wallets_src' => self::wallet_library_url(),
             'refresh_nonce' => wp_create_nonce(self::refresh_nonce_action($order)),
             'price_unavailable' => self::price_unavailable_requested(),
         ];
@@ -507,10 +507,23 @@ class LedgerDirect
         /*
          * The page script of @ledger-direct/payment-ui (public/js/ledger-direct-payment-ui/VERSION
          * names the package tag), a classic script without jQuery. The wallet library
-         * (wallets.js, 1.6 MB) is deliberately not enqueued: the page fetches it by a native
+         * (wallets.js, 1.8 MB) is deliberately not enqueued: the page fetches it by a native
          * import() from data-ld-wallets-src only when a customer opens the wallet list.
          */
         wp_enqueue_script('ledger-direct-payment-ui', ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/payment-page.js'), [], self::asset_version('public/js/ledger-direct-payment-ui/payment-page.js'), true);
+    }
+
+    /**
+     * The URL of the wallet library (wallets.js), versioned like the other assets: the payment page
+     * loads it by import() from data-ld-wallets-src, and a copy cached before an update would not
+     * match the page script.
+     *
+     * @return string
+     */
+    public static function wallet_library_url(): string {
+        $path = 'public/js/ledger-direct-payment-ui/wallets.js';
+
+        return add_query_arg('ver', self::asset_version($path), ledger_direct_get_public_url('/' . $path));
     }
 
     /**

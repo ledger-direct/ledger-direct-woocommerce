@@ -72,6 +72,10 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 
 == Changelog ==
 
+= Unreleased =
+* The payment page uses @ledger-direct/payment-ui 0.4.0 instead of 0.1.1: the wallet library is xrpl-connect 1.0.0 with xrpl 5, and on Xahau and Stellar the page no longer offers the XRP Ledger's browser wallets.
+* The wallet library's URL carries its file version, so a browser does not combine a copy cached before an update with a newer page script.
+
 = 1.5.2 =
 * Core 0.11.1: when the price oracles disagree, no price is quoted, instead of a rate up to five minutes old. An older rate stands in only when no oracle answers.
 * Core 0.11.1: after a reset of the XRP Ledger testnet, only the first sync per receiving account sends a request the node rejects; the plugin remembers the reset, so later syncs continue without it.
