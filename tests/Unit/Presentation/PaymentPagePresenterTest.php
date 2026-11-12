@@ -29,7 +29,7 @@ class PaymentPagePresenterTest extends TestCase
         self::assertSame('832110', $view['amount_drops']);
         self::assertNull($view['currency']);
         self::assertSame('EUR', $view['shop_currency']);
-        self::assertSame('https://xrplf.org//send?to=' . self::ACCOUNT . '&dt=123456&amount=0.83211', $view['payment_uri']);
+        self::assertSame('https://xrplf.org//send?to=' . self::ACCOUNT . '&dt=123456&amount=0.83211&network=TESTNET', $view['payment_uri']);
         self::assertStringStartsWith('data:image/svg+xml;base64,', $view['qr_data_uri']);
         self::assertSame('XRP', $view['asset']);
         self::assertSame(900, $view['quote_seconds']);
