@@ -1,0 +1,37 @@
+name: Audit
+
+# Known vulnerabilities in the dependencies (composer.lock): weekly, on demand, and on every pull request
+# or push that changes composer.lock or this file. Fails on high and critical advisories in the runtime
+# dependencies; all others are listed in the log without failing the run.
+
+on:
+  push:
+    branches: [main]
+    paths: [composer.lock, .github/workflows/audit.yml]
+  pull_request:
+    paths: [composer.lock, .github/workflows/audit.yml]
+  schedule:
+    - cron: '31 5 * * 1'
+  workflow_dispatch:
+
+# Reads the repository, nothing else.
+permissions:
+  contents: read
+
+jobs:
+  composer:
+    name: Composer audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+      - name: All advisories and abandoned packages (listed, not failing)
+        run: composer audit --locked --abandoned=report || true
+      - name: No high or critical advisory in the runtime dependencies
+        run: composer audit --locked --no-dev --abandoned=ignore --ignore-severity=low --ignore-severity=medium
