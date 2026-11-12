@@ -34,7 +34,7 @@ jobs:
       docs_only: ${{ steps.changes.outputs.docs_only }}
       runtime: ${{ steps.changes.outputs.runtime }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # pull_request: the merge commit and both parents; push: the pushed range
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
@@ -45,8 +45,8 @@ jobs:
     name: PHP lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
       - name: Lint all PHP files
@@ -65,8 +65,8 @@ jobs:
     if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
           extensions: mbstring, mysqli
@@ -84,8 +84,8 @@ jobs:
     if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
           extensions: mbstring, mysqli
@@ -107,7 +107,7 @@ jobs:
       matrix:
         php: ['8.2', '8.3', '8.4']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       # MySQL as a plain container after a Docker Hub login, not as a `services:`
       # container: a service starts before any step and so can only pull
@@ -116,7 +116,7 @@ jobs:
       # ("toomanyrequests: Data limit exceeded", seen 2026-10-16). Logged in, the
       # pull counts against the organisation's account.
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -133,7 +133,7 @@ jobs:
           docker inspect -f 'mysql: {{.State.Health.Status}}' mysql
           [ "$(docker inspect -f '{{.State.Health.Status}}' mysql)" = "healthy" ]
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, mysqli, intl, zip
@@ -183,10 +183,10 @@ jobs:
       # than the GitHub repo name (ledger-direct-woocommerce) - Plugin Check derives the
       # expected text domain from the directory name it scans, and it must match the
       # `Text Domain: ledger-direct` header used throughout the codebase.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           path: ledger-direct
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
           extensions: mbstring, mysqli
@@ -214,13 +214,13 @@ jobs:
       # against the runner's shared IP. The runner's Docker config is shared, so
       # the login reaches wp-env's pulls.
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Run WordPress Plugin Check
-        uses: WordPress/plugin-check-action@v1
+        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
           build-dir: '/tmp/plugin-build/ledger-direct'
           # .wp-env.json has to be physically present in build-dir for the wp-env-based
@@ -237,7 +237,7 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Compare the ruleset on GitHub with the file
         env:
           GH_TOKEN: ${{ github.token }}
