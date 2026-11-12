@@ -73,6 +73,7 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Changelog ==
 
 = Unreleased =
+* Core 0.11.3: the payment request in the QR code and behind the Xaman button now names its network on the XRP Ledger too, as it already did on Xahau. Before, Xaman paid on whichever network the wallet had open, so an XRP payment scanned with a Xahau account opened a XAH payment of the same amount.
 * The payment page uses @ledger-direct/payment-ui 0.4.0 instead of 0.1.1: the wallet library is xrpl-connect 1.0.0 with xrpl 5, and on Xahau and Stellar the page no longer offers the XRP Ledger's browser wallets.
 * The wallet library's URL carries its file version, so a browser does not combine a copy cached before an update with a newer page script.
 
