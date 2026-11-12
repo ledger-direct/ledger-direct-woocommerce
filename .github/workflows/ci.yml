@@ -8,8 +8,8 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Weekly, Monday: the whole suite on main, and the check that the branch rules on GitHub
-  # are the ones in .github/rulesets/main.json.
+  # Weekly, Monday: the whole suite on main, and the check that the branch and tag rules on GitHub
+  # are the ones in .github/rulesets/main.json and tags.json.
   schedule:
     - cron: '27 4 * * 1'
   workflow_dispatch:
@@ -263,7 +263,8 @@ jobs:
           # the check results specifically (not from the scanned directory).
           exclude-files: '.wp-env.json'
 
-  # Weekly and on demand: the ruleset GitHub enforces on main is the one in .github/rulesets/main.json.
+  # Weekly and on demand: the rulesets GitHub enforces on main and on tags are the ones in
+  # .github/rulesets/main.json and tags.json.
   # Not part of "CI passed": a pull request that changes the file differs from GitHub until the
   # ruleset is applied after the merge.
   ruleset:
@@ -274,10 +275,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
-      - name: Compare the ruleset on GitHub with the file
+      - name: Compare the rulesets on GitHub with the files
         env:
           GH_TOKEN: ${{ github.token }}
-        run: .github/rulesets/check.sh "${{ github.repository }}" .github/rulesets/main.json
+        # Both files are checked, also when the first differs.
+        run: |
+          rc=0
+          .github/rulesets/check.sh "$GITHUB_REPOSITORY" .github/rulesets/main.json || rc=1
+          .github/rulesets/check.sh "$GITHUB_REPOSITORY" .github/rulesets/tags.json || rc=1
+          exit $rc
 
   # The one check a merge into main requires. Its name is in .github/rulesets/main.json: renaming the
   # job blocks every merge until the ruleset on GitHub is changed too. A job's own name changes with
