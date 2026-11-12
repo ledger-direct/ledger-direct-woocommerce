@@ -19,7 +19,7 @@
 FROM composer:2.11.1@sha256:8de2184c6de224f4689e8f80ed5f5edaf0030b6b8b7839a22a2bcb6722ac87d0 AS composer
 FROM mlocati/php-extension-installer:2.13.1@sha256:35821db0661308f64aa18483bb3af56bedc3b40090ff441ed961327d1ccbceb8 AS extension-installer
 
-FROM php:8.3.36-apache-bookworm@sha256:a14446c32a3c8aeb9b4dac7fb73b03dfd8006e670d9b43ea7947e4030d3cbae6 AS base
+FROM php:8.5.12-apache-bookworm@sha256:dbc0a3eb85e639cc8158ae74e83448064473a7fa78e90a1b0dfb7c4ee14497e3 AS base
 COPY --from=extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 # The extensions WordPress and WooCommerce use, plus gmp for the wallet tool's signing
 # (hardcastle/xrpl_php). DejaVu draws the demo article's picture.
