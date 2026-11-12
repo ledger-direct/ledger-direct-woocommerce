@@ -8,8 +8,8 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Weekly, Monday: the whole suite on main, and the check that the branch rules on GitHub
-  # are the ones in .github/rulesets/main.json.
+  # Weekly, Monday: the whole suite on main, and the check that the branch and tag rules on GitHub
+  # are the ones in .github/rulesets/main.json and tags.json.
   schedule:
     - cron: '27 4 * * 1'
   workflow_dispatch:
@@ -27,6 +27,30 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Every external action is referenced by a full commit SHA, with its version as a comment: a tag
+  # can be moved to other code, a commit cannot. Dependabot keeps the SHAs current.
+  pinned:
+    name: Actions pinned to commit SHAs
+    needs: changes
+    # Fail-safe as for the other jobs: a failed `changes` job leaves docs_only empty, and the check
+    # runs. A documentation-only change cannot touch a workflow or an action.
+    if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Every external action is pinned to a full commit SHA
+        run: |
+          # The key is spelled apart, so this file does not match its own pattern.
+          key=uses
+          unpinned=$(grep -rnoE "${key}:\s*[^ #]+" .github/ | grep -v "${key}: \./" | grep -vE '@[0-9a-f]{40}$' || true)
+          if [ -n "$unpinned" ]; then
+            echo "::error::Actions not pinned to a full commit SHA (owner/action@<sha> # vX.Y.Z):"
+            echo "$unpinned"
+            exit 1
+          fi
+
   changes:
     name: What changed
     runs-on: ubuntu-latest
@@ -34,8 +58,9 @@ jobs:
       docs_only: ${{ steps.changes.outputs.docs_only }}
       runtime: ${{ steps.changes.outputs.runtime }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           # pull_request: the merge commit and both parents; push: the pushed range
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
       - id: changes
@@ -45,8 +70,10 @@ jobs:
     name: PHP lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
       - name: Lint all PHP files
@@ -65,8 +92,10 @@ jobs:
     if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
           extensions: mbstring, mysqli
@@ -84,8 +113,10 @@ jobs:
     if: ${{ !cancelled() && needs.changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
           extensions: mbstring, mysqli
@@ -107,7 +138,9 @@ jobs:
       matrix:
         php: ['8.2', '8.3', '8.4']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       # MySQL as a plain container after a Docker Hub login, not as a `services:`
       # container: a service starts before any step and so can only pull
@@ -116,7 +149,7 @@ jobs:
       # ("toomanyrequests: Data limit exceeded", seen 2026-10-16). Logged in, the
       # pull counts against the organisation's account.
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -133,7 +166,7 @@ jobs:
           docker inspect -f 'mysql: {{.State.Health.Status}}' mysql
           [ "$(docker inspect -f '{{.State.Health.Status}}' mysql)" = "healthy" ]
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, mysqli, intl, zip
@@ -183,10 +216,11 @@ jobs:
       # than the GitHub repo name (ledger-direct-woocommerce) - Plugin Check derives the
       # expected text domain from the directory name it scans, and it must match the
       # `Text Domain: ledger-direct` header used throughout the codebase.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           path: ledger-direct
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.2'
           extensions: mbstring, mysqli
@@ -214,13 +248,13 @@ jobs:
       # against the runner's shared IP. The runner's Docker config is shared, so
       # the login reaches wp-env's pulls.
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Run WordPress Plugin Check
-        uses: WordPress/plugin-check-action@v1
+        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
           build-dir: '/tmp/plugin-build/ledger-direct'
           # .wp-env.json has to be physically present in build-dir for the wp-env-based
@@ -229,7 +263,8 @@ jobs:
           # the check results specifically (not from the scanned directory).
           exclude-files: '.wp-env.json'
 
-  # Weekly and on demand: the ruleset GitHub enforces on main is the one in .github/rulesets/main.json.
+  # Weekly and on demand: the rulesets GitHub enforces on main and on tags are the ones in
+  # .github/rulesets/main.json and tags.json.
   # Not part of "CI passed": a pull request that changes the file differs from GitHub until the
   # ruleset is applied after the merge.
   ruleset:
@@ -237,11 +272,18 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Compare the ruleset on GitHub with the file
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Compare the rulesets on GitHub with the files
         env:
           GH_TOKEN: ${{ github.token }}
-        run: .github/rulesets/check.sh "${{ github.repository }}" .github/rulesets/main.json
+        # Both files are checked, also when the first differs.
+        run: |
+          rc=0
+          .github/rulesets/check.sh "$GITHUB_REPOSITORY" .github/rulesets/main.json || rc=1
+          .github/rulesets/check.sh "$GITHUB_REPOSITORY" .github/rulesets/tags.json || rc=1
+          exit $rc
 
   # The one check a merge into main requires. Its name is in .github/rulesets/main.json: renaming the
   # job blocks every merge until the ruleset on GitHub is changed too. A job's own name changes with
@@ -251,7 +293,7 @@ jobs:
   # to run and report in every case.
   passed:
     name: CI passed
-    needs: [changes, lint, phpcs, phpstan, phpunit, plugin-check]
+    needs: [changes, lint, phpcs, phpstan, phpunit, plugin-check, pinned]
     if: always()
     runs-on: ubuntu-latest
     # Reads this run's job list, nothing else.
