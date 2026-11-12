@@ -8,6 +8,9 @@
  *       trust lines to the RLUSD and USDC issuers of the core's StablecoinRegistry, and created anew
  *       when the testnet was reset (see wallet.php)
  *     - XRP always; RLUSD and USDC when the account has the trust lines
+ *     - XAH on the Xahau testnet, to the shop's own Xahau account (one account per chain), made on the
+ *       first start and funded from the Xahau faucet; when the Xahau testnet does not answer, XAH stays
+ *       as it was and the next start tries again
  *     - free shipping, so an order costs exactly the article; the other payment methods off; the
  *       store in EUR, open to guests, without WooCommerce's "coming soon" page and onboarding
  *
@@ -24,6 +27,7 @@ use Hardcastle\LedgerDirect\Core\Xrpl\StablecoinRegistry;
 const STATE = '/var/lib/ledger-direct-try';
 const ACCOUNT_FILE = STATE . '/account';
 const WALLET_FILE = STATE . '/wallet.json';
+const XAHAU_WALLET_FILE = STATE . '/wallet-xahau.json';
 const WALLET = '/usr/local/share/ledger-direct/wallet.php';
 const ADDRESS = '/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/';
 const SKU = 'ledger-direct-demo';
@@ -83,6 +87,20 @@ function ownWallet(): array
     return [$address, $trusted];
 }
 
+/**
+ * The shop's own Xahau testnet account, separate from the XRP Ledger one: the same r-address is a
+ * different account on each chain (one account per chain, the core's INVARIANTS.md "Xahau"). null while
+ * it is not on the Xahau testnet; the next start tries again.
+ */
+function xahauAccount(): ?string
+{
+    if (wallet('xahau', XAHAU_WALLET_FILE) !== 0) {
+        return null;
+    }
+
+    return json_decode((string) file_get_contents(XAHAU_WALLET_FILE), true)['address'];
+}
+
 function configure(): void
 {
     $own = trim((string) getenv('LD_TESTNET_ACCOUNT'));
@@ -97,16 +115,25 @@ function configure(): void
     file_put_contents(ACCOUNT_FILE, $account);
 
     $settings = get_option(SETTINGS, []);
-    update_option(SETTINGS, array_merge(is_array($settings) ? $settings : [], [
+    $settings = is_array($settings) ? $settings : [];
+
+    // XAH out of the box, so a visitor pays with their wallet without configuring anything.
+    $xahau = xahauAccount();
+    if ($xahau === null) {
+        out('the Xahau testnet account is not ready; XAH stays as it was, the next start tries again');
+    }
+
+    update_option(SETTINGS, array_merge($settings, [
         'enabled' => 'yes',
         'xrpl_network' => 'testnet',
         'xrpl_testnet_destination_account' => $account,
         'xrpl_is_rlusd_enabled' => $stablecoins ? 'yes' : 'no',
         'xrpl_is_usdc_enabled' => $stablecoins ? 'yes' : 'no',
-        // Xahau stays off, on its testnet: whoever switches it on in the settings pays on the
-        // Xahau testnet, with an account they enter there.
-        'xahau_enabled' => 'no',
         'xahau_network' => 'testnet',
+    ], $xahau === null ? [] : [
+        'xahau_enabled' => 'yes',
+        'xahau_testnet_destination_account' => $xahau,
+    ], [
         'xrpl_quote_expiry' => 5,
     ]));
 
@@ -149,7 +176,8 @@ function configure(): void
     freeShipping();
 
     out("receiving account {$account} (" . ($own !== '' ? 'yours' : "the shop's own testnet wallet") . '); XRP'
-        . ($stablecoins ? ', RLUSD and USDC' : ' only'));
+        . ($stablecoins ? ', RLUSD and USDC' : ' only')
+        . ($xahau !== null ? "; XAH to the shop's Xahau testnet account {$xahau}" : ''));
 }
 
 /** Free shipping everywhere: the zone "everywhere else" offers it, and nothing else. */

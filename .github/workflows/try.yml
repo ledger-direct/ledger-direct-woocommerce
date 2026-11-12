@@ -3,7 +3,7 @@ name: Try stack
 # The try-it stack in dev/try: every pull request and every push to main builds the image from the
 # checkout, starts the stack the way a visitor does and runs dev/try/smoke.sh against it (storefront,
 # catalogue, guest order through WooCommerce's checkout, payment page markup contract, status endpoint
-# PS-01 and PS-07), then walks the storefront in a real browser with XRP, RLUSD and USDC. It installs
+# PS-01 and PS-07), then walks the storefront in a real browser with XRP, RLUSD, USDC and XAH. It installs
 # the plugin into a fresh WordPress and WooCommerce on Linux, laid out as the release build lays it out.
 #
 # Publishing the image to GHCR (ghcr.io/ledger-direct/try-woocommerce):
@@ -129,14 +129,14 @@ jobs:
 
       # The storefront the way a prospect sees it, in a real browser: home page, cart, guest
       # checkout with each asset, payment page. GitHub's runners ship Chrome.
-      - name: Browser walk (XRP, RLUSD, USDC)
+      - name: Browser walk (XRP, RLUSD, USDC, XAH)
         working-directory: dev/try/browser
         env:
           CHROME: /usr/bin/google-chrome
         run: |
           npm install --no-audit --no-fund
           mkdir -p screenshots
-          for asset in xrp rlusd usdc; do
+          for asset in xrp rlusd usdc xah; do
             echo "== $asset"
             node visitor.mjs http://localhost:8092 screenshots "$asset"
           done
