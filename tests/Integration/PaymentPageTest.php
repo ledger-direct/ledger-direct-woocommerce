@@ -82,7 +82,7 @@ class PaymentPageTest extends TestCase
         self::assertStringContainsString('data-ld-account data-value="' . XrplNetworkStub::ACCOUNT . '"', $html);
         self::assertStringContainsString('data-ld-tag data-value="' . $intent->destinationTag . '"', $html);
         self::assertStringContainsString('data-ld-poll-url="', $html);
-        self::assertStringContainsString('ledger-direct-payment-ui/wallets.js"', $html);
+        self::assertMatchesRegularExpression('#ledger-direct-payment-ui/wallets\.js\?ver=\d+"#', $html);
         self::assertStringContainsString('style="--ld-accent: #123456"', $html);
         self::assertMatchesRegularExpression('~data-ld-amount>' . preg_quote($intent->amountRequestedValue(), '~') . '<~', $html);
         self::assertStringContainsString('data-ld-check-form', $html);
@@ -140,6 +140,19 @@ class PaymentPageTest extends TestCase
         self::assertFalse(wp_script_is('ledger-direct', 'enqueued'));
         // The wallet library is fetched by the page on demand, never enqueued
         self::assertStringNotContainsString('wallets.js', (string) wp_scripts()->registered['ledger-direct-payment-ui']->src);
+    }
+
+    /**
+     * The values the plugin hands the page carry the versioned wallet library URL, so a copy
+     * cached before an update does not meet a newer page script.
+     */
+    public function testThePagePointsTheWalletLibraryAtAVersionedUrl(): void
+    {
+        $values = (new \ReflectionMethod(LedgerDirect::class, 'page_platform_values'))
+            ->invoke(LedgerDirect::instance(), $this->order, new LedgerDirectPaymentGateway());
+
+        self::assertSame(LedgerDirect::wallet_library_url(), $values['wallets_src']);
+        self::assertMatchesRegularExpression('#/public/js/ledger-direct-payment-ui/wallets\.js\?ver=\d+$#', $values['wallets_src']);
     }
 
     /**
@@ -260,7 +273,7 @@ class PaymentPageTest extends TestCase
             'logo' => ['mode' => 'none', 'url' => null, 'monogram' => 'T'],
             'xaman_key' => $configuration->getXamanApiKey(),
             'wc_project' => $configuration->getWalletConnectProjectId(),
-            'wallets_src' => ledger_direct_get_public_url('/public/js/ledger-direct-payment-ui/wallets.js'),
+            'wallets_src' => LedgerDirect::wallet_library_url(),
             'refresh_nonce' => 'n',
         ] + $platform);
 
