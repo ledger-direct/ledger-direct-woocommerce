@@ -90,7 +90,7 @@ msgstr "Aceptar XAH en Xahau"
 
 #: includes/admin/class-ledger-direct-admin.php:62
 msgid "Xahau is a network of its own that speaks the XRP Ledger's protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger."
-msgstr "Xahau es una red propia que habla el protocolo del XRP Ledger: pagos en XAH, con destination tag, a una cuenta con el mismo formato. Utilice una cuenta que reciba solo en Xahau, no una que también reciba en el XRP Ledger."
+msgstr "Xahau es una red propia que usa el protocolo del XRP Ledger: pagos en XAH, por destination tag, a una cuenta del mismo formato. Use una cuenta que reciba solo en Xahau, no una que también reciba en el XRP Ledger."
 
 #: includes/admin/class-ledger-direct-admin.php:67
 msgid "Xahau Network"
@@ -170,7 +170,7 @@ msgstr "Página de pago: color de acento"
 
 #: includes/admin/class-ledger-direct-admin.php:127
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
-msgstr "Los botones, la barra de cuenta atrás y el destination tag se dibujan en este color con texto blanco, por lo que debe ser lo bastante oscuro (contraste 4,5:1). Por defecto #1f5eff."
+msgstr "Los botones, la barra de cuenta atrás y el destination tag se muestran en este color con texto blanco, por lo que debe ser lo bastante oscuro (contraste 4,5:1). Predeterminado #1f5eff."
 
 #: includes/admin/class-ledger-direct-admin.php:132
 msgid "Payment page: Xaman API key"
@@ -178,7 +178,7 @@ msgstr "Página de pago: clave API de Xaman"
 
 #: includes/admin/class-ledger-direct-admin.php:134
 msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
-msgstr "La clave API pública de su aplicación de desarrollador de Xaman (apps.xaman.dev). Con ella, los clientes en un móvil ven un botón «Abrir en la aplicación de cartera». Nunca el secreto de la API."
+msgstr "La clave API pública de su aplicación de desarrollador de Xaman (apps.xaman.dev). Con ella, los clientes en un móvil ven un botón \"Abrir en la aplicación de cartera\". Nunca el secreto de la API."
 
 #: includes/admin/class-ledger-direct-admin.php:139
 msgid "Payment page: WalletConnect project id"
@@ -198,11 +198,11 @@ msgstr "%1$s: la cuenta receptora %2$s en la red %3$s puede recibir todos los ac
 #: includes/admin/class-ledger-direct-admin.php:206
 #, php-format
 msgid "The account is not activated yet. A first payment of at least %1$s %2$s activates it; until then smaller orders in %2$s fail, and tokens are not offered."
-msgstr "La cuenta aún no está activada. Un primer pago de al menos %1$s %2$s la activa; hasta entonces, los pedidos más pequeños en %2$s fallan y no se ofrecen tokens."
+msgstr "La cuenta aún no está activada. Un primer pago de al menos %1$s %2$s la activa; hasta entonces fallan los pedidos menores en %2$s y no se ofrecen tokens."
 
 #: includes/admin/class-ledger-direct-admin.php:208
 msgid "Deposit authorization is set on the account: only senders you authorized can pay. The payment methods stay in the checkout."
-msgstr "La cuenta tiene Deposit Authorization activada: solo pueden pagar los remitentes que usted haya autorizado. Los métodos de pago siguen apareciendo en el pago."
+msgstr "La cuenta tiene activada Deposit Authorization: solo pueden pagar los remitentes que usted autorizó. Los métodos de pago siguen disponibles en el pago."
 
 #. translators: 1: asset, e.g. RLUSD, 2: issuer address
 #: includes/admin/class-ledger-direct-admin.php:211
@@ -238,7 +238,7 @@ msgstr "%1$s no se ofrece en el pago: el emisor %2$s ha congelado todas sus trus
 #: includes/admin/class-ledger-direct-admin.php:226
 #, php-format
 msgid "The ledger could not be asked just now. Until it can, tokens are not offered; %s is."
-msgstr "No se ha podido consultar el ledger en este momento. Hasta entonces no se ofrecen tokens; %s sí."
+msgstr "No se pudo consultar el ledger en este momento. Hasta entonces no se ofrecen tokens; %s sí."
 
 #: includes/admin/class-ledger-direct-admin.php:259
 #: includes/class-ledger-direct.php:158 includes/class-ledger-direct.php:159
@@ -294,7 +294,7 @@ msgstr "Transacciones con este destination tag"
 
 #: includes/admin/views/order_panel_html.php:85
 msgid "no delivered amount"
-msgstr "ningún importe entregado"
+msgstr "sin importe entregado"
 
 #: includes/admin/views/order_panel_html.php:87
 msgid "(token)"
@@ -411,7 +411,7 @@ msgstr "Un nuevo importe no está disponible temporalmente porque ahora mismo no
 
 #: includes/views/ledger-direct_html.php:216
 msgid "Already sent? Then do not send again – we will still recognise the payment."
-msgstr "¿Ya lo ha enviado? Entonces no vuelva a enviarlo – reconoceremos el pago igualmente."
+msgstr "¿Ya lo ha enviado? Entonces no lo envíe de nuevo – reconoceremos el pago igualmente."
 
 #: includes/views/ledger-direct_html.php:221
 msgid "Request a new amount"
@@ -423,11 +423,11 @@ msgstr "Importe a enviar"
 
 #: includes/views/ledger-direct_html.php:228
 msgid "Still to send"
-msgstr "Pendiente de enviar"
+msgstr "Importe pendiente"
 
 #: includes/views/ledger-direct_html.php:233
 msgid "Copy amount"
-msgstr "Copiar importe"
+msgstr "Copiar el importe"
 
 #. translators: %s: the order total in the shop currency
 #: includes/views/ledger-direct_html.php:237
@@ -439,7 +439,7 @@ msgstr "equivale a %s"
 #: includes/views/ledger-direct_html.php:239
 #, php-format
 msgid "of %1$s %2$s in total (%3$s)"
-msgstr "de un total de %1$s %2$s (%3$s)"
+msgstr "de %1$s %2$s en total (%3$s)"
 
 #. translators: %s: the countdown, filled in by the script
 #: includes/views/ledger-direct_html.php:247
@@ -453,7 +453,7 @@ msgstr "Dirección de recepción"
 
 #: includes/views/ledger-direct_html.php:260
 msgid "Copy address"
-msgstr "Copiar dirección"
+msgstr "Copiar la dirección"
 
 #: includes/views/ledger-direct_html.php:264
 msgid "Required"
@@ -461,11 +461,11 @@ msgstr "Obligatorio"
 
 #: includes/views/ledger-direct_html.php:267
 msgid "Copy destination tag"
-msgstr "Copiar destination tag"
+msgstr "Copiar el destination tag"
 
 #: includes/views/ledger-direct_html.php:269
 msgid "Without this tag we cannot match the payment to your order."
-msgstr "Sin este tag no podemos asignar el pago a su pedido."
+msgstr "Sin este destination tag no podemos asignar el pago a su pedido."
 
 #: includes/views/ledger-direct_html.php:273
 msgid "Token and issuer"
@@ -473,13 +473,13 @@ msgstr "Token y emisor"
 
 #: includes/views/ledger-direct_html.php:276
 msgid "Copy issuer"
-msgstr "Copiar emisor"
+msgstr "Copiar el emisor"
 
 #. translators: %s: the token symbol (RLUSD, USDC)
 #: includes/views/ledger-direct_html.php:279
 #, php-format
 msgid "Only %s from exactly this issuer is credited. Your wallet needs a trust line for it."
-msgstr "Solo se abonan los %s de este emisor exacto. Su cartera necesita una trustline para ello."
+msgstr "Solo se abonan %s de exactamente este emisor. Su cartera necesita una trustline para ello."
 
 #: includes/views/ledger-direct_html.php:285
 msgid "Paying from an exchange?"
@@ -487,7 +487,7 @@ msgstr "¿Paga desde una plataforma de intercambio?"
 
 #: includes/views/ledger-direct_html.php:286
 msgid "The destination tag is required, and the amount must still arrive in full after the exchange's fee."
-msgstr "El destination tag es obligatorio, y el importe debe llegar completo después de la comisión de la plataforma."
+msgstr "El destination tag es obligatorio y el importe debe llegar completo después de la comisión de la plataforma."
 
 #: includes/views/ledger-direct_html.php:290
 msgid "Pay with a wallet"
@@ -511,7 +511,7 @@ msgstr "Caducado – solicite un nuevo importe"
 
 #: includes/views/ledger-direct_html.php:298
 msgid "Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending."
-msgstr "Escanee con Xaman. La dirección, el destination tag y el importe se rellenan solos, y Xaman ofrece cambiar a la red Xahau si hay otra configurada – compruébelos antes de enviar."
+msgstr "Escanee con Xaman. La dirección, el destination tag y el importe se rellenan solos, y Xaman ofrece cambiar a la red Xahau si está configurado en otra – compruébelos antes de enviar."
 
 #: includes/views/ledger-direct_html.php:298
 msgid "Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending."
@@ -543,7 +543,7 @@ msgstr "Abrir en la aplicación de cartera"
 
 #: includes/views/ledger-direct_html.php:320
 msgid "found"
-msgstr "detectada"
+msgstr "encontrada"
 
 #: includes/views/ledger-direct_html.php:321
 msgid "Confirm in your wallet …"
@@ -555,7 +555,7 @@ msgstr "Enviado – estamos comprobando la recepción."
 
 #: includes/views/ledger-direct_html.php:323
 msgid "The wallet does not respond. Is the extension installed and unlocked?"
-msgstr "La cartera no responde. ¿Está instalada y desbloqueada la extensión?"
+msgstr "La cartera no responde. ¿Está la extensión instalada y desbloqueada?"
 
 #: includes/views/ledger-direct_html.php:324
 msgid "The connection to the wallet failed – please try again."
@@ -619,7 +619,7 @@ msgstr "Pago parcial recibido. Esperando el resto."
 
 #: includes/views/ledger-direct_html.php:345
 msgid "Payment in the wrong token received. Waiting for the right amount."
-msgstr "Pago recibido en un token incorrecto. Esperando el importe correcto."
+msgstr "Pago recibido en el token equivocado. Esperando el importe correcto."
 
 #: includes/views/ledger-direct_html.php:346
 msgid "A late payment of the old amount is still recognised."

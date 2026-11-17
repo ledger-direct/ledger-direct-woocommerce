@@ -90,7 +90,7 @@ msgstr "Aceitar XAH na Xahau"
 
 #: includes/admin/class-ledger-direct-admin.php:62
 msgid "Xahau is a network of its own that speaks the XRP Ledger's protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger."
-msgstr "A Xahau é uma rede própria que fala o protocolo do XRP Ledger: pagamentos em XAH, com destination tag, para uma conta com o mesmo formato. Utilize uma conta que receba apenas na Xahau, não uma que também receba no XRP Ledger."
+msgstr "O Xahau é uma rede própria que usa o protocolo do XRP Ledger: pagamentos em XAH, por destination tag, para uma conta do mesmo formato. Utilize uma conta que receba apenas no Xahau, e não uma que também receba no XRP Ledger."
 
 #: includes/admin/class-ledger-direct-admin.php:67
 msgid "Xahau Network"
@@ -170,15 +170,15 @@ msgstr "Página de pagamento: cor de destaque"
 
 #: includes/admin/class-ledger-direct-admin.php:127
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
-msgstr "Os botões, a barra da contagem decrescente e o destination tag são desenhados nesta cor com texto branco, por isso tem de ser suficientemente escura (contraste 4,5:1). Predefinição #1f5eff."
+msgstr "Os botões, a barra de contagem decrescente e o destination tag são apresentados nesta cor com texto branco, pelo que tem de ser suficientemente escura (contraste 4,5:1). Predefinição #1f5eff."
 
 #: includes/admin/class-ledger-direct-admin.php:132
 msgid "Payment page: Xaman API key"
-msgstr "Página de pagamento: chave API da Xaman"
+msgstr "Página de pagamento: chave API do Xaman"
 
 #: includes/admin/class-ledger-direct-admin.php:134
 msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
-msgstr "A chave API pública da aplicação de programador Xaman (apps.xaman.dev). Com ela, os clientes num telemóvel veem um botão «Abrir na aplicação de carteira». Nunca o segredo da API."
+msgstr "A chave API pública da aplicação de programador Xaman (apps.xaman.dev). Com ela, os clientes num telemóvel veem um botão \"Abrir na aplicação de carteira\". Nunca o segredo da API."
 
 #: includes/admin/class-ledger-direct-admin.php:139
 msgid "Payment page: WalletConnect project id"
@@ -186,7 +186,7 @@ msgstr "Página de pagamento: ID do projeto WalletConnect"
 
 #: includes/admin/class-ledger-direct-admin.php:141
 msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
-msgstr "O ID do projeto de cloud.walletconnect.com, se pretender oferecer carteiras WalletConnect. Público, tal como a chave Xaman."
+msgstr "O ID de projeto de cloud.walletconnect.com, para oferecer carteiras WalletConnect. Público, tal como a chave Xaman."
 
 #. translators: 1: chain name, e.g. XRP Ledger, 2: account address, 3: network (mainnet or testnet)
 #: includes/admin/class-ledger-direct-admin.php:186
@@ -198,7 +198,7 @@ msgstr "%1$s: a conta de receção %2$s na rede %3$s pode receber todos os ativo
 #: includes/admin/class-ledger-direct-admin.php:206
 #, php-format
 msgid "The account is not activated yet. A first payment of at least %1$s %2$s activates it; until then smaller orders in %2$s fail, and tokens are not offered."
-msgstr "A conta ainda não está ativada. Um primeiro pagamento de pelo menos %1$s %2$s ativa-a; até lá, as encomendas mais pequenas em %2$s falham e os tokens não são oferecidos."
+msgstr "A conta ainda não está ativada. Um primeiro pagamento de pelo menos %1$s %2$s ativa-a; até lá, as encomendas menores em %2$s falham e não são oferecidos tokens."
 
 #: includes/admin/class-ledger-direct-admin.php:208
 msgid "Deposit authorization is set on the account: only senders you authorized can pay. The payment methods stay in the checkout."
@@ -238,7 +238,7 @@ msgstr "%1$s não é oferecido na finalização da compra: o emissor %2$s congel
 #: includes/admin/class-ledger-direct-admin.php:226
 #, php-format
 msgid "The ledger could not be asked just now. Until it can, tokens are not offered; %s is."
-msgstr "Não foi possível consultar o ledger neste momento. Até lá, os tokens não são oferecidos; %s sim."
+msgstr "Não foi possível consultar o ledger neste momento. Até lá, não são oferecidos tokens; %s sim."
 
 #: includes/admin/class-ledger-direct-admin.php:259
 #: includes/class-ledger-direct.php:158 includes/class-ledger-direct.php:159
@@ -294,7 +294,7 @@ msgstr "Transações com este destination tag"
 
 #: includes/admin/views/order_panel_html.php:85
 msgid "no delivered amount"
-msgstr "nenhum montante entregue"
+msgstr "sem montante entregue"
 
 #: includes/admin/views/order_panel_html.php:87
 msgid "(token)"
@@ -391,7 +391,7 @@ msgstr "Encomenda"
 
 #: includes/views/ledger-direct_html.php:189
 msgid "Complete your payment"
-msgstr "Conclua o pagamento"
+msgstr "Concluir o pagamento"
 
 #: includes/views/ledger-direct_html.php:197
 msgid "Please send the rest to the same address with the same destination tag."
@@ -411,7 +411,7 @@ msgstr "Um novo montante está temporariamente indisponível porque não é poss
 
 #: includes/views/ledger-direct_html.php:216
 msgid "Already sent? Then do not send again – we will still recognise the payment."
-msgstr "Já enviou? Então não envie novamente – o pagamento será reconhecido na mesma."
+msgstr "Já enviou? Então não envie novamente – o pagamento continuará a ser reconhecido."
 
 #: includes/views/ledger-direct_html.php:221
 msgid "Request a new amount"
@@ -423,11 +423,11 @@ msgstr "Montante a enviar"
 
 #: includes/views/ledger-direct_html.php:228
 msgid "Still to send"
-msgstr "Ainda por enviar"
+msgstr "Montante em dívida"
 
 #: includes/views/ledger-direct_html.php:233
 msgid "Copy amount"
-msgstr "Copiar montante"
+msgstr "Copiar o montante"
 
 #. translators: %s: the order total in the shop currency
 #: includes/views/ledger-direct_html.php:237
@@ -439,7 +439,7 @@ msgstr "equivale a %s"
 #: includes/views/ledger-direct_html.php:239
 #, php-format
 msgid "of %1$s %2$s in total (%3$s)"
-msgstr "de um total de %1$s %2$s (%3$s)"
+msgstr "de %1$s %2$s no total (%3$s)"
 
 #. translators: %s: the countdown, filled in by the script
 #: includes/views/ledger-direct_html.php:247
@@ -453,7 +453,7 @@ msgstr "Endereço de receção"
 
 #: includes/views/ledger-direct_html.php:260
 msgid "Copy address"
-msgstr "Copiar endereço"
+msgstr "Copiar o endereço"
 
 #: includes/views/ledger-direct_html.php:264
 msgid "Required"
@@ -461,11 +461,11 @@ msgstr "Obrigatório"
 
 #: includes/views/ledger-direct_html.php:267
 msgid "Copy destination tag"
-msgstr "Copiar destination tag"
+msgstr "Copiar o destination tag"
 
 #: includes/views/ledger-direct_html.php:269
 msgid "Without this tag we cannot match the payment to your order."
-msgstr "Sem este tag não é possível associar o pagamento à encomenda."
+msgstr "Sem este destination tag não é possível associar o pagamento à sua encomenda."
 
 #: includes/views/ledger-direct_html.php:273
 msgid "Token and issuer"
@@ -473,21 +473,21 @@ msgstr "Token e emissor"
 
 #: includes/views/ledger-direct_html.php:276
 msgid "Copy issuer"
-msgstr "Copiar emissor"
+msgstr "Copiar o emissor"
 
 #. translators: %s: the token symbol (RLUSD, USDC)
 #: includes/views/ledger-direct_html.php:279
 #, php-format
 msgid "Only %s from exactly this issuer is credited. Your wallet needs a trust line for it."
-msgstr "Só são creditados %s exatamente deste emissor. A carteira precisa de uma trustline para isso."
+msgstr "Só é creditado %s exatamente deste emissor. A sua carteira precisa de uma trustline para isso."
 
 #: includes/views/ledger-direct_html.php:285
 msgid "Paying from an exchange?"
-msgstr "Paga a partir de uma plataforma de negociação?"
+msgstr "Paga a partir de uma corretora?"
 
 #: includes/views/ledger-direct_html.php:286
 msgid "The destination tag is required, and the amount must still arrive in full after the exchange's fee."
-msgstr "O destination tag é obrigatório e o montante tem de chegar completo depois da comissão da plataforma."
+msgstr "O destination tag é obrigatório e o montante tem de chegar na totalidade depois da comissão da corretora."
 
 #: includes/views/ledger-direct_html.php:290
 msgid "Pay with a wallet"
@@ -511,11 +511,11 @@ msgstr "Expirado – peça um novo montante"
 
 #: includes/views/ledger-direct_html.php:298
 msgid "Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending."
-msgstr "Digitalize com Xaman. O endereço, o destination tag e o montante são preenchidos, e a Xaman propõe mudar para a rede Xahau se estiver definida outra – verifique-os antes de enviar."
+msgstr "Digitalize com o Xaman. O endereço, o destination tag e o montante são preenchidos automaticamente, e o Xaman propõe mudar para a rede Xahau se estiver configurado noutra – verifique-os antes de enviar."
 
 #: includes/views/ledger-direct_html.php:298
 msgid "Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending."
-msgstr "Digitalize com Xaman ou outra carteira XRPL. O endereço, o destination tag e o montante são preenchidos – verifique-os antes de enviar."
+msgstr "Digitalize com o Xaman ou outra carteira XRPL. O endereço, o destination tag e o montante são preenchidos automaticamente – verifique-os antes de enviar."
 
 #: includes/views/ledger-direct_html.php:303
 msgid "or"
@@ -543,11 +543,11 @@ msgstr "Abrir na aplicação de carteira"
 
 #: includes/views/ledger-direct_html.php:320
 msgid "found"
-msgstr "detetada"
+msgstr "encontrada"
 
 #: includes/views/ledger-direct_html.php:321
 msgid "Confirm in your wallet …"
-msgstr "Confirme na carteira …"
+msgstr "Confirme na sua carteira …"
 
 #: includes/views/ledger-direct_html.php:322
 msgid "Sent – we are checking for it."
@@ -564,7 +564,7 @@ msgstr "A ligação à carteira falhou – tente novamente."
 #. translators: %network% is replaced by the script with the network's name
 #: includes/views/ledger-direct_html.php:326
 msgid "Your wallet is set to another network. Please switch to %network%."
-msgstr "A carteira está definida para outra rede. Mude para %network%."
+msgstr "A sua carteira está configurada noutra rede. Mude para %network%."
 
 #: includes/views/ledger-direct_html.php:327
 msgid "The payment through the wallet failed. Please use the QR code or copy the details."
@@ -611,7 +611,7 @@ msgstr "Rede"
 
 #: includes/views/ledger-direct_html.php:343
 msgid "Waiting for your payment. This page updates by itself."
-msgstr "A aguardar o pagamento. Esta página atualiza-se automaticamente."
+msgstr "A aguardar o pagamento. Esta página é atualizada automaticamente."
 
 #: includes/views/ledger-direct_html.php:344
 msgid "Partial payment received. Waiting for the rest."
@@ -623,11 +623,11 @@ msgstr "Pagamento recebido no token errado. A aguardar o montante correto."
 
 #: includes/views/ledger-direct_html.php:346
 msgid "A late payment of the old amount is still recognised."
-msgstr "Um pagamento tardio do montante antigo continua a ser reconhecido."
+msgstr "Um pagamento tardio do montante anterior continua a ser reconhecido."
 
 #: includes/views/ledger-direct_html.php:352
 msgid "Check payment now"
-msgstr "Verificar pagamento agora"
+msgstr "Verificar o pagamento agora"
 
 #: includes/views/ledger-direct_html.php:353
 msgid "Checking …"
@@ -635,7 +635,7 @@ msgstr "A verificar …"
 
 #: includes/views/ledger-direct_html.php:356
 msgid "No payment found yet. A transaction usually takes only a few seconds – please check again in a moment."
-msgstr "Ainda não foi encontrado nenhum pagamento. Uma transação demora normalmente apenas alguns segundos – verifique novamente daqui a pouco."
+msgstr "Ainda não foi encontrado nenhum pagamento. Uma transação demora normalmente apenas alguns segundos – verifique novamente dentro de instantes."
 
 #: includes/views/ledger-direct_html.php:363
 msgid "Payment received"
@@ -679,7 +679,7 @@ msgstr "Pago"
 
 #: src/Presentation/OrderPanelPresenter.php:122
 msgid "Partially paid"
-msgstr "Pago parcialmente"
+msgstr "Parcialmente pago"
 
 #: src/Presentation/OrderPanelPresenter.php:123
 msgid "Paid in the wrong token, not credited"

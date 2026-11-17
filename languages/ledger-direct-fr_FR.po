@@ -90,7 +90,7 @@ msgstr "Accepter XAH sur Xahau"
 
 #: includes/admin/class-ledger-direct-admin.php:62
 msgid "Xahau is a network of its own that speaks the XRP Ledger's protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger."
-msgstr "Xahau est un réseau à part entière qui parle le protocole du XRP Ledger : paiements en XAH, par destination tag, vers un compte de même format. Utilisez un compte qui reçoit uniquement sur Xahau, et non un compte qui reçoit aussi sur le XRP Ledger."
+msgstr "Xahau est un réseau à part entière qui utilise le protocole du XRP Ledger : paiements en XAH, par destination tag, vers un compte de même format. Utilisez un compte qui reçoit uniquement sur Xahau, et non un compte qui reçoit aussi sur le XRP Ledger."
 
 #: includes/admin/class-ledger-direct-admin.php:67
 msgid "Xahau Network"
@@ -170,7 +170,7 @@ msgstr "Page de paiement : couleur d'accent"
 
 #: includes/admin/class-ledger-direct-admin.php:127
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
-msgstr "Les boutons, la barre du compte à rebours et le destination tag sont dessinés dans cette couleur avec du texte blanc ; elle doit donc être assez foncée (contraste 4,5:1). Par défaut #1f5eff."
+msgstr "Les boutons, la barre de compte à rebours et le destination tag sont affichés dans cette couleur avec un texte blanc ; elle doit donc être assez foncée (contraste 4,5:1). Par défaut #1f5eff."
 
 #: includes/admin/class-ledger-direct-admin.php:132
 msgid "Payment page: Xaman API key"
@@ -238,7 +238,7 @@ msgstr "%1$s n'est pas proposé au paiement : l'émetteur %2$s a gelé toutes se
 #: includes/admin/class-ledger-direct-admin.php:226
 #, php-format
 msgid "The ledger could not be asked just now. Until it can, tokens are not offered; %s is."
-msgstr "Le registre n'a pas pu être interrogé pour le moment. D'ici là, les jetons ne sont pas proposés ; %s l'est."
+msgstr "Le registre n'a pas pu être interrogé pour le moment. D'ici là, aucun jeton n'est proposé ; %s l'est."
 
 #: includes/admin/class-ledger-direct-admin.php:259
 #: includes/class-ledger-direct.php:158 includes/class-ledger-direct.php:159
@@ -423,7 +423,7 @@ msgstr "Montant à envoyer"
 
 #: includes/views/ledger-direct_html.php:228
 msgid "Still to send"
-msgstr "Reste à envoyer"
+msgstr "Montant restant dû"
 
 #: includes/views/ledger-direct_html.php:233
 msgid "Copy amount"
@@ -433,13 +433,13 @@ msgstr "Copier le montant"
 #: includes/views/ledger-direct_html.php:237
 #, php-format
 msgid "equals %s"
-msgstr "soit %s"
+msgstr "correspond à %s"
 
 #. translators: 1: the requested amount, 2: the asset symbol, 3: the order total in the shop currency
 #: includes/views/ledger-direct_html.php:239
 #, php-format
 msgid "of %1$s %2$s in total (%3$s)"
-msgstr "sur un total de %1$s %2$s (%3$s)"
+msgstr "sur %1$s %2$s au total (%3$s)"
 
 #. translators: %s: the countdown, filled in by the script
 #: includes/views/ledger-direct_html.php:247
@@ -465,7 +465,7 @@ msgstr "Copier le destination tag"
 
 #: includes/views/ledger-direct_html.php:269
 msgid "Without this tag we cannot match the payment to your order."
-msgstr "Sans ce tag, nous ne pouvons pas associer le paiement à votre commande."
+msgstr "Sans ce destination tag, nous ne pouvons pas associer le paiement à votre commande."
 
 #: includes/views/ledger-direct_html.php:273
 msgid "Token and issuer"
@@ -511,7 +511,7 @@ msgstr "Expiré – veuillez demander un nouveau montant"
 
 #: includes/views/ledger-direct_html.php:298
 msgid "Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending."
-msgstr "Scannez avec Xaman. L'adresse, le destination tag et le montant sont préremplis, et Xaman propose de passer au réseau Xahau si un autre réseau est réglé – veuillez les vérifier avant l'envoi."
+msgstr "Scannez avec Xaman. L'adresse, le destination tag et le montant sont préremplis, et Xaman propose de passer au réseau Xahau s'il est réglé sur un autre – veuillez les vérifier avant l'envoi."
 
 #: includes/views/ledger-direct_html.php:298
 msgid "Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending."
@@ -535,7 +535,7 @@ msgstr "Aucun portefeuille de navigateur trouvé. Utilisez le code QR ou copiez 
 
 #: includes/views/ledger-direct_html.php:313
 msgid "The wallet fills in the payment. You confirm it there."
-msgstr "Le portefeuille préremplit le paiement. Vous le confirmez dans le portefeuille."
+msgstr "Le portefeuille remplit le paiement. Vous le confirmez dans le portefeuille."
 
 #: includes/views/ledger-direct_html.php:317
 msgid "Open in wallet app"
@@ -543,7 +543,7 @@ msgstr "Ouvrir dans l'application de portefeuille"
 
 #: includes/views/ledger-direct_html.php:320
 msgid "found"
-msgstr "détecté"
+msgstr "trouvé"
 
 #: includes/views/ledger-direct_html.php:321
 msgid "Confirm in your wallet …"
@@ -551,7 +551,7 @@ msgstr "Confirmez dans votre portefeuille …"
 
 #: includes/views/ledger-direct_html.php:322
 msgid "Sent – we are checking for it."
-msgstr "Envoyé – nous vérifions sa réception."
+msgstr "Envoyé – nous vérifions la réception."
 
 #: includes/views/ledger-direct_html.php:323
 msgid "The wallet does not respond. Is the extension installed and unlocked?"
@@ -627,7 +627,7 @@ msgstr "Un paiement tardif de l'ancien montant est toujours reconnu."
 
 #: includes/views/ledger-direct_html.php:352
 msgid "Check payment now"
-msgstr "Vérifier le paiement"
+msgstr "Vérifier le paiement maintenant"
 
 #: includes/views/ledger-direct_html.php:353
 msgid "Checking …"
@@ -737,11 +737,11 @@ msgstr "« %s » n'est pas une adresse XRPL. Une adresse commence par r et compt
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:228
 msgid "The accent colour must be a hex colour such as #1f5eff."
-msgstr "La couleur d'accent doit être une couleur hexadécimale, par exemple #1f5eff."
+msgstr "La couleur d'accent doit être une couleur hexadécimale, par ex. #1f5eff."
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:234
 msgid "The accent colour is too light to carry white text (contrast below 4.5:1). Choose a darker colour."
-msgstr "La couleur d'accent est trop claire pour du texte blanc (contraste inférieur à 4,5:1). Choisissez une couleur plus foncée."
+msgstr "La couleur d'accent est trop claire pour un texte blanc (contraste inférieur à 4,5:1). Choisissez une couleur plus foncée."
 
 #: src/Woocommerce/LedgerDirectPaymentGateway.php:261
 msgid "The payment page picture must be an image from this site's media library, given as its attachment ID or URL."

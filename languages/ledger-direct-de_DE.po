@@ -170,7 +170,7 @@ msgstr "Zahlungsseite: Akzentfarbe"
 
 #: includes/admin/class-ledger-direct-admin.php:127
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
-msgstr "Buttons, der Countdown-Balken und der Destination Tag werden in dieser Farbe mit weißer Schrift gezeichnet, sie muss also dunkel genug sein (Kontrast 4,5:1). Standard #1f5eff."
+msgstr "Schaltflächen, der Countdown-Balken und der Destination Tag werden in dieser Farbe mit weißer Schrift dargestellt, sie muss also dunkel genug sein (Kontrast 4,5:1). Standard #1f5eff."
 
 #: includes/admin/class-ledger-direct-admin.php:132
 msgid "Payment page: Xaman API key"
@@ -178,7 +178,7 @@ msgstr "Zahlungsseite: Xaman-API-Schlüssel"
 
 #: includes/admin/class-ledger-direct-admin.php:134
 msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
-msgstr "Der öffentliche API-Schlüssel Ihrer Xaman-Entwickler-App (apps.xaman.dev). Damit sehen Kunden auf dem Smartphone den Button „In Wallet-App öffnen“. Niemals das API-Secret."
+msgstr "Der öffentliche API-Key Ihrer Xaman-Entwickler-App (apps.xaman.dev). Damit erhalten Kunden auf dem Smartphone die Schaltfläche \"In Wallet-App öffnen\". Niemals das API-Secret."
 
 #: includes/admin/class-ledger-direct-admin.php:139
 msgid "Payment page: WalletConnect project id"
@@ -186,7 +186,7 @@ msgstr "Zahlungsseite: WalletConnect-Projekt-ID"
 
 #: includes/admin/class-ledger-direct-admin.php:141
 msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
-msgstr "Die Projekt-ID von cloud.walletconnect.com, wenn Sie WalletConnect-Wallets anbieten möchten. Öffentlich, wie der Xaman-Schlüssel."
+msgstr "Die Projekt-ID von cloud.walletconnect.com, wenn Sie WalletConnect-Wallets anbieten wollen. Öffentlich, wie der Xaman-Key."
 
 #. translators: 1: chain name, e.g. XRP Ledger, 2: account address, 3: network (mainnet or testnet)
 #: includes/admin/class-ledger-direct-admin.php:186
@@ -232,7 +232,7 @@ msgstr "%s wird an der Kasse nicht angeboten: Das Limit der Trustline ist erreic
 #: includes/admin/class-ledger-direct-admin.php:223
 #, php-format
 msgid "%1$s is not offered in the checkout: the issuer %2$s has frozen all its trustlines."
-msgstr "%1$s wird an der Kasse nicht angeboten: Der Herausgeber %2$s hat alle seine Trustlines eingefroren."
+msgstr "%1$s wird an der Kasse nicht angeboten: Der Herausgeber %2$s hat alle Trustlines eingefroren."
 
 #. translators: %s: native asset, e.g. XRP
 #: includes/admin/class-ledger-direct-admin.php:226
@@ -255,7 +255,7 @@ msgstr "Angefordert"
 
 #: includes/admin/views/order_panel_html.php:30
 msgid "Received"
-msgstr "Eingegangen"
+msgstr "Erhalten"
 
 #: includes/admin/views/order_panel_html.php:36
 msgid "Still due"
@@ -290,7 +290,7 @@ msgstr "Transaktion"
 
 #: includes/admin/views/order_panel_html.php:79
 msgid "Transactions on this destination tag"
-msgstr "Transaktionen auf diesem Destination Tag"
+msgstr "Transaktionen zu diesem Destination Tag"
 
 #: includes/admin/views/order_panel_html.php:85
 msgid "no delivered amount"
@@ -330,7 +330,7 @@ msgstr "%1$s sind angekommen – danke. Es fehlen noch %2$s."
 #: includes/views/ledger-direct_html.php:54
 #, php-format
 msgid "A payment of %1$s has arrived, but this order expects %2$s from the issuer named below. It cannot be credited."
-msgstr "Eine Zahlung über %1$s ist eingegangen, diese Bestellung erwartet aber %2$s des unten genannten Herausgebers. Sie kann nicht angerechnet werden."
+msgstr "Eine Zahlung über %1$s ist angekommen, diese Bestellung erwartet aber %2$s des unten genannten Herausgebers. Sie kann deshalb nicht angerechnet werden."
 
 #. translators: 1: amount still due with asset symbol
 #: includes/views/ledger-direct_html.php:60
@@ -411,7 +411,7 @@ msgstr "Ein neuer Betrag ist gerade nicht verfügbar, weil sich der Kurs im Mome
 
 #: includes/views/ledger-direct_html.php:216
 msgid "Already sent? Then do not send again – we will still recognise the payment."
-msgstr "Schon gesendet? Dann bitte nicht erneut senden – wir erkennen die Zahlung trotzdem."
+msgstr "Schon gesendet? Dann nicht erneut senden – wir erkennen die Zahlung trotzdem."
 
 #: includes/views/ledger-direct_html.php:221
 msgid "Request a new amount"
@@ -423,7 +423,7 @@ msgstr "Zu zahlen"
 
 #: includes/views/ledger-direct_html.php:228
 msgid "Still to send"
-msgstr "Noch zu zahlen"
+msgstr "Offener Betrag"
 
 #: includes/views/ledger-direct_html.php:233
 msgid "Copy amount"
@@ -449,7 +449,7 @@ msgstr "Betrag garantiert für %s Minuten"
 
 #: includes/views/ledger-direct_html.php:257
 msgid "Receiving address"
-msgstr "Empfängeradresse"
+msgstr "Empfangsadresse"
 
 #: includes/views/ledger-direct_html.php:260
 msgid "Copy address"
@@ -465,7 +465,7 @@ msgstr "Destination Tag kopieren"
 
 #: includes/views/ledger-direct_html.php:269
 msgid "Without this tag we cannot match the payment to your order."
-msgstr "Ohne diesen Tag können wir die Zahlung nicht Ihrer Bestellung zuordnen."
+msgstr "Ohne diesen Destination Tag können wir die Zahlung Ihrer Bestellung nicht zuordnen."
 
 #: includes/views/ledger-direct_html.php:273
 msgid "Token and issuer"
@@ -547,7 +547,7 @@ msgstr "gefunden"
 
 #: includes/views/ledger-direct_html.php:321
 msgid "Confirm in your wallet …"
-msgstr "Bitte in der Wallet bestätigen …"
+msgstr "Bestätigen Sie in Ihrer Wallet …"
 
 #: includes/views/ledger-direct_html.php:322
 msgid "Sent – we are checking for it."
@@ -635,7 +635,7 @@ msgstr "Wird geprüft …"
 
 #: includes/views/ledger-direct_html.php:356
 msgid "No payment found yet. A transaction usually takes only a few seconds – please check again in a moment."
-msgstr "Noch keine Zahlung gefunden. Eine Transaktion braucht meist nur wenige Sekunden – bitte prüfen Sie gleich noch einmal."
+msgstr "Noch keine Zahlung gefunden. Eine Transaktion braucht meist nur wenige Sekunden – bitte gleich noch einmal prüfen."
 
 #: includes/views/ledger-direct_html.php:363
 msgid "Payment received"
@@ -663,11 +663,11 @@ msgstr "Zurück zum Warenkorb"
 
 #: includes/views/ledger-direct_html.php:377
 msgid "Paid directly on the Xahau network, with no intermediary."
-msgstr "Direkt im Xahau-Netzwerk bezahlt, ohne Zwischenhändler."
+msgstr "Zahlung direkt im Xahau-Netzwerk, ohne Zwischenhändler."
 
 #: includes/views/ledger-direct_html.php:377
 msgid "Paid directly on the XRP Ledger, with no intermediary."
-msgstr "Direkt auf dem XRP Ledger bezahlt, ohne Zwischenhändler."
+msgstr "Zahlung direkt auf dem XRP Ledger, ohne Zwischenhändler."
 
 #: ledger-direct.php:39
 msgid "Ledger Direct requires PHP 8.2 or newer and has been disabled on this site."
@@ -687,7 +687,7 @@ msgstr "Im falschen Token bezahlt, nicht angerechnet"
 
 #: src/Presentation/OrderPanelPresenter.php:124
 msgid "Quote expired, nothing received"
-msgstr "Kurs abgelaufen, nichts eingegangen"
+msgstr "Kursgültigkeit abgelaufen, nichts eingegangen"
 
 #: src/Presentation/OrderPanelPresenter.php:125
 msgid "Waiting for payment"
