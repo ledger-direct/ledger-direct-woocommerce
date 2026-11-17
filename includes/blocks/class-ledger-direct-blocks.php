@@ -66,15 +66,18 @@ final class LedgerDirectBlocks extends AbstractPaymentMethodType {
      */
     public function get_payment_method_data() {
         $configuration = ledger_direct_get_configuration();
+        // The same list as the classic checkout: what the configuration switches on and the
+        // receiving account can take (core 0.12, INVARIANTS.md "Receiving account").
+        $offered = LedgerDirectPaymentGateway::offered_payment_types( $configuration );
         return [
             'title'       => $this->get_setting( 'title' ),
             'description' => $this->get_setting( 'description' ),
             'supports'    => array_filter( $this->gateway->supports, [ $this->gateway, 'supports' ] ),
-            'rlusd_available' => $configuration[ 'rlusd_available' ] ?? false,
-            'usdc_available' => $configuration[ 'usdc_available' ] ?? false,
-            'xah_available' => $configuration[ 'xah_available' ] ?? false,
+            'rlusd_available' => in_array( 'rlusd', $offered, true ),
+            'usdc_available' => in_array( 'usdc', $offered, true ),
+            'xah_available' => in_array( 'xah', $offered, true ),
             // The payment types the shop offers, in order; the block renders one radio per entry.
-            'payment_types' => LedgerDirectPaymentGateway::available_payment_types( $configuration ),
+            'payment_types' => $offered,
             'icons' => [
                 'xrp' => ledger_direct_get_public_url('/public/images/xrp_payment.svg'),
                 'rlusd' => ledger_direct_get_public_url('/public/images/rlusd_payment.svg'),
