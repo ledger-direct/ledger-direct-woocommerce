@@ -9,6 +9,7 @@ use Hardcastle\LedgerDirect\Core\ChainCatalog;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntentService;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
 use Hardcastle\LedgerDirect\Core\Price\PriceService;
+use Hardcastle\LedgerDirect\Core\Xrpl\AccountInspector;
 use Hardcastle\LedgerDirect\Core\Xrpl\DestinationTagService;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncService;
 use Hardcastle\LedgerDirect\Core\Xrpl\SyncThrottle;
@@ -46,6 +47,9 @@ final class ServiceFactory
     private array $paymentIntentServices = [];
     /** @var array<string, SyncService> by chain */
     private array $syncServices = [];
+
+    /** @var array<string, AccountInspector> */
+    private array $accountInspectors = [];
     /** @var array<string, SyncThrottle> by chain */
     private array $syncThrottles = [];
     private ?SettlementPolicy $settlementPolicy = null;
@@ -171,6 +175,21 @@ final class ServiceFactory
             $this->getLogger(),
             $this->getRateCache(),
             $chain
+        );
+    }
+
+    /**
+     * Whether the receiving account can take an asset (core 0.12, INVARIANTS.md "Receiving
+     * account"): the checkout asks offers(), the settings page assess(). Answers live in the
+     * rate cache's transients for five minutes, so a checkout does not ask the node each time.
+     */
+    public function getAccountInspector(string $chain = ChainCatalog::XRPL): AccountInspector
+    {
+        return $this->accountInspectors[$chain] ??= new AccountInspector(
+            $this->getXrplClient($chain),
+            $this->getLogger(),
+            $this->getRateCache(),
+            chain: $chain
         );
     }
 

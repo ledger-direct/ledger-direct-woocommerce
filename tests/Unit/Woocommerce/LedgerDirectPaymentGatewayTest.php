@@ -44,4 +44,43 @@ class LedgerDirectPaymentGatewayTest extends TestCase
     {
         $this->assertSame('ledger-direct', LedgerDirectPaymentGateway::ID);
     }
+
+    /**
+     * K3 (Documentation/Mainnet-Testing.md): a shop offered RLUSD to an account without a
+     * trustline and the customer's payment failed with tecPATH_DRY. The checkout keeps only the
+     * types the receiving account can take, each asked on its own chain.
+     */
+    public function testTheCheckoutKeepsOnlyWhatTheReceivingAccountCanTake(): void
+    {
+        $asked = [];
+        $offered = LedgerDirectPaymentGateway::filter_offered(
+            ['xrp', 'rlusd', 'usdc', 'xah'],
+            static function (string $chain, string $asset) use (&$asked): bool {
+                $asked[] = $chain . ':' . $asset;
+
+                return !in_array($asset, ['RLUSD', 'USDC'], true);
+            },
+            static fn () => null
+        );
+
+        $this->assertSame(['xrp', 'xah'], $offered);
+        $this->assertSame(['XRPL:XRP', 'XRPL:RLUSD', 'XRPL:USDC', 'XAHAU:XAH'], $asked);
+    }
+
+    public function testACheckThatBreaksKeepsTheNativeAssetsAndDropsTheTokens(): void
+    {
+        $failed = [];
+        $offered = LedgerDirectPaymentGateway::filter_offered(
+            ['xrp', 'rlusd', 'xah'],
+            static function (): bool {
+                throw new \LogicException('a bug, not an unreachable node');
+            },
+            static function (string $type) use (&$failed): void {
+                $failed[] = $type;
+            }
+        );
+
+        $this->assertSame(['xrp', 'xah'], $offered);
+        $this->assertSame(['xrp', 'rlusd', 'xah'], $failed);
+    }
 }
