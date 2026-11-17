@@ -1,0 +1,813 @@
+# Translation of LedgerDirect in French (France)
+# This file is distributed under the same license as the LedgerDirect package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Ledger Direct\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledger-direct\n"
+"POT-Creation-Date: 2026-11-17T19:42:24+00:00\n"
+"PO-Revision-Date: 2026-11-17 12:00+0100\n"
+"Last-Translator: LedgerDirect\n"
+"Language-Team: French (France)\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: ledger-direct\n"
+
+#. Plugin Name of the plugin
+#: ledger-direct.php
+msgid "Ledger Direct"
+msgstr "Ledger Direct"
+
+#. Plugin URI of the plugin
+#: ledger-direct.php
+msgid "https://github.com/ledger-direct/ledger-direct-woocommerce"
+msgstr "https://github.com/ledger-direct/ledger-direct-woocommerce"
+
+#. Description of the plugin
+#: ledger-direct.php
+msgid "A XRP Ledger integration."
+msgstr "Une intégration du XRP Ledger."
+
+#. Author of the plugin
+#: ledger-direct.php
+msgid "Alexander Busse | Hardcastle Technologies"
+msgstr "Alexander Busse | Hardcastle Technologies"
+
+#. Author URI of the plugin
+#: ledger-direct.php
+msgid "https://www.ledger-direct.com"
+msgstr "https://www.ledger-direct.com"
+
+#: includes/admin/class-ledger-direct-admin.php:18
+msgid "XRPL Network"
+msgstr "Réseau XRPL"
+
+#: includes/admin/class-ledger-direct-admin.php:19
+msgid "Choose the XRPL Network"
+msgstr "Choisissez le réseau XRPL"
+
+#: includes/admin/class-ledger-direct-admin.php:29
+msgid "Merchant Account - MAINNET"
+msgstr "Compte marchand – MAINNET"
+
+#: includes/admin/class-ledger-direct-admin.php:31
+msgid "Merchant Account address (MAINNET) - receiving account"
+msgstr "Adresse du compte marchand (MAINNET) – compte de réception"
+
+#: includes/admin/class-ledger-direct-admin.php:36
+msgid "Merchant Account - TESTNET"
+msgstr "Compte marchand – TESTNET"
+
+#: includes/admin/class-ledger-direct-admin.php:38
+msgid "Merchant Account address (TESTNET) - receiving account"
+msgstr "Adresse du compte marchand (TESTNET) – compte de réception"
+
+#: includes/admin/class-ledger-direct-admin.php:43
+msgid "RLUSD payments"
+msgstr "Paiements en RLUSD"
+
+#: includes/admin/class-ledger-direct-admin.php:45
+msgid "Enable RLUSD payments"
+msgstr "Activer les paiements en RLUSD"
+
+#: includes/admin/class-ledger-direct-admin.php:50
+msgid "USDC payments"
+msgstr "Paiements en USDC"
+
+#: includes/admin/class-ledger-direct-admin.php:52
+msgid "Enable USDC payments"
+msgstr "Activer les paiements en USDC"
+
+#: includes/admin/class-ledger-direct-admin.php:59
+msgid "Xahau"
+msgstr "Xahau"
+
+#: includes/admin/class-ledger-direct-admin.php:61
+msgid "Accept XAH on Xahau"
+msgstr "Accepter XAH sur Xahau"
+
+#: includes/admin/class-ledger-direct-admin.php:62
+msgid "Xahau is a network of its own that speaks the XRP Ledger's protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger."
+msgstr "Xahau est un réseau à part entière qui utilise le protocole du XRP Ledger : paiements en XAH, par destination tag, vers un compte de même format. Utilisez un compte qui reçoit uniquement sur Xahau, et non un compte qui reçoit aussi sur le XRP Ledger."
+
+#: includes/admin/class-ledger-direct-admin.php:67
+msgid "Xahau Network"
+msgstr "Réseau Xahau"
+
+#: includes/admin/class-ledger-direct-admin.php:68
+msgid "Choose the Xahau network"
+msgstr "Choisissez le réseau Xahau"
+
+#: includes/admin/class-ledger-direct-admin.php:78
+msgid "Xahau Account - MAINNET"
+msgstr "Compte Xahau – MAINNET"
+
+#: includes/admin/class-ledger-direct-admin.php:80
+msgid "Receiving account on the Xahau mainnet"
+msgstr "Compte de réception sur le Mainnet Xahau"
+
+#: includes/admin/class-ledger-direct-admin.php:85
+msgid "Xahau Account - TESTNET"
+msgstr "Compte Xahau – TESTNET"
+
+#: includes/admin/class-ledger-direct-admin.php:87
+msgid "Receiving account on the Xahau testnet"
+msgstr "Compte de réception sur le Testnet Xahau"
+
+#: includes/admin/class-ledger-direct-admin.php:92
+msgid "LedgerDirect Payment Page Title"
+msgstr "Titre de la page de paiement LedgerDirect"
+
+#: includes/admin/class-ledger-direct-admin.php:94
+msgid "Title for LedgerDirect Payment Page"
+msgstr "Titre affiché sur la page de paiement LedgerDirect"
+
+#: includes/admin/class-ledger-direct-admin.php:95
+msgid "LedgerDirect PaymentPage"
+msgstr "Page de paiement LedgerDirect"
+
+#: includes/admin/class-ledger-direct-admin.php:99
+msgid "XRP quote expiry"
+msgstr "Validité de la cotation"
+
+#: includes/admin/class-ledger-direct-admin.php:101
+msgid "Validity of the quote in minutes"
+msgstr "Durée de validité de la cotation, en minutes"
+
+#: includes/admin/class-ledger-direct-admin.php:106
+msgid "Payment page: logo"
+msgstr "Page de paiement : logo"
+
+#: includes/admin/class-ledger-direct-admin.php:109
+msgid "The site logo"
+msgstr "Le logo du site"
+
+#: includes/admin/class-ledger-direct-admin.php:110
+msgid "A picture from the media library"
+msgstr "Une image de la médiathèque"
+
+#: includes/admin/class-ledger-direct-admin.php:111
+msgid "No logo, the first letter of the site name"
+msgstr "Pas de logo, la première lettre du nom du site"
+
+#: includes/admin/class-ledger-direct-admin.php:114
+msgid "Shown in the header of the payment page, at most 160 by 32 pixels."
+msgstr "Affiché dans l'en-tête de la page de paiement, 160 × 32 pixels au maximum."
+
+#: includes/admin/class-ledger-direct-admin.php:118
+msgid "Payment page: picture"
+msgstr "Page de paiement : image"
+
+#: includes/admin/class-ledger-direct-admin.php:120
+msgid "The attachment ID or the URL of a picture in this site's media library. Only used with \"A picture from the media library\"."
+msgstr "L'ID de pièce jointe ou l'URL d'une image de la médiathèque de ce site. Utilisé uniquement avec « Une image de la médiathèque »."
+
+#: includes/admin/class-ledger-direct-admin.php:125
+msgid "Payment page: accent colour"
+msgstr "Page de paiement : couleur d'accent"
+
+#: includes/admin/class-ledger-direct-admin.php:127
+msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
+msgstr "Les boutons, la barre de compte à rebours et le destination tag sont affichés dans cette couleur avec un texte blanc ; elle doit donc être assez foncée (contraste 4,5:1). Par défaut #1f5eff."
+
+#: includes/admin/class-ledger-direct-admin.php:132
+msgid "Payment page: Xaman API key"
+msgstr "Page de paiement : clé API Xaman"
+
+#: includes/admin/class-ledger-direct-admin.php:134
+msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
+msgstr "La clé API publique de votre application développeur Xaman (apps.xaman.dev). Avec elle, les clients sur téléphone voient un bouton « Ouvrir dans l'application de portefeuille ». Jamais le secret API."
+
+#: includes/admin/class-ledger-direct-admin.php:139
+msgid "Payment page: WalletConnect project id"
+msgstr "Page de paiement : ID de projet WalletConnect"
+
+#: includes/admin/class-ledger-direct-admin.php:141
+msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
+msgstr "L'ID de projet de cloud.walletconnect.com, si vous souhaitez proposer des portefeuilles WalletConnect. Public, comme la clé Xaman."
+
+#. translators: 1: chain name, e.g. XRP Ledger, 2: account address, 3: network (mainnet or testnet)
+#: includes/admin/class-ledger-direct-admin.php:186
+#, php-format
+msgid "%1$s: the receiving account %2$s on the %3$s can take every asset that is switched on."
+msgstr "%1$s : le compte de réception %2$s sur le réseau %3$s peut recevoir tous les actifs activés."
+
+#. translators: 1: base reserve, e.g. 1, 2: native asset, e.g. XRP
+#: includes/admin/class-ledger-direct-admin.php:206
+#, php-format
+msgid "The account is not activated yet. A first payment of at least %1$s %2$s activates it; until then smaller orders in %2$s fail, and tokens are not offered."
+msgstr "Le compte n'est pas encore activé. Un premier paiement d'au moins %1$s %2$s l'active ; d'ici là, les commandes plus petites en %2$s échouent et les jetons ne sont pas proposés."
+
+#: includes/admin/class-ledger-direct-admin.php:208
+msgid "Deposit authorization is set on the account: only senders you authorized can pay. The payment methods stay in the checkout."
+msgstr "Deposit Authorization est activé sur le compte : seuls les expéditeurs que vous avez autorisés peuvent payer. Les moyens de paiement restent proposés au paiement."
+
+#. translators: 1: asset, e.g. RLUSD, 2: issuer address
+#: includes/admin/class-ledger-direct-admin.php:211
+#, php-format
+msgid "%1$s is not offered in the checkout: the account has no trustline to the issuer %2$s."
+msgstr "%1$s n'est pas proposé au paiement : le compte n'a pas de trustline vers l'émetteur %2$s."
+
+#. translators: 1: asset, e.g. RLUSD, 2: issuer address
+#: includes/admin/class-ledger-direct-admin.php:214
+#, php-format
+msgid "%1$s is not offered in the checkout: the issuer %2$s has not authorized the trustline."
+msgstr "%1$s n'est pas proposé au paiement : l'émetteur %2$s n'a pas autorisé la trustline."
+
+#. translators: %s: asset, e.g. RLUSD
+#: includes/admin/class-ledger-direct-admin.php:217
+#, php-format
+msgid "%s is not offered in the checkout: the trustline is frozen."
+msgstr "%s n'est pas proposé au paiement : la trustline est gelée."
+
+#. translators: %s: asset, e.g. RLUSD
+#: includes/admin/class-ledger-direct-admin.php:220
+#, php-format
+msgid "%s is not offered in the checkout: the trustline has reached its limit."
+msgstr "%s n'est pas proposé au paiement : la trustline a atteint sa limite."
+
+#. translators: 1: asset, e.g. RLUSD, 2: issuer address
+#: includes/admin/class-ledger-direct-admin.php:223
+#, php-format
+msgid "%1$s is not offered in the checkout: the issuer %2$s has frozen all its trustlines."
+msgstr "%1$s n'est pas proposé au paiement : l'émetteur %2$s a gelé toutes ses trustlines."
+
+#. translators: %s: native asset, e.g. XRP
+#: includes/admin/class-ledger-direct-admin.php:226
+#, php-format
+msgid "The ledger could not be asked just now. Until it can, tokens are not offered; %s is."
+msgstr "Le registre n'a pas pu être interrogé pour le moment. D'ici là, aucun jeton n'est proposé ; %s l'est."
+
+#: includes/admin/class-ledger-direct-admin.php:259
+#: includes/class-ledger-direct.php:158 includes/class-ledger-direct.php:159
+msgid "LedgerDirect"
+msgstr "LedgerDirect"
+
+#: includes/admin/class-ledger-direct-admin.php:280
+msgid "No payment record on this order."
+msgstr "Aucun enregistrement de paiement pour cette commande."
+
+#: includes/admin/views/order_panel_html.php:25
+msgid "Requested"
+msgstr "Demandé"
+
+#: includes/admin/views/order_panel_html.php:30
+msgid "Received"
+msgstr "Reçu"
+
+#: includes/admin/views/order_panel_html.php:36
+msgid "Still due"
+msgstr "Restant dû"
+
+#: includes/admin/views/order_panel_html.php:41
+#: includes/views/ledger-direct_html.php:334
+msgid "Rate"
+msgstr "Taux de change"
+
+#: includes/admin/views/order_panel_html.php:45
+msgid "Account"
+msgstr "Compte de réception"
+
+#: includes/admin/views/order_panel_html.php:49
+#: includes/views/ledger-direct_html.php:264
+msgid "Destination tag"
+msgstr "Destination tag"
+
+#: includes/admin/views/order_panel_html.php:54
+msgid "Issuer"
+msgstr "Émetteur"
+
+#: includes/admin/views/order_panel_html.php:60
+msgid "Quote valid until"
+msgstr "Cotation valable jusqu'au"
+
+#: includes/admin/views/order_panel_html.php:66
+#: includes/views/ledger-direct_html.php:366
+msgid "Transaction"
+msgstr "Transaction"
+
+#: includes/admin/views/order_panel_html.php:79
+msgid "Transactions on this destination tag"
+msgstr "Transactions sur ce destination tag"
+
+#: includes/admin/views/order_panel_html.php:85
+msgid "no delivered amount"
+msgstr "aucun montant livré"
+
+#: includes/admin/views/order_panel_html.php:87
+msgid "(token)"
+msgstr "(jeton)"
+
+#: includes/admin/views/order_panel_html.php:99
+msgid "Read-only. Settling is the sync's job; to accept a short payment, change the order status as for any other payment method."
+msgstr "Lecture seule. Le règlement est assuré par la synchronisation ; pour accepter un paiement insuffisant, modifiez le statut de la commande comme pour tout autre moyen de paiement."
+
+#: includes/admin/views/settings_html.php:9
+msgid "LedgerDirect for WooCommerce"
+msgstr "LedgerDirect pour WooCommerce"
+
+#: includes/class-ledger-direct-install.php:477
+msgid "Ledger Direct Payment"
+msgstr "Paiement LedgerDirect"
+
+#: includes/class-ledger-direct.php:260
+msgid "Payment gateway is not available."
+msgstr "Ce moyen de paiement n'est pas disponible."
+
+#: includes/class-ledger-direct.php:280
+msgid "An error occurred while processing your payment. Please contact support."
+msgstr "Une erreur est survenue lors du traitement de votre paiement. Veuillez contacter le service client."
+
+#. translators: 1: amount received so far with asset symbol, 2: amount still missing with asset symbol
+#: includes/views/ledger-direct_html.php:48
+#, php-format
+msgid "%1$s have arrived – thank you. %2$s are still missing."
+msgstr "%1$s sont arrivés – merci. Il manque encore %2$s."
+
+#. translators: 1: amount that arrived, 2: the token this order expects
+#: includes/views/ledger-direct_html.php:54
+#, php-format
+msgid "A payment of %1$s has arrived, but this order expects %2$s from the issuer named below. It cannot be credited."
+msgstr "Un paiement de %1$s est arrivé, mais cette commande attend des %2$s de l'émetteur indiqué ci-dessous. Il ne peut pas être crédité."
+
+#. translators: 1: amount still due with asset symbol
+#: includes/views/ledger-direct_html.php:60
+#, php-format
+msgid "Please send %1$s – or contact us about the payment you already made."
+msgstr "Veuillez envoyer %1$s – ou contactez-nous au sujet du paiement déjà effectué."
+
+#: includes/views/ledger-direct_html.php:66
+msgid "Copy"
+msgstr "Copier"
+
+#: includes/views/ledger-direct_html.php:66
+msgid "Copied"
+msgstr "Copié"
+
+#: includes/views/ledger-direct_html.php:98
+msgid "Order not found"
+msgstr "Commande introuvable"
+
+#: includes/views/ledger-direct_html.php:99
+msgid "The requested order could not be found."
+msgstr "La commande demandée est introuvable."
+
+#: includes/views/ledger-direct_html.php:101
+#: includes/views/ledger-direct_html.php:119
+msgid "Return to homepage"
+msgstr "Retour à l'accueil"
+
+#: includes/views/ledger-direct_html.php:107
+msgid "Payment not required"
+msgstr "Aucun paiement requis"
+
+#. translators: 1: order number, 2: order status label
+#: includes/views/ledger-direct_html.php:109
+#, php-format
+msgid "Order #%1$s is already %2$s."
+msgstr "La commande #%1$s a déjà le statut « %2$s »."
+
+#: includes/views/ledger-direct_html.php:111
+msgid "View Order"
+msgstr "Voir la commande"
+
+#: includes/views/ledger-direct_html.php:116
+msgid "Invalid payment method"
+msgstr "Moyen de paiement non valide"
+
+#: includes/views/ledger-direct_html.php:117
+msgid "This order was not paid with LedgerDirect."
+msgstr "Cette commande n'a pas été payée avec LedgerDirect."
+
+#: includes/views/ledger-direct_html.php:177
+msgid "Testnet – no real money"
+msgstr "Testnet – pas d'argent réel"
+
+#: includes/views/ledger-direct_html.php:179
+msgid "Order"
+msgstr "Commande"
+
+#: includes/views/ledger-direct_html.php:189
+msgid "Complete your payment"
+msgstr "Finalisez votre paiement"
+
+#: includes/views/ledger-direct_html.php:197
+msgid "Please send the rest to the same address with the same destination tag."
+msgstr "Veuillez envoyer le reste à la même adresse avec le même destination tag."
+
+#: includes/views/ledger-direct_html.php:212
+msgid "This amount is no longer valid."
+msgstr "Ce montant n'est plus valable."
+
+#: includes/views/ledger-direct_html.php:212
+msgid "The exchange rate may have moved since."
+msgstr "Le taux de change a pu évoluer depuis."
+
+#: includes/views/ledger-direct_html.php:214
+msgid "A new amount is temporarily unavailable because the price cannot be determined right now. Please try again in a moment."
+msgstr "Un nouveau montant est momentanément indisponible, car le prix ne peut pas être déterminé pour l'instant. Veuillez réessayer dans un instant."
+
+#: includes/views/ledger-direct_html.php:216
+msgid "Already sent? Then do not send again – we will still recognise the payment."
+msgstr "Déjà envoyé ? Alors n'envoyez rien de plus – nous reconnaîtrons quand même le paiement."
+
+#: includes/views/ledger-direct_html.php:221
+msgid "Request a new amount"
+msgstr "Demander un nouveau montant"
+
+#: includes/views/ledger-direct_html.php:227
+msgid "Amount to send"
+msgstr "Montant à envoyer"
+
+#: includes/views/ledger-direct_html.php:228
+msgid "Still to send"
+msgstr "Montant restant dû"
+
+#: includes/views/ledger-direct_html.php:233
+msgid "Copy amount"
+msgstr "Copier le montant"
+
+#. translators: %s: the order total in the shop currency
+#: includes/views/ledger-direct_html.php:237
+#, php-format
+msgid "equals %s"
+msgstr "correspond à %s"
+
+#. translators: 1: the requested amount, 2: the asset symbol, 3: the order total in the shop currency
+#: includes/views/ledger-direct_html.php:239
+#, php-format
+msgid "of %1$s %2$s in total (%3$s)"
+msgstr "sur %1$s %2$s au total (%3$s)"
+
+#. translators: %s: the countdown, filled in by the script
+#: includes/views/ledger-direct_html.php:247
+#, php-format
+msgid "Amount guaranteed for %s minutes"
+msgstr "Montant garanti pendant %s minutes"
+
+#: includes/views/ledger-direct_html.php:257
+msgid "Receiving address"
+msgstr "Adresse de réception"
+
+#: includes/views/ledger-direct_html.php:260
+msgid "Copy address"
+msgstr "Copier l'adresse"
+
+#: includes/views/ledger-direct_html.php:264
+msgid "Required"
+msgstr "Obligatoire"
+
+#: includes/views/ledger-direct_html.php:267
+msgid "Copy destination tag"
+msgstr "Copier le destination tag"
+
+#: includes/views/ledger-direct_html.php:269
+msgid "Without this tag we cannot match the payment to your order."
+msgstr "Sans ce destination tag, nous ne pouvons pas associer le paiement à votre commande."
+
+#: includes/views/ledger-direct_html.php:273
+msgid "Token and issuer"
+msgstr "Jeton et émetteur"
+
+#: includes/views/ledger-direct_html.php:276
+msgid "Copy issuer"
+msgstr "Copier l'émetteur"
+
+#. translators: %s: the token symbol (RLUSD, USDC)
+#: includes/views/ledger-direct_html.php:279
+#, php-format
+msgid "Only %s from exactly this issuer is credited. Your wallet needs a trust line for it."
+msgstr "Seuls les %s de cet émetteur précis sont crédités. Votre portefeuille a besoin d'une trustline pour cela."
+
+#: includes/views/ledger-direct_html.php:285
+msgid "Paying from an exchange?"
+msgstr "Vous payez depuis une plateforme d'échange ?"
+
+#: includes/views/ledger-direct_html.php:286
+msgid "The destination tag is required, and the amount must still arrive in full after the exchange's fee."
+msgstr "Le destination tag est obligatoire, et le montant doit arriver en entier après déduction des frais de la plateforme."
+
+#: includes/views/ledger-direct_html.php:290
+msgid "Pay with a wallet"
+msgstr "Payer avec un portefeuille"
+
+#: includes/views/ledger-direct_html.php:292
+msgid "Scan with a wallet app"
+msgstr "Scanner avec une application de portefeuille"
+
+#: includes/views/ledger-direct_html.php:292
+msgid "Show QR code ▾"
+msgstr "Afficher le code QR ▾"
+
+#: includes/views/ledger-direct_html.php:295
+msgid "QR code with address, destination tag and amount"
+msgstr "Code QR avec adresse, destination tag et montant"
+
+#: includes/views/ledger-direct_html.php:296
+msgid "Expired – please request a new amount"
+msgstr "Expiré – veuillez demander un nouveau montant"
+
+#: includes/views/ledger-direct_html.php:298
+msgid "Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending."
+msgstr "Scannez avec Xaman. L'adresse, le destination tag et le montant sont préremplis, et Xaman propose de passer au réseau Xahau s'il est réglé sur un autre – veuillez les vérifier avant l'envoi."
+
+#: includes/views/ledger-direct_html.php:298
+msgid "Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending."
+msgstr "Scannez avec Xaman ou un autre portefeuille XRPL. L'adresse, le destination tag et le montant sont préremplis – veuillez les vérifier avant l'envoi."
+
+#: includes/views/ledger-direct_html.php:303
+msgid "or"
+msgstr "ou"
+
+#: includes/views/ledger-direct_html.php:307
+msgid "Pay with a browser wallet"
+msgstr "Payer avec un portefeuille de navigateur"
+
+#: includes/views/ledger-direct_html.php:310
+msgid "Looking for wallets …"
+msgstr "Recherche de portefeuilles …"
+
+#: includes/views/ledger-direct_html.php:312
+msgid "No browser wallet found. Use the QR code or copy the details."
+msgstr "Aucun portefeuille de navigateur trouvé. Utilisez le code QR ou copiez les informations."
+
+#: includes/views/ledger-direct_html.php:313
+msgid "The wallet fills in the payment. You confirm it there."
+msgstr "Le portefeuille remplit le paiement. Vous le confirmez dans le portefeuille."
+
+#: includes/views/ledger-direct_html.php:317
+msgid "Open in wallet app"
+msgstr "Ouvrir dans l'application de portefeuille"
+
+#: includes/views/ledger-direct_html.php:320
+msgid "found"
+msgstr "trouvé"
+
+#: includes/views/ledger-direct_html.php:321
+msgid "Confirm in your wallet …"
+msgstr "Confirmez dans votre portefeuille …"
+
+#: includes/views/ledger-direct_html.php:322
+msgid "Sent – we are checking for it."
+msgstr "Envoyé – nous vérifions la réception."
+
+#: includes/views/ledger-direct_html.php:323
+msgid "The wallet does not respond. Is the extension installed and unlocked?"
+msgstr "Le portefeuille ne répond pas. L'extension est-elle installée et déverrouillée ?"
+
+#: includes/views/ledger-direct_html.php:324
+msgid "The connection to the wallet failed – please try again."
+msgstr "La connexion au portefeuille a échoué – veuillez réessayer."
+
+#. translators: %network% is replaced by the script with the network's name
+#: includes/views/ledger-direct_html.php:326
+msgid "Your wallet is set to another network. Please switch to %network%."
+msgstr "Votre portefeuille est réglé sur un autre réseau. Veuillez passer à %network%."
+
+#: includes/views/ledger-direct_html.php:327
+msgid "The payment through the wallet failed. Please use the QR code or copy the details."
+msgstr "Le paiement via le portefeuille a échoué. Veuillez utiliser le code QR ou copier les informations."
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/views/ledger-direct_html.php:328
+#: includes/views/ledger-direct_html.php:335
+msgid "Xahau Mainnet"
+msgstr "Xahau Mainnet"
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/views/ledger-direct_html.php:328
+#: includes/views/ledger-direct_html.php:335
+msgid "XRPL Mainnet"
+msgstr "XRPL Mainnet"
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/views/ledger-direct_html.php:329
+#: includes/views/ledger-direct_html.php:335
+msgid "Xahau Testnet"
+msgstr "Xahau Testnet"
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/views/ledger-direct_html.php:329
+#: includes/views/ledger-direct_html.php:335
+msgid "XRPL Testnet"
+msgstr "XRPL Testnet"
+
+#: includes/views/ledger-direct_html.php:333
+msgid "Order total"
+msgstr "Total de la commande"
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/views/ledger-direct_html.php:334
+#, php-format
+msgid "1 %1$s = %2$s %3$s"
+msgstr "1 %1$s = %2$s %3$s"
+
+#. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
+#: includes/views/ledger-direct_html.php:335
+msgid "Network"
+msgstr "Réseau"
+
+#: includes/views/ledger-direct_html.php:343
+msgid "Waiting for your payment. This page updates by itself."
+msgstr "En attente de votre paiement. Cette page se met à jour automatiquement."
+
+#: includes/views/ledger-direct_html.php:344
+msgid "Partial payment received. Waiting for the rest."
+msgstr "Paiement partiel reçu. En attente du reste."
+
+#: includes/views/ledger-direct_html.php:345
+msgid "Payment in the wrong token received. Waiting for the right amount."
+msgstr "Paiement reçu dans le mauvais jeton. En attente du bon montant."
+
+#: includes/views/ledger-direct_html.php:346
+msgid "A late payment of the old amount is still recognised."
+msgstr "Un paiement tardif de l'ancien montant est toujours reconnu."
+
+#: includes/views/ledger-direct_html.php:352
+msgid "Check payment now"
+msgstr "Vérifier le paiement maintenant"
+
+#: includes/views/ledger-direct_html.php:353
+msgid "Checking …"
+msgstr "Vérification …"
+
+#: includes/views/ledger-direct_html.php:356
+msgid "No payment found yet. A transaction usually takes only a few seconds – please check again in a moment."
+msgstr "Aucun paiement trouvé pour l'instant. Une transaction ne prend généralement que quelques secondes – veuillez vérifier à nouveau dans un instant."
+
+#: includes/views/ledger-direct_html.php:363
+msgid "Payment received"
+msgstr "Paiement reçu"
+
+#. translators: %s: the settled amount with asset symbol, filled in by the script
+#: includes/views/ledger-direct_html.php:365
+#, php-format
+msgid "%s have arrived."
+msgstr "%s sont arrivés."
+
+#. translators: %s: the seconds until the redirect, counted down by the script
+#: includes/views/ledger-direct_html.php:368
+#, php-format
+msgid "Continuing to your order in %s s"
+msgstr "Redirection vers votre commande dans %s s"
+
+#: includes/views/ledger-direct_html.php:369
+msgid "Continue to your order"
+msgstr "Continuer vers votre commande"
+
+#: includes/views/ledger-direct_html.php:376
+msgid "Back to cart"
+msgstr "Retour au panier"
+
+#: includes/views/ledger-direct_html.php:377
+msgid "Paid directly on the Xahau network, with no intermediary."
+msgstr "Payé directement sur le réseau Xahau, sans intermédiaire."
+
+#: includes/views/ledger-direct_html.php:377
+msgid "Paid directly on the XRP Ledger, with no intermediary."
+msgstr "Payé directement sur le XRP Ledger, sans intermédiaire."
+
+#: ledger-direct.php:39
+msgid "Ledger Direct requires PHP 8.2 or newer and has been disabled on this site."
+msgstr "Ledger Direct nécessite PHP 8.2 ou une version plus récente et a été désactivé sur ce site."
+
+#: src/Presentation/OrderPanelPresenter.php:121
+msgid "Paid"
+msgstr "Payé"
+
+#: src/Presentation/OrderPanelPresenter.php:122
+msgid "Partially paid"
+msgstr "Partiellement payé"
+
+#: src/Presentation/OrderPanelPresenter.php:123
+msgid "Paid in the wrong token, not credited"
+msgstr "Payé dans le mauvais jeton, non crédité"
+
+#: src/Presentation/OrderPanelPresenter.php:124
+msgid "Quote expired, nothing received"
+msgstr "Cotation expirée, rien reçu"
+
+#: src/Presentation/OrderPanelPresenter.php:125
+msgid "Waiting for payment"
+msgstr "En attente de paiement"
+
+#. translators: 1: amount requested, 2: asset, 3: transaction hash
+#: src/Service/OrderTransactionService.php:265
+#, php-format
+msgid "A payment arrived in another token and was not credited. The full %1$s %2$s is still due. Transaction %3$s."
+msgstr "Un paiement est arrivé dans un autre jeton et n'a pas été crédité. La totalité des %1$s %2$s reste due. Transaction %3$s."
+
+#. translators: 1: amount received, 2: asset, 3: amount requested, 4: amount still due, 5: transaction hash
+#: src/Service/OrderTransactionService.php:273
+#, php-format
+msgid "A payment arrived that does not settle the order: %1$s %2$s received of %3$s %2$s requested, %4$s %2$s still due. Transaction %5$s."
+msgstr "Un paiement est arrivé qui ne règle pas la commande : %1$s %2$s reçus sur %3$s %2$s demandés, %4$s %2$s restant dus. Transaction %5$s."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:55
+msgid "Accept payments (XRP, RLUSD, USDC) on your XRPL wallet, and XAH on Xahau"
+msgstr "Acceptez des paiements (XRP, RLUSD, USDC) sur votre portefeuille XRPL, et en XAH sur Xahau"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:56
+msgid "Pay directly on XRPL with LedgerDirect"
+msgstr "Payer directement sur le XRPL avec LedgerDirect"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:57
+msgid "Choose your preferred XRPL payment method"
+msgstr "Choisissez votre moyen de paiement XRPL préféré"
+
+#. translators: %s: the value the merchant entered
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:152
+#, php-format
+msgid "\"%s\" is not a Xahau account address. It starts with r, like an XRP Ledger address; the previous value was kept."
+msgstr "« %s » n'est pas une adresse de compte Xahau. Elle commence par r, comme une adresse du XRP Ledger ; l'ancienne valeur a été conservée."
+
+#. translators: %s: the account address
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:182
+#, php-format
+msgid "The Xahau account %s is also the XRP Ledger account on this network. The two are different accounts on different chains; use one account per chain."
+msgstr "Le compte Xahau %s est aussi le compte XRP Ledger sur ce réseau. Ce sont deux comptes distincts sur des blockchains différentes ; utilisez un compte par blockchain."
+
+#. translators: %s: the value the merchant entered
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:200
+#, php-format
+msgid "\"%s\" is not an XRPL address. An address starts with r and has 25 to 35 letters and digits; the previous value was kept."
+msgstr "« %s » n'est pas une adresse XRPL. Une adresse commence par r et compte de 25 à 35 lettres et chiffres ; l'ancienne valeur a été conservée."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:228
+msgid "The accent colour must be a hex colour such as #1f5eff."
+msgstr "La couleur d'accent doit être une couleur hexadécimale, par ex. #1f5eff."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:234
+msgid "The accent colour is too light to carry white text (contrast below 4.5:1). Choose a darker colour."
+msgstr "La couleur d'accent est trop claire pour un texte blanc (contraste inférieur à 4,5:1). Choisissez une couleur plus foncée."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:261
+msgid "The payment page picture must be an image from this site's media library, given as its attachment ID or URL."
+msgstr "L'image de la page de paiement doit provenir de la médiathèque de ce site, indiquée par son ID de pièce jointe ou son URL."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:280
+msgid "The XRPL wallet is not configured. Please contact the site administrator."
+msgstr "Le portefeuille XRPL n'est pas configuré. Veuillez contacter l'administrateur du site."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:285
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Choose payment method"
+msgstr "Choisissez le moyen de paiement"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:291
+msgid "XRP"
+msgstr "XRP"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:292
+msgid "RLUSD Stablecoin (XRPL)"
+msgstr "Stablecoin RLUSD (XRPL)"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:293
+msgid "USDC Stablecoin (XRPL)"
+msgstr "Stablecoin USDC (XRPL)"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:294
+msgid "XAH (Xahau)"
+msgstr "XAH (Xahau)"
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:422
+msgid "Please select a valid payment method."
+msgstr "Veuillez choisir un moyen de paiement valide."
+
+#: src/Woocommerce/LedgerDirectPaymentGateway.php:449
+msgid "This payment method is temporarily unavailable. Please try again or choose another payment method."
+msgstr "Ce moyen de paiement est temporairement indisponible. Veuillez réessayer ou choisir un autre moyen de paiement."
+
+#: src/Woocommerce/PaymentIncompleteStatus.php:43
+msgid "XRPL payment incomplete"
+msgstr "Paiement XRPL incomplet"
+
+#. translators: %s: number of orders
+#: src/Woocommerce/PaymentIncompleteStatus.php:55
+#, php-format
+msgid "XRPL payment incomplete <span class=\"count\">(%s)</span>"
+msgid_plural "XRPL payment incomplete <span class=\"count\">(%s)</span>"
+msgstr[0] "Paiement XRPL incomplet <span class=\"count\">(%s)</span>"
+msgstr[1] "Paiement XRPL incomplet <span class=\"count\">(%s)</span>"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "LedgerDirect Payments"
+msgstr "Paiements LedgerDirect"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with XRP"
+msgstr "Payer en XRP"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with RLUSD"
+msgstr "Payer en RLUSD"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with USDC"
+msgstr "Payer en USDC"
+
+#: includes/assets/js/frontend/blocks.js:1
+msgid "Pay with XAH (Xahau)"
+msgstr "Payer en XAH (Xahau)"

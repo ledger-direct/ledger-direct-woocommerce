@@ -40,14 +40,14 @@ class LedgerDirectAdmin
                 'desc_tip'    => true
             ],
             ConfigurationService::CONFIG_KEY_IS_RLUSD_ENABLED => [
-                'title'       => __("Enable RLUSD payments title", 'ledger-direct'),
+                'title'       => __('RLUSD payments', 'ledger-direct'),
                 'type'        => 'checkbox',
                 'label'       => __('Enable RLUSD payments', 'ledger-direct'),
                 'default'     => 'no',
                 'desc_tip'    => true
             ],
             ConfigurationService::CONFIG_KEY_IS_USDC_ENABLED => [
-                'title'       => __("Enable USDC payments title", 'ledger-direct'),
+                'title'       => __('USDC payments', 'ledger-direct'),
                 'type'        => 'checkbox',
                 'label'       => __('Enable USDC payments', 'ledger-direct'),
                 'default'     => 'no',
@@ -92,7 +92,7 @@ class LedgerDirectAdmin
                 'title'       => __("LedgerDirect Payment Page Title", 'ledger-direct'),
                 'type'        => 'text',
                 'description' => __('Title for LedgerDirect Payment Page', 'ledger-direct'),
-                'default'     => 'LedgerDirect PaymentPage',
+                'default'     => __('LedgerDirect PaymentPage', 'ledger-direct'),
                 'desc_tip'    => true
             ],
             ConfigurationService::CONFIG_KEY_EXPIRY => [

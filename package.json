@@ -18,8 +18,9 @@
   "scripts": {
     "start": "wp-scripts start",
     "build": "wp-scripts build",
-    "i18n": "npm run i18n:pot && npm run i18n:json",
-    "i18n:pot": "wp i18n make-pot . languages/ledger-direct.pot --exclude=vendor,node_modules,tests,.build,bin,scripts,resources,languages",
+    "i18n": "npm run i18n:pot && npm run i18n:mo && npm run i18n:json",
+    "i18n:pot": "wp i18n make-pot . languages/ledger-direct.pot --domain=ledger-direct --exclude=vendor,node_modules,tests,.build,bin,scripts,resources,languages,dev,docs,public/js/ledger-direct-payment-ui",
+    "i18n:mo": "wp i18n make-mo languages",
     "i18n:json": "wp i18n make-json languages --no-purge",
     "packages-update": "wp-scripts packages-update",
     "check-engines": "wp-scripts check-engines"

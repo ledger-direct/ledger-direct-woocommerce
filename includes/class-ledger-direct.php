@@ -110,7 +110,8 @@ class LedgerDirect
         add_action( 'woocommerce_checkout_create_order', [$this, 'before_checkout_create_order'], 20, 2 );
         add_filter( 'template_include', [$this, 'render_payment_page'] );
 
-        add_action( 'plugins_loaded', [$this, 'load_translations'] );
+        // At init, the earliest WordPress allows (6.7 flags translations loaded before it as too early).
+        add_action( 'init', [$this, 'load_translations'], 0 );
         // The payment page's assets are enqueued by render_payment_page() alone: no other page needs them.
 
         add_filter('query_vars', [$this, 'add_query_vars']);
@@ -477,16 +478,15 @@ class LedgerDirect
 
 
     /**
-     * Load translations - obsolete, kept for compatibility
+     * Registers the translations bundled in languages/. Just-in-time loading only looks in
+     * wp-content/languages/, so without this the bundled catalogues are never read; a language
+     * pack from translate.wordpress.org, where one exists, still takes precedence.
      *
      * @return void
      */
     public function load_translations(): void {
-        // load_plugin_textdomain(
-        //    'ledger-direct',
-        //    false,
-        //    dirname(dirname(plugin_basename( __FILE__ ))) . '/languages/'
-        // );
+        // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- the plugin ships its own catalogues for six languages
+        load_plugin_textdomain('ledger-direct', false, dirname(plugin_basename(LEDGER_DIRECT_PLUGIN_FILE_PATH . 'ledger-direct.php')) . '/languages');
     }
 
     /**
