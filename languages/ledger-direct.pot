@@ -39,111 +39,111 @@ msgstr ""
 msgid "https://www.ledger-direct.com"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:15
+#: includes/admin/class-ledger-direct-admin.php:18
 msgid "XRPL Network"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:16
+#: includes/admin/class-ledger-direct-admin.php:19
 msgid "Choose the XRPL Network"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:26
+#: includes/admin/class-ledger-direct-admin.php:29
 msgid "Merchant Account - MAINNET"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:28
+#: includes/admin/class-ledger-direct-admin.php:31
 msgid "Merchant Account address (MAINNET) - receiving account"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:33
+#: includes/admin/class-ledger-direct-admin.php:36
 msgid "Merchant Account - TESTNET"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:35
+#: includes/admin/class-ledger-direct-admin.php:38
 msgid "Merchant Account address (TESTNET) - receiving account"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:40
+#: includes/admin/class-ledger-direct-admin.php:43
 msgid "Enable RLUSD payments title"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:42
+#: includes/admin/class-ledger-direct-admin.php:43
 msgid "Enable RLUSD payments"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:47
+#: includes/admin/class-ledger-direct-admin.php:50
 msgid "Enable USDC payments title"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:49
+#: includes/admin/class-ledger-direct-admin.php:50
 msgid "Enable USDC payments"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:54
+#: includes/admin/class-ledger-direct-admin.php:92
 msgid "LedgerDirect Payment Page Title"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:56
+#: includes/admin/class-ledger-direct-admin.php:94
 msgid "Title for LedgerDirect Payment Page"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:61
+#: includes/admin/class-ledger-direct-admin.php:99
 msgid "XRP quote expiry"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:63
+#: includes/admin/class-ledger-direct-admin.php:101
 msgid "Validity of the quote in minutes"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:68
+#: includes/admin/class-ledger-direct-admin.php:106
 msgid "Payment page: logo"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:71
+#: includes/admin/class-ledger-direct-admin.php:109
 msgid "The site logo"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:72
+#: includes/admin/class-ledger-direct-admin.php:110
 msgid "A picture from the media library"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:73
+#: includes/admin/class-ledger-direct-admin.php:111
 msgid "No logo, the first letter of the site name"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:76
+#: includes/admin/class-ledger-direct-admin.php:114
 msgid "Shown in the header of the payment page, at most 160 by 32 pixels."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:80
+#: includes/admin/class-ledger-direct-admin.php:118
 msgid "Payment page: picture"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:82
+#: includes/admin/class-ledger-direct-admin.php:120
 msgid "The attachment ID or the URL of a picture in this site's media library. Only used with \"A picture from the media library\"."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:87
+#: includes/admin/class-ledger-direct-admin.php:125
 msgid "Payment page: accent colour"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:89
+#: includes/admin/class-ledger-direct-admin.php:127
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:94
+#: includes/admin/class-ledger-direct-admin.php:132
 msgid "Payment page: Xaman API key"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:96
+#: includes/admin/class-ledger-direct-admin.php:134
 msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:101
+#: includes/admin/class-ledger-direct-admin.php:139
 msgid "Payment page: WalletConnect project id"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:103
+#: includes/admin/class-ledger-direct-admin.php:141
 msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
 msgstr ""
 
@@ -153,7 +153,7 @@ msgstr ""
 msgid "LedgerDirect"
 msgstr ""
 
-#: includes/admin/class-ledger-direct-admin.php:162
+#: includes/admin/class-ledger-direct-admin.php:280
 msgid "No payment record on this order."
 msgstr ""
 
@@ -664,4 +664,56 @@ msgstr ""
 
 #: includes/assets/js/frontend/blocks.js:1
 msgid "Pay with XRP"
+msgstr ""
+
+#. translators: 1: chain name, e.g. XRP Ledger, 2: account address, 3: network (mainnet or testnet)
+#: includes/admin/class-ledger-direct-admin.php:186
+#, php-format
+msgid "%1$s: the receiving account %2$s on the %3$s can take every asset that is switched on."
+msgstr ""
+
+#. translators: 1: base reserve, e.g. 1, 2: native asset, e.g. XRP
+#: includes/admin/class-ledger-direct-admin.php:206
+#, php-format
+msgid "The account is not activated yet. A first payment of at least %1$s %2$s activates it; until then smaller orders in %2$s fail, and tokens are not offered."
+msgstr ""
+
+#: includes/admin/class-ledger-direct-admin.php:208
+msgid "Deposit authorization is set on the account: only senders you authorized can pay. The payment methods stay in the checkout."
+msgstr ""
+
+#. translators: 1: asset, e.g. RLUSD, 2: issuer address
+#: includes/admin/class-ledger-direct-admin.php:211
+#, php-format
+msgid "%1$s is not offered in the checkout: the account has no trustline to the issuer %2$s."
+msgstr ""
+
+#. translators: 1: asset, e.g. RLUSD, 2: issuer address
+#: includes/admin/class-ledger-direct-admin.php:214
+#, php-format
+msgid "%1$s is not offered in the checkout: the issuer %2$s has not authorized the trustline."
+msgstr ""
+
+#. translators: %s: asset, e.g. RLUSD
+#: includes/admin/class-ledger-direct-admin.php:217
+#, php-format
+msgid "%s is not offered in the checkout: the trustline is frozen."
+msgstr ""
+
+#. translators: %s: asset, e.g. RLUSD
+#: includes/admin/class-ledger-direct-admin.php:220
+#, php-format
+msgid "%s is not offered in the checkout: the trustline has reached its limit."
+msgstr ""
+
+#. translators: 1: asset, e.g. RLUSD, 2: issuer address
+#: includes/admin/class-ledger-direct-admin.php:223
+#, php-format
+msgid "%1$s is not offered in the checkout: the issuer %2$s has frozen all its trustlines."
+msgstr ""
+
+#. translators: %s: native asset, e.g. XRP
+#: includes/admin/class-ledger-direct-admin.php:226
+#, php-format
+msgid "The ledger could not be asked just now. Until it can, tokens are not offered; %s is."
 msgstr ""

@@ -294,7 +294,7 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
             self::XAH_PAYMENT_ID => __('XAH (Xahau)', 'ledger-direct'),
         ];
         $first = true;
-        foreach (self::available_payment_types($config) as $type) {
+        foreach (self::offered_payment_types($config) as $type) {
             echo '<label>';
             echo '<input type="radio" name="ledger_direct_payment_type" value="' . esc_attr($type) . '"' . ($first ? ' checked' : '') . '> ';
             echo wp_kses($icon($type), self::ICON_HTML);
@@ -339,12 +339,86 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
         return $types;
     }
 
+    /** Each payment type's chain and asset, as the core's catalogue names them. */
+    private const CHAIN_AND_ASSET = [
+        self::XRP_PAYMENT_ID => ['XRPL', 'XRP'],
+        self::RLUSD_PAYMENT_ID => ['XRPL', 'RLUSD'],
+        self::USDC_PAYMENT_ID => ['XRPL', 'USDC'],
+        self::XAH_PAYMENT_ID => ['XAHAU', 'XAH'],
+    ];
+
+    /**
+     * The payment types the checkout offers: those the configuration switches on
+     * (available_payment_types()) that the receiving account can also take — the core's
+     * AccountInspector::offers() (INVARIANTS.md, "Receiving account"). A token without a
+     * trustline is left out, so no order exists that nobody can pay; the settings page says
+     * what is missing. The amount is not known when the methods are listed: an unactivated
+     * account keeps XRP, and the settings page warns.
+     *
+     * @param array<string, mixed> $config ledger_direct_get_configuration()
+     * @return string[] 'xrp' | 'rlusd' | 'usdc' | 'xah'
+     */
+    public static function offered_payment_types(array $config): array
+    {
+        $services = ServiceFactory::getInstance();
+        $provider = $services->getConfigProvider();
+
+        return self::filter_offered(
+            self::available_payment_types($config),
+            static fn (string $chain, string $asset): bool => $services->getAccountInspector($chain)->offers($provider->getDestinationAccount($chain), $asset, $provider->getNetwork($chain)),
+            static fn (string $type, \Throwable $exception) => $services->getLogger()->error('LedgerDirect: checking the receiving account failed', ['type' => $type, 'exception' => $exception->getMessage()])
+        );
+    }
+
+    /**
+     * The rule of offered_payment_types(), without the services: keeps the types `$offers`
+     * accepts for their chain and asset. `$offers` does not throw for an unreachable node;
+     * should it throw anyway (a bug), the rule for an unreachable node applies — tokens out,
+     * the native asset stays — and `$failed` is told.
+     *
+     * @param string[] $types
+     * @param callable(string, string): bool $offers chain, asset
+     * @param callable(string, \Throwable): mixed $failed type, exception
+     * @return string[]
+     */
+    public static function filter_offered(array $types, callable $offers, callable $failed): array
+    {
+        return array_values(array_filter($types, static function (string $type) use ($offers, $failed): bool {
+            [$chain, $asset] = self::CHAIN_AND_ASSET[$type];
+            try {
+                return $offers($chain, $asset);
+            } catch (\Throwable $exception) {
+                $failed($type, $exception);
+
+                return ChainCatalog::chain($chain)->nativeAsset === $asset;
+            }
+        }));
+    }
+
+    /**
+     * WooCommerce's own checks, and at least one payment type the receiving account can
+     * take: a gateway with nothing to choose is not shown.
+     */
+    public function is_available(): bool
+    {
+        if (!parent::is_available()) {
+            return false;
+        }
+
+        // Only where a cart is being checked out; the admin lists every gateway.
+        if (is_admin() && !wp_doing_ajax()) {
+            return true;
+        }
+
+        return self::offered_payment_types(ledger_direct_get_configuration()) !== [];
+    }
+
     public function validate_fields(): bool
     {
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the checkout nonce before calling this gateway method.
         $payment_type = isset($_POST['ledger_direct_payment_type']) ? sanitize_text_field(wp_unslash($_POST['ledger_direct_payment_type'])) : 'xrp';
 
-        if (!in_array($payment_type, self::available_payment_types(ledger_direct_get_configuration()), true)) {
+        if (!in_array($payment_type, self::offered_payment_types(ledger_direct_get_configuration()), true)) {
             wc_add_notice(__('Please select a valid payment method.', 'ledger-direct'), 'error');
             return false;
         }
