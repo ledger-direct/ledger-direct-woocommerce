@@ -52,9 +52,9 @@ class LedgerDirectPaymentGateway extends WC_Payment_Gateway
     {
         $this->id = self::ID;
         $this->method_title = 'LedgerDirect';
-        $this->method_description = 'Accept payments (XRP, RLUSD, USDC) on your XRPL wallet, and XAH on Xahau';
+        $this->method_description = __('Accept payments (XRP, RLUSD, USDC) on your XRPL wallet, and XAH on Xahau', 'ledger-direct');
         $this->title = esc_html__('Pay directly on XRPL with LedgerDirect', 'ledger-direct');
-        $this->description = 'Choose your preferred XRPL payment method';
+        $this->description = __('Choose your preferred XRPL payment method', 'ledger-direct');
         $this->icon = ledger_direct_get_public_url('/public/images/checkout.png');
 
         $config = ledger_direct_get_configuration();

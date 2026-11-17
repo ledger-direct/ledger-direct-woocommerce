@@ -331,8 +331,7 @@ if ($ld_error !== null) {
 
                         <dl class="ld-details">
                             <dt><?php esc_html_e('Order total', 'ledger-direct'); ?></dt><dd><?php echo esc_html($v['fiat_display']); ?></dd>
-                            <?php /* translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency */ ?>
-                            <dt><?php esc_html_e('Rate', 'ledger-direct'); ?></dt><dd><?php echo esc_html(sprintf(__('1 %1$s = %2$s %3$s', 'ledger-direct'), $asset, $v['rate_display'], $v['shop_currency'])); ?></dd>
+                            <dt><?php esc_html_e('Rate', 'ledger-direct'); ?></dt><dd><?php /* translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency */ echo esc_html(sprintf(__('1 %1$s = %2$s %3$s', 'ledger-direct'), $asset, $v['rate_display'], $v['shop_currency'])); ?></dd>
                             <dt><?php esc_html_e('Network', 'ledger-direct'); ?></dt><dd><?php echo esc_html($isXahau ? ($v['is_testnet'] ? __('Xahau Testnet', 'ledger-direct') : __('Xahau Mainnet', 'ledger-direct')) : ($v['is_testnet'] ? __('XRPL Testnet', 'ledger-direct') : __('XRPL Mainnet', 'ledger-direct'))); ?></dd>
                         </dl>
                     </aside>

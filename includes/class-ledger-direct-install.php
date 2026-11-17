@@ -474,7 +474,7 @@ class LedgerDirectInstall {
         $pages = [
             'ledger-direct-payment' => [
                 'name'    => 'ledger-direct-payment',
-                'title'   => 'Ledger Direct Payment',
+                'title'   => __('Ledger Direct Payment', 'ledger-direct'),
                 'content' => '',
             ]
         ];

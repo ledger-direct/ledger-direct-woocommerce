@@ -30,6 +30,11 @@ require_once "{$_tests_dir}/includes/functions.php";
  */
 function _manually_load_plugin() {
     require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
+    // CI links the checkout into wp-content/plugins/ledger-direct. Registered like WordPress does for
+    // an active plugin, so plugin_basename() and the bundled translations resolve as in a shop.
+    if ( file_exists( WP_PLUGIN_DIR . '/ledger-direct/ledger-direct.php' ) ) {
+        wp_register_plugin_realpath( WP_PLUGIN_DIR . '/ledger-direct/ledger-direct.php' );
+    }
     require dirname( dirname( __FILE__ ) ) . '/ledger-direct.php';
 }
 
