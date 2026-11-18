@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, xahau
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -71,6 +71,14 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.7.0 =
+* Core 0.12.0: the checkout offers only what the receiving account can take, in the classic and the block checkout. A token the account cannot receive (no trust line, frozen, full) is not offered, so no order exists that nobody can pay. An account that is not activated yet keeps the native asset, and the settings page warns.
+* The settings page shows what each chain's saved receiving account lacks, above the settings, which stay as they are.
+* The bundled translations are loaded. Before, customer pages were English even in German shops unless a WordPress.org language pack was installed.
+* Every text in six languages: English, German, French, Dutch, Spanish and European Portuguese. French, Dutch, Spanish and Portuguese are new, also for the block checkout. The terms follow the LedgerDirect glossary (German: "Herausgeber" for issuer, "Destination Tag", "an der Kasse").
+* The gateway's description, the default payment page title and the title of the page created on activation are translated; they were English.
+* The order panel names a native amount with the order's chain: XAH for a Xahau order. It printed XRP for every chain.
 
 = 1.6.0 =
 * Core 0.11.3: the payment request in the QR code and behind the Xaman button now names its network on the XRP Ledger too, as it already did on Xahau. Before, Xaman paid on whichever network the wallet had open, so an XRP payment scanned with a Xahau account opened a XAH payment of the same amount.
