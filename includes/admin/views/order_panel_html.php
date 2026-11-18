@@ -84,7 +84,7 @@ $ld_asset = (string) $ld_panel['asset'];
             <?php if ($ld_tx['delivered'] === null) { ?>
                 <?php esc_html_e('no delivered amount', 'ledger-direct'); ?>
             <?php } else { ?>
-                <?php echo esc_html($ld_tx['delivered'] . ' ' . ($ld_tx['is_issued'] ? __('(token)', 'ledger-direct') : 'XRP')); ?>
+                <?php echo esc_html($ld_tx['delivered'] . ' ' . ($ld_tx['native_asset'] ?? __('(token)', 'ledger-direct'))); ?>
             <?php } ?>
             ·
             <?php if ($ld_tx['explorer_url'] !== null) { ?>

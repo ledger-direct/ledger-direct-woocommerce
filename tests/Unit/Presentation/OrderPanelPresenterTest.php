@@ -65,6 +65,8 @@ final class OrderPanelPresenterTest extends TestCase
         self::assertSame('XAHAU', $panel['chain']);
         self::assertSame('https://explorer.xahau-test.net/tx/', $panel['explorer']);
         self::assertSame('https://explorer.xahau-test.net/tx/HASH-XAH', $panel['transactions'][0]['explorer_url']);
+        self::assertSame('109.89011', $panel['transactions'][0]['delivered']);
+        self::assertSame('XAH', $panel['transactions'][0]['native_asset']);
     }
 
     public function testAShortPaymentShowsWhatArrivedAndTheShortfallWithTheTransactions(): void
@@ -83,7 +85,7 @@ final class OrderPanelPresenterTest extends TestCase
         self::assertSame('50', $panel['shortfall']);
         self::assertSame('HASH-HALF', $panel['hash']);
         self::assertSame('150', $panel['transactions'][0]['delivered']);
-        self::assertFalse($panel['transactions'][0]['is_issued']);
+        self::assertSame('XRP', $panel['transactions'][0]['native_asset']);
         self::assertSame('2025-05-08 06:13:20', $panel['transactions'][0]['date']);
         self::assertSame('https://testnet.xrpl.org/transactions/HASH-HALF', $panel['transactions'][0]['explorer_url']);
         self::assertNull($panel['transactions'][1]['delivered']);
