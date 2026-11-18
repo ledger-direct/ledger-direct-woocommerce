@@ -40,6 +40,18 @@ const settled = () => page.waitForFunction(() => {
   const button = document.querySelector('.wc-block-components-checkout-place-order-button');
   return !busy && button && !button.disabled && !button.classList.contains('wc-block-components-button--loading');
 }, { timeout: 30000 });
+// A button below the fold: scroll it to the middle of the window and wait until the page stands
+// still, then click. Puppeteer 25 clicks while its own scroll is still under way, and the click
+// lands where the button was before (the place-order button in a 1000-pixel window).
+const clickInView = async (selector) => {
+  const handle = await page.waitForSelector(selector, { visible: true, timeout: 30000 });
+  await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+  await page.waitForFunction(() => new Promise((resolve) => {
+    const y = window.scrollY;
+    setTimeout(() => resolve(window.scrollY === y), 150);
+  }), { timeout: 10000, polling: 50 });
+  await handle.click();
+};
 
 await step('1-home', async () => {
   await page.goto(`${BASE}/`, { waitUntil: 'networkidle0', timeout: 60000 });
@@ -76,7 +88,7 @@ await step('4-payment-method', async () => {
   console.log('      assets offered:', assets.join(' | '));
   const radio = `input[name="ledger_direct_payment_type"][value="${ASSET}"]`;
   await page.waitForSelector(radio, { visible: true, timeout: 30000 });
-  await page.click(radio);
+  await clickInView(radio);
   await settled();
   await pause(1000);
 });
@@ -84,7 +96,7 @@ await step('5-place-order', async () => {
   await settled();
   await Promise.all([
     page.waitForNavigation({ timeout: 60000 }),
-    page.click('.wc-block-components-checkout-place-order-button'),
+    clickInView('.wc-block-components-checkout-place-order-button'),
   ]);
   await page.waitForFunction(() => location.pathname.includes('/ledger-direct-payment/'), { timeout: 60000 });
   await page.waitForSelector('[data-ld-page][data-ld-state]', { timeout: 30000 });
