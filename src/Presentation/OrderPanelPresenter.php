@@ -2,6 +2,7 @@
 
 namespace Hardcastle\LedgerDirect\Presentation;
 
+use Hardcastle\LedgerDirect\Core\ChainCatalog;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentIntent;
 use Hardcastle\LedgerDirect\Core\Payment\PaymentStatus;
 use Hardcastle\LedgerDirect\Core\Payment\SettlementPolicy;
@@ -36,7 +37,7 @@ final class OrderPanelPresenter
      *   amount_requested: string, amount_paid: string|null, shortfall: string|null,
      *   rate: string, pairing: string, destination_account: string, destination_tag: string,
      *   issuer: string|null, expiry: int|null, hash: string|null, ctid: string|null, explorer: string|null,
-     *   transactions: list<array{hash: string, delivered: string|null, is_issued: bool, date: string, explorer_url: string|null}>
+     *   transactions: list<array{hash: string, delivered: string|null, native_asset: string|null, date: string, explorer_url: string|null}>
      * }
      */
     public static function present(PaymentIntent $intent, SettlementPolicy $policy, array $transactions = []): array
@@ -47,7 +48,7 @@ final class OrderPanelPresenter
 
         $rows = [];
         foreach ($transactions as $transaction) {
-            $rows[] = self::presentTransaction($transaction, $explorer);
+            $rows[] = self::presentTransaction($transaction, $intent->chain, $explorer);
         }
 
         return [
@@ -74,9 +75,9 @@ final class OrderPanelPresenter
     }
 
     /**
-     * @return array{hash: string, delivered: string|null, is_issued: bool, date: string, explorer_url: string|null}
+     * @return array{hash: string, delivered: string|null, native_asset: string|null, date: string, explorer_url: string|null}
      */
-    private static function presentTransaction(XrplTransaction $transaction, ?string $explorer): array
+    private static function presentTransaction(XrplTransaction $transaction, string $chain, ?string $explorer): array
     {
         try {
             $delivered = $transaction->getDeliveredAmount();
@@ -87,9 +88,10 @@ final class OrderPanelPresenter
         return [
             'hash' => $transaction->hash,
             'delivered' => self::plainAmount($delivered),
-            // Issued currencies carry their code as a 40-hex string on the
-            // ledger; the merchant reads the asset from the request above.
-            'is_issued' => is_array($delivered),
+            // A native amount is named with the chain's own asset (XAH on
+            // Xahau). Issued currencies carry their code as a 40-hex string
+            // on the ledger; the merchant reads the asset from the request above.
+            'native_asset' => $delivered === null || is_array($delivered) ? null : ChainCatalog::chain($chain)->nativeAsset,
             'date' => gmdate('Y-m-d H:i:s', self::RIPPLE_EPOCH_OFFSET + $transaction->date),
             'explorer_url' => $explorer === null ? null : $explorer . $transaction->hash,
         ];
