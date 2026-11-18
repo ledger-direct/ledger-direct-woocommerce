@@ -1,7 +1,7 @@
 === Ledger Direct ===
 Contributors: ledgerdirect, alexanderbuzz
 Tags: xrpl, xrp, rlusd, usdc, xahau
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
@@ -71,6 +71,9 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.7.1 =
+* The release build of 1.7.0 refused the plugin: the receiving-account notices on the settings page named two classes of the bundled core where the build does not prefix them. They are now built where it does. 1.7.0 never reached WordPress.org; its changes come with this release.
 
 = 1.7.0 =
 * Core 0.12.0: the checkout offers only what the receiving account can take, in the classic and the block checkout. A token the account cannot receive (no trust line, frozen, full) is not offered, so no order exists that nobody can pay. An account that is not activated yet keeps the native asset, and the settings page warns.
