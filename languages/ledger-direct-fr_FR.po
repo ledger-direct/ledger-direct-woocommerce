@@ -1,17 +1,15 @@
-# Translation of LedgerDirect in French (France)
-# This file is distributed under the same license as the LedgerDirect package.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ledger Direct\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledger-direct\n"
-"POT-Creation-Date: 2026-11-17T19:42:24+00:00\n"
-"PO-Revision-Date: 2026-11-17 12:00+0100\n"
 "Last-Translator: LedgerDirect\n"
 "Language-Team: French (France)\n"
-"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-17T19:42:24+00:00\n"
+"PO-Revision-Date: 2026-11-17 12:00+0100\n"
+"Language: fr_FR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Domain: ledger-direct\n"
 
@@ -40,212 +38,213 @@ msgstr "Alexander Busse | Hardcastle Technologies"
 msgid "https://www.ledger-direct.com"
 msgstr "https://www.ledger-direct.com"
 
-#: includes/admin/class-ledger-direct-admin.php:18
+#: includes/admin/class-ledger-direct-admin.php:17
 msgid "XRPL Network"
 msgstr "Réseau XRPL"
 
-#: includes/admin/class-ledger-direct-admin.php:19
+#: includes/admin/class-ledger-direct-admin.php:18
 msgid "Choose the XRPL Network"
 msgstr "Choisissez le réseau XRPL"
 
-#: includes/admin/class-ledger-direct-admin.php:29
+#: includes/admin/class-ledger-direct-admin.php:28
 msgid "Merchant Account - MAINNET"
 msgstr "Compte marchand – MAINNET"
 
-#: includes/admin/class-ledger-direct-admin.php:31
+#: includes/admin/class-ledger-direct-admin.php:30
 msgid "Merchant Account address (MAINNET) - receiving account"
 msgstr "Adresse du compte marchand (MAINNET) – compte de réception"
 
-#: includes/admin/class-ledger-direct-admin.php:36
+#: includes/admin/class-ledger-direct-admin.php:35
 msgid "Merchant Account - TESTNET"
 msgstr "Compte marchand – TESTNET"
 
-#: includes/admin/class-ledger-direct-admin.php:38
+#: includes/admin/class-ledger-direct-admin.php:37
 msgid "Merchant Account address (TESTNET) - receiving account"
 msgstr "Adresse du compte marchand (TESTNET) – compte de réception"
 
-#: includes/admin/class-ledger-direct-admin.php:43
+#: includes/admin/class-ledger-direct-admin.php:42
 msgid "RLUSD payments"
 msgstr "Paiements en RLUSD"
 
-#: includes/admin/class-ledger-direct-admin.php:45
+#: includes/admin/class-ledger-direct-admin.php:44
 msgid "Enable RLUSD payments"
 msgstr "Activer les paiements en RLUSD"
 
-#: includes/admin/class-ledger-direct-admin.php:50
+#: includes/admin/class-ledger-direct-admin.php:49
 msgid "USDC payments"
 msgstr "Paiements en USDC"
 
-#: includes/admin/class-ledger-direct-admin.php:52
+#: includes/admin/class-ledger-direct-admin.php:51
 msgid "Enable USDC payments"
 msgstr "Activer les paiements en USDC"
 
-#: includes/admin/class-ledger-direct-admin.php:59
+#: includes/admin/class-ledger-direct-admin.php:58
 msgid "Xahau"
 msgstr "Xahau"
 
-#: includes/admin/class-ledger-direct-admin.php:61
+#: includes/admin/class-ledger-direct-admin.php:60
 msgid "Accept XAH on Xahau"
 msgstr "Accepter XAH sur Xahau"
 
-#: includes/admin/class-ledger-direct-admin.php:62
+#: includes/admin/class-ledger-direct-admin.php:61
 msgid "Xahau is a network of its own that speaks the XRP Ledger's protocol: payments in XAH, by destination tag, to an account of the same form. Use an account that receives on Xahau alone, not one that also receives on the XRP Ledger."
 msgstr "Xahau est un réseau à part entière qui utilise le protocole du XRP Ledger : paiements en XAH, par destination tag, vers un compte de même format. Utilisez un compte qui reçoit uniquement sur Xahau, et non un compte qui reçoit aussi sur le XRP Ledger."
 
-#: includes/admin/class-ledger-direct-admin.php:67
+#: includes/admin/class-ledger-direct-admin.php:66
 msgid "Xahau Network"
 msgstr "Réseau Xahau"
 
-#: includes/admin/class-ledger-direct-admin.php:68
+#: includes/admin/class-ledger-direct-admin.php:67
 msgid "Choose the Xahau network"
 msgstr "Choisissez le réseau Xahau"
 
-#: includes/admin/class-ledger-direct-admin.php:78
+#: includes/admin/class-ledger-direct-admin.php:77
 msgid "Xahau Account - MAINNET"
 msgstr "Compte Xahau – MAINNET"
 
-#: includes/admin/class-ledger-direct-admin.php:80
+#: includes/admin/class-ledger-direct-admin.php:79
 msgid "Receiving account on the Xahau mainnet"
 msgstr "Compte de réception sur le Mainnet Xahau"
 
-#: includes/admin/class-ledger-direct-admin.php:85
+#: includes/admin/class-ledger-direct-admin.php:84
 msgid "Xahau Account - TESTNET"
 msgstr "Compte Xahau – TESTNET"
 
-#: includes/admin/class-ledger-direct-admin.php:87
+#: includes/admin/class-ledger-direct-admin.php:86
 msgid "Receiving account on the Xahau testnet"
 msgstr "Compte de réception sur le Testnet Xahau"
 
-#: includes/admin/class-ledger-direct-admin.php:92
+#: includes/admin/class-ledger-direct-admin.php:91
 msgid "LedgerDirect Payment Page Title"
 msgstr "Titre de la page de paiement LedgerDirect"
 
-#: includes/admin/class-ledger-direct-admin.php:94
+#: includes/admin/class-ledger-direct-admin.php:93
 msgid "Title for LedgerDirect Payment Page"
 msgstr "Titre affiché sur la page de paiement LedgerDirect"
 
-#: includes/admin/class-ledger-direct-admin.php:95
+#: includes/admin/class-ledger-direct-admin.php:94
 msgid "LedgerDirect PaymentPage"
 msgstr "Page de paiement LedgerDirect"
 
-#: includes/admin/class-ledger-direct-admin.php:99
+#: includes/admin/class-ledger-direct-admin.php:98
 msgid "XRP quote expiry"
 msgstr "Validité de la cotation"
 
-#: includes/admin/class-ledger-direct-admin.php:101
+#: includes/admin/class-ledger-direct-admin.php:100
 msgid "Validity of the quote in minutes"
 msgstr "Durée de validité de la cotation, en minutes"
 
-#: includes/admin/class-ledger-direct-admin.php:106
+#: includes/admin/class-ledger-direct-admin.php:105
 msgid "Payment page: logo"
 msgstr "Page de paiement : logo"
 
-#: includes/admin/class-ledger-direct-admin.php:109
+#: includes/admin/class-ledger-direct-admin.php:108
 msgid "The site logo"
 msgstr "Le logo du site"
 
-#: includes/admin/class-ledger-direct-admin.php:110
+#: includes/admin/class-ledger-direct-admin.php:109
 msgid "A picture from the media library"
 msgstr "Une image de la médiathèque"
 
-#: includes/admin/class-ledger-direct-admin.php:111
+#: includes/admin/class-ledger-direct-admin.php:110
 msgid "No logo, the first letter of the site name"
 msgstr "Pas de logo, la première lettre du nom du site"
 
-#: includes/admin/class-ledger-direct-admin.php:114
+#: includes/admin/class-ledger-direct-admin.php:113
 msgid "Shown in the header of the payment page, at most 160 by 32 pixels."
 msgstr "Affiché dans l'en-tête de la page de paiement, 160 × 32 pixels au maximum."
 
-#: includes/admin/class-ledger-direct-admin.php:118
+#: includes/admin/class-ledger-direct-admin.php:117
 msgid "Payment page: picture"
 msgstr "Page de paiement : image"
 
-#: includes/admin/class-ledger-direct-admin.php:120
+#: includes/admin/class-ledger-direct-admin.php:119
 msgid "The attachment ID or the URL of a picture in this site's media library. Only used with \"A picture from the media library\"."
 msgstr "L'ID de pièce jointe ou l'URL d'une image de la médiathèque de ce site. Utilisé uniquement avec « Une image de la médiathèque »."
 
-#: includes/admin/class-ledger-direct-admin.php:125
+#: includes/admin/class-ledger-direct-admin.php:124
 msgid "Payment page: accent colour"
 msgstr "Page de paiement : couleur d'accent"
 
-#: includes/admin/class-ledger-direct-admin.php:127
+#: includes/admin/class-ledger-direct-admin.php:126
 msgid "Buttons, the countdown bar and the destination tag are drawn in this colour with white text on it, so it has to be dark enough (contrast 4.5:1). Default #1f5eff."
 msgstr "Les boutons, la barre de compte à rebours et le destination tag sont affichés dans cette couleur avec un texte blanc ; elle doit donc être assez foncée (contraste 4,5:1). Par défaut #1f5eff."
 
-#: includes/admin/class-ledger-direct-admin.php:132
+#: includes/admin/class-ledger-direct-admin.php:131
 msgid "Payment page: Xaman API key"
 msgstr "Page de paiement : clé API Xaman"
 
-#: includes/admin/class-ledger-direct-admin.php:134
+#: includes/admin/class-ledger-direct-admin.php:133
 msgid "The public API key of your Xaman developer app (apps.xaman.dev). With it, customers on a phone get an \"Open in wallet app\" button. Never the API secret."
 msgstr "La clé API publique de votre application développeur Xaman (apps.xaman.dev). Avec elle, les clients sur téléphone voient un bouton « Ouvrir dans l'application de portefeuille ». Jamais le secret API."
 
-#: includes/admin/class-ledger-direct-admin.php:139
+#: includes/admin/class-ledger-direct-admin.php:138
 msgid "Payment page: WalletConnect project id"
 msgstr "Page de paiement : ID de projet WalletConnect"
 
-#: includes/admin/class-ledger-direct-admin.php:141
+#: includes/admin/class-ledger-direct-admin.php:140
 msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
 msgstr "L'ID de projet de cloud.walletconnect.com, si vous souhaitez proposer des portefeuilles WalletConnect. Public, comme la clé Xaman."
 
 #. translators: 1: chain name, e.g. XRP Ledger, 2: account address, 3: network (mainnet or testnet)
-#: includes/admin/class-ledger-direct-admin.php:186
+#: src/Presentation/AccountCheckNotices.php:53
 #, php-format
 msgid "%1$s: the receiving account %2$s on the %3$s can take every asset that is switched on."
 msgstr "%1$s : le compte de réception %2$s sur le réseau %3$s peut recevoir tous les actifs activés."
 
 #. translators: 1: base reserve, e.g. 1, 2: native asset, e.g. XRP
-#: includes/admin/class-ledger-direct-admin.php:206
+#: src/Presentation/AccountCheckNotices.php:74
 #, php-format
 msgid "The account is not activated yet. A first payment of at least %1$s %2$s activates it; until then smaller orders in %2$s fail, and tokens are not offered."
 msgstr "Le compte n'est pas encore activé. Un premier paiement d'au moins %1$s %2$s l'active ; d'ici là, les commandes plus petites en %2$s échouent et les jetons ne sont pas proposés."
 
-#: includes/admin/class-ledger-direct-admin.php:208
+#: src/Presentation/AccountCheckNotices.php:76
 msgid "Deposit authorization is set on the account: only senders you authorized can pay. The payment methods stay in the checkout."
 msgstr "Deposit Authorization est activé sur le compte : seuls les expéditeurs que vous avez autorisés peuvent payer. Les moyens de paiement restent proposés au paiement."
 
 #. translators: 1: asset, e.g. RLUSD, 2: issuer address
-#: includes/admin/class-ledger-direct-admin.php:211
+#: src/Presentation/AccountCheckNotices.php:79
 #, php-format
 msgid "%1$s is not offered in the checkout: the account has no trustline to the issuer %2$s."
 msgstr "%1$s n'est pas proposé au paiement : le compte n'a pas de trustline vers l'émetteur %2$s."
 
 #. translators: 1: asset, e.g. RLUSD, 2: issuer address
-#: includes/admin/class-ledger-direct-admin.php:214
+#: src/Presentation/AccountCheckNotices.php:82
 #, php-format
 msgid "%1$s is not offered in the checkout: the issuer %2$s has not authorized the trustline."
 msgstr "%1$s n'est pas proposé au paiement : l'émetteur %2$s n'a pas autorisé la trustline."
 
 #. translators: %s: asset, e.g. RLUSD
-#: includes/admin/class-ledger-direct-admin.php:217
+#: src/Presentation/AccountCheckNotices.php:85
 #, php-format
 msgid "%s is not offered in the checkout: the trustline is frozen."
 msgstr "%s n'est pas proposé au paiement : la trustline est gelée."
 
 #. translators: %s: asset, e.g. RLUSD
-#: includes/admin/class-ledger-direct-admin.php:220
+#: src/Presentation/AccountCheckNotices.php:88
 #, php-format
 msgid "%s is not offered in the checkout: the trustline has reached its limit."
 msgstr "%s n'est pas proposé au paiement : la trustline a atteint sa limite."
 
 #. translators: 1: asset, e.g. RLUSD, 2: issuer address
-#: includes/admin/class-ledger-direct-admin.php:223
+#: src/Presentation/AccountCheckNotices.php:91
 #, php-format
 msgid "%1$s is not offered in the checkout: the issuer %2$s has frozen all its trustlines."
 msgstr "%1$s n'est pas proposé au paiement : l'émetteur %2$s a gelé toutes ses trustlines."
 
 #. translators: %s: native asset, e.g. XRP
-#: includes/admin/class-ledger-direct-admin.php:226
+#: src/Presentation/AccountCheckNotices.php:94
 #, php-format
 msgid "The ledger could not be asked just now. Until it can, tokens are not offered; %s is."
 msgstr "Le registre n'a pas pu être interrogé pour le moment. D'ici là, aucun jeton n'est proposé ; %s l'est."
 
-#: includes/admin/class-ledger-direct-admin.php:259
-#: includes/class-ledger-direct.php:158 includes/class-ledger-direct.php:159
+#: includes/admin/class-ledger-direct-admin.php:189
+#: includes/class-ledger-direct.php:158
+#: includes/class-ledger-direct.php:159
 msgid "LedgerDirect"
 msgstr "LedgerDirect"
 
-#: includes/admin/class-ledger-direct-admin.php:280
+#: includes/admin/class-ledger-direct-admin.php:210
 msgid "No payment record on this order."
 msgstr "Aucun enregistrement de paiement pour cette commande."
 
@@ -673,23 +672,23 @@ msgstr "Payé directement sur le XRP Ledger, sans intermédiaire."
 msgid "Ledger Direct requires PHP 8.2 or newer and has been disabled on this site."
 msgstr "Ledger Direct nécessite PHP 8.2 ou une version plus récente et a été désactivé sur ce site."
 
-#: src/Presentation/OrderPanelPresenter.php:121
+#: src/Presentation/OrderPanelPresenter.php:123
 msgid "Paid"
 msgstr "Payé"
 
-#: src/Presentation/OrderPanelPresenter.php:122
+#: src/Presentation/OrderPanelPresenter.php:124
 msgid "Partially paid"
 msgstr "Partiellement payé"
 
-#: src/Presentation/OrderPanelPresenter.php:123
+#: src/Presentation/OrderPanelPresenter.php:125
 msgid "Paid in the wrong token, not credited"
 msgstr "Payé dans le mauvais jeton, non crédité"
 
-#: src/Presentation/OrderPanelPresenter.php:124
+#: src/Presentation/OrderPanelPresenter.php:126
 msgid "Quote expired, nothing received"
 msgstr "Cotation expirée, rien reçu"
 
-#: src/Presentation/OrderPanelPresenter.php:125
+#: src/Presentation/OrderPanelPresenter.php:127
 msgid "Waiting for payment"
 msgstr "En attente de paiement"
 
