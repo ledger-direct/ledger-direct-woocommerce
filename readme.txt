@@ -72,6 +72,9 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 
 == Changelog ==
 
+= Unreleased =
+* The payment page uses @ledger-direct/payment-ui 0.4.2 instead of 0.4.0, which fixes partial payments in the wallet flow: after a partial payment, a wallet button opens the payment for the rest instead of reloading the page again and again; an XRP payment whose amount changed while the wallet was connecting reloads instead of signing the old amount; a page that turned paid or expired meanwhile signs nothing; and an older status answer arriving late no longer turns the page back. After payment the page goes to the order confirmation once. The wallet script and the stylesheet are unchanged.
+
 = 1.7.1 =
 * The release build of 1.7.0 refused the plugin: the receiving-account notices on the settings page named two classes of the bundled core where the build does not prefix them. They are now built where it does. 1.7.0 never reached WordPress.org; its changes come with this release.
 
