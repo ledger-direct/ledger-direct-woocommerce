@@ -261,7 +261,7 @@ msgid "Still due"
 msgstr "Pendiente"
 
 #: includes/admin/views/order_panel_html.php:41
-#: includes/views/ledger-direct_html.php:334
+#: includes/views/ledger-direct_html.php:350
 msgid "Rate"
 msgstr "Tipo de cambio"
 
@@ -270,7 +270,8 @@ msgid "Account"
 msgstr "Cuenta receptora"
 
 #: includes/admin/views/order_panel_html.php:49
-#: includes/views/ledger-direct_html.php:264
+#: includes/views/ledger-direct_html.php:266
+#: includes/views/ledger-direct_html.php:290
 msgid "Destination tag"
 msgstr "Destination tag"
 
@@ -283,7 +284,7 @@ msgid "Quote valid until"
 msgstr "Cotización válida hasta"
 
 #: includes/admin/views/order_panel_html.php:66
-#: includes/views/ledger-direct_html.php:366
+#: includes/views/ledger-direct_html.php:382
 msgid "Transaction"
 msgstr "Transacción"
 
@@ -337,334 +338,327 @@ msgstr "Ha llegado un pago de %1$s, pero este pedido espera %2$s del emisor indi
 msgid "Please send %1$s – or contact us about the payment you already made."
 msgstr "Envíe %1$s – o póngase en contacto con nosotros por el pago ya realizado."
 
-#: includes/views/ledger-direct_html.php:66
+#: includes/views/ledger-direct_html.php:67
 msgid "Copy"
 msgstr "Copiar"
 
-#: includes/views/ledger-direct_html.php:66
+#: includes/views/ledger-direct_html.php:67
 msgid "Copied"
 msgstr "Copiado"
 
-#: includes/views/ledger-direct_html.php:98
+#: includes/views/ledger-direct_html.php:99
 msgid "Order not found"
 msgstr "Pedido no encontrado"
 
-#: includes/views/ledger-direct_html.php:99
+#: includes/views/ledger-direct_html.php:100
 msgid "The requested order could not be found."
 msgstr "No se ha encontrado el pedido solicitado."
 
-#: includes/views/ledger-direct_html.php:101
-#: includes/views/ledger-direct_html.php:119
+#: includes/views/ledger-direct_html.php:102
+#: includes/views/ledger-direct_html.php:120
 msgid "Return to homepage"
 msgstr "Volver a la página de inicio"
 
-#: includes/views/ledger-direct_html.php:107
+#: includes/views/ledger-direct_html.php:108
 msgid "Payment not required"
 msgstr "No se requiere ningún pago"
 
 #. translators: 1: order number, 2: order status label
-#: includes/views/ledger-direct_html.php:109
+#: includes/views/ledger-direct_html.php:110
 #, php-format
 msgid "Order #%1$s is already %2$s."
 msgstr "El pedido #%1$s ya tiene el estado «%2$s»."
 
-#: includes/views/ledger-direct_html.php:111
+#: includes/views/ledger-direct_html.php:112
 msgid "View Order"
 msgstr "Ver pedido"
 
-#: includes/views/ledger-direct_html.php:116
+#: includes/views/ledger-direct_html.php:117
 msgid "Invalid payment method"
 msgstr "Método de pago no válido"
 
-#: includes/views/ledger-direct_html.php:117
+#: includes/views/ledger-direct_html.php:118
 msgid "This order was not paid with LedgerDirect."
 msgstr "Este pedido no se ha pagado con LedgerDirect."
 
-#: includes/views/ledger-direct_html.php:177
+#: includes/views/ledger-direct_html.php:178
 msgid "Testnet – no real money"
 msgstr "Testnet – sin dinero real"
 
-#: includes/views/ledger-direct_html.php:179
+#: includes/views/ledger-direct_html.php:180
 msgid "Order"
 msgstr "Pedido"
 
-#: includes/views/ledger-direct_html.php:189
+#: includes/views/ledger-direct_html.php:190
 msgid "Complete your payment"
 msgstr "Complete su pago"
 
-#: includes/views/ledger-direct_html.php:197
+#: includes/views/ledger-direct_html.php:198
 msgid "Please send the rest to the same address with the same destination tag."
 msgstr "Envíe el resto a la misma dirección con el mismo destination tag."
 
-#: includes/views/ledger-direct_html.php:212
+#: includes/views/ledger-direct_html.php:213
 msgid "This amount is no longer valid."
 msgstr "Este importe ya no es válido."
 
-#: includes/views/ledger-direct_html.php:212
+#: includes/views/ledger-direct_html.php:213
 msgid "The exchange rate may have moved since."
 msgstr "El tipo de cambio puede haber variado desde entonces."
 
-#: includes/views/ledger-direct_html.php:214
+#: includes/views/ledger-direct_html.php:215
 msgid "A new amount is temporarily unavailable because the price cannot be determined right now. Please try again in a moment."
 msgstr "Un nuevo importe no está disponible temporalmente porque ahora mismo no se puede determinar el precio. Vuelva a intentarlo en un momento."
 
-#: includes/views/ledger-direct_html.php:216
+#: includes/views/ledger-direct_html.php:217
 msgid "Already sent? Then do not send again – we will still recognise the payment."
 msgstr "¿Ya lo ha enviado? Entonces no lo envíe de nuevo – reconoceremos el pago igualmente."
 
-#: includes/views/ledger-direct_html.php:221
+#: includes/views/ledger-direct_html.php:222
 msgid "Request a new amount"
 msgstr "Solicitar un nuevo importe"
 
-#: includes/views/ledger-direct_html.php:227
+#: includes/views/ledger-direct_html.php:228
 msgid "Amount to send"
 msgstr "Importe a enviar"
 
-#: includes/views/ledger-direct_html.php:228
+#: includes/views/ledger-direct_html.php:229
 msgid "Still to send"
 msgstr "Importe pendiente"
 
-#: includes/views/ledger-direct_html.php:233
+#: includes/views/ledger-direct_html.php:234
 msgid "Copy amount"
 msgstr "Copiar el importe"
 
 #. translators: %s: the order total in the shop currency
-#: includes/views/ledger-direct_html.php:237
+#: includes/views/ledger-direct_html.php:238
 #, php-format
 msgid "equals %s"
 msgstr "equivale a %s"
 
 #. translators: 1: the requested amount, 2: the asset symbol, 3: the order total in the shop currency
-#: includes/views/ledger-direct_html.php:239
+#: includes/views/ledger-direct_html.php:240
 #, php-format
 msgid "of %1$s %2$s in total (%3$s)"
 msgstr "de %1$s %2$s en total (%3$s)"
 
 #. translators: %s: the countdown, filled in by the script
-#: includes/views/ledger-direct_html.php:247
+#: includes/views/ledger-direct_html.php:248
 #, php-format
 msgid "Amount guaranteed for %s minutes"
 msgstr "Importe garantizado durante %s minutos"
 
-#: includes/views/ledger-direct_html.php:257
+#: includes/views/ledger-direct_html.php:258
+#: includes/views/ledger-direct_html.php:289
 msgid "Receiving address"
 msgstr "Dirección de recepción"
 
-#: includes/views/ledger-direct_html.php:260
+#: includes/views/ledger-direct_html.php:262
 msgid "Copy address"
 msgstr "Copiar la dirección"
 
-#: includes/views/ledger-direct_html.php:264
+#: includes/views/ledger-direct_html.php:266
 msgid "Required"
 msgstr "Obligatorio"
 
-#: includes/views/ledger-direct_html.php:267
+#: includes/views/ledger-direct_html.php:270
 msgid "Copy destination tag"
 msgstr "Copiar el destination tag"
 
-#: includes/views/ledger-direct_html.php:269
+#: includes/views/ledger-direct_html.php:272
 msgid "Without this tag we cannot match the payment to your order."
 msgstr "Sin este destination tag no podemos asignar el pago a su pedido."
 
-#: includes/views/ledger-direct_html.php:273
+#: includes/views/ledger-direct_html.php:276
 msgid "Token and issuer"
 msgstr "Token y emisor"
 
-#: includes/views/ledger-direct_html.php:276
+#: includes/views/ledger-direct_html.php:279
 msgid "Copy issuer"
 msgstr "Copiar el emisor"
 
 #. translators: %s: the token symbol (RLUSD, USDC)
-#: includes/views/ledger-direct_html.php:279
+#: includes/views/ledger-direct_html.php:282
 #, php-format
 msgid "Only %s from exactly this issuer is credited. Your wallet needs a trust line for it."
 msgstr "Solo se abonan %s de exactamente este emisor. Su cartera necesita una trustline para ello."
 
-#: includes/views/ledger-direct_html.php:285
+#: includes/views/ledger-direct_html.php:297
 msgid "Paying from an exchange?"
 msgstr "¿Paga desde una plataforma de intercambio?"
 
-#: includes/views/ledger-direct_html.php:286
+#: includes/views/ledger-direct_html.php:298
 msgid "The destination tag is required, and the amount must still arrive in full after the exchange's fee."
 msgstr "El destination tag es obligatorio y el importe debe llegar completo después de la comisión de la plataforma."
 
-#: includes/views/ledger-direct_html.php:290
+#: includes/views/ledger-direct_html.php:302
 msgid "Pay with a wallet"
 msgstr "Pagar con una cartera"
 
-#: includes/views/ledger-direct_html.php:292
-msgid "Scan with a wallet app"
-msgstr "Escanear con una aplicación de cartera"
-
-#: includes/views/ledger-direct_html.php:292
+#: includes/views/ledger-direct_html.php:304
 msgid "Show QR code ▾"
 msgstr "Mostrar código QR ▾"
 
-#: includes/views/ledger-direct_html.php:295
+#: includes/views/ledger-direct_html.php:307
 msgid "QR code with address, destination tag and amount"
 msgstr "Código QR con dirección, destination tag e importe"
 
-#: includes/views/ledger-direct_html.php:296
+#: includes/views/ledger-direct_html.php:308
 msgid "Expired – please request a new amount"
 msgstr "Caducado – solicite un nuevo importe"
 
-#: includes/views/ledger-direct_html.php:298
+#: includes/views/ledger-direct_html.php:310
 msgid "Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending."
 msgstr "Escanee con Xaman. La dirección, el destination tag y el importe se rellenan solos, y Xaman ofrece cambiar a la red Xahau si está configurado en otra – compruébelos antes de enviar."
 
-#: includes/views/ledger-direct_html.php:298
-msgid "Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending."
-msgstr "Escanee con Xaman u otra cartera XRPL. La dirección, el destination tag y el importe se rellenan solos – compruébelos antes de enviar."
-
-#: includes/views/ledger-direct_html.php:303
+#: includes/views/ledger-direct_html.php:315
 msgid "or"
 msgstr "o"
 
-#: includes/views/ledger-direct_html.php:307
+#: includes/views/ledger-direct_html.php:323
 msgid "Pay with a browser wallet"
 msgstr "Pagar con una cartera de navegador"
 
-#: includes/views/ledger-direct_html.php:310
+#: includes/views/ledger-direct_html.php:326
 msgid "Looking for wallets …"
 msgstr "Buscando carteras …"
 
-#: includes/views/ledger-direct_html.php:312
+#: includes/views/ledger-direct_html.php:328
 msgid "No browser wallet found. Use the QR code or copy the details."
 msgstr "No se ha encontrado ninguna cartera de navegador. Use el código QR o copie los datos."
 
-#: includes/views/ledger-direct_html.php:313
+#: includes/views/ledger-direct_html.php:329
 msgid "The wallet fills in the payment. You confirm it there."
 msgstr "La cartera rellena el pago. Usted lo confirma allí."
 
-#: includes/views/ledger-direct_html.php:317
+#: includes/views/ledger-direct_html.php:333
 msgid "Open in wallet app"
 msgstr "Abrir en la aplicación de cartera"
 
-#: includes/views/ledger-direct_html.php:320
+#: includes/views/ledger-direct_html.php:336
 msgid "found"
 msgstr "encontrada"
 
-#: includes/views/ledger-direct_html.php:321
+#: includes/views/ledger-direct_html.php:337
 msgid "Confirm in your wallet …"
 msgstr "Confirme en su cartera …"
 
-#: includes/views/ledger-direct_html.php:322
+#: includes/views/ledger-direct_html.php:338
 msgid "Sent – we are checking for it."
 msgstr "Enviado – estamos comprobando la recepción."
 
-#: includes/views/ledger-direct_html.php:323
+#: includes/views/ledger-direct_html.php:339
 msgid "The wallet does not respond. Is the extension installed and unlocked?"
 msgstr "La cartera no responde. ¿Está la extensión instalada y desbloqueada?"
 
-#: includes/views/ledger-direct_html.php:324
+#: includes/views/ledger-direct_html.php:340
 msgid "The connection to the wallet failed – please try again."
 msgstr "La conexión con la cartera ha fallado – vuelva a intentarlo."
 
 #. translators: %network% is replaced by the script with the network's name
-#: includes/views/ledger-direct_html.php:326
+#: includes/views/ledger-direct_html.php:342
 msgid "Your wallet is set to another network. Please switch to %network%."
 msgstr "Su cartera está configurada en otra red. Cambie a %network%."
 
-#: includes/views/ledger-direct_html.php:327
+#: includes/views/ledger-direct_html.php:343
 msgid "The payment through the wallet failed. Please use the QR code or copy the details."
 msgstr "El pago a través de la cartera ha fallado. Use el código QR o copie los datos."
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:328
-#: includes/views/ledger-direct_html.php:335
+#: includes/views/ledger-direct_html.php:344
+#: includes/views/ledger-direct_html.php:351
 msgid "Xahau Mainnet"
 msgstr "Xahau Mainnet"
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:328
-#: includes/views/ledger-direct_html.php:335
+#: includes/views/ledger-direct_html.php:344
+#: includes/views/ledger-direct_html.php:351
 msgid "XRPL Mainnet"
 msgstr "XRPL Mainnet"
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:329
-#: includes/views/ledger-direct_html.php:335
+#: includes/views/ledger-direct_html.php:345
+#: includes/views/ledger-direct_html.php:351
 msgid "Xahau Testnet"
 msgstr "Xahau Testnet"
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:329
-#: includes/views/ledger-direct_html.php:335
+#: includes/views/ledger-direct_html.php:345
+#: includes/views/ledger-direct_html.php:351
 msgid "XRPL Testnet"
 msgstr "XRPL Testnet"
 
-#: includes/views/ledger-direct_html.php:333
+#: includes/views/ledger-direct_html.php:349
 msgid "Order total"
 msgstr "Total del pedido"
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:334
+#: includes/views/ledger-direct_html.php:350
 #, php-format
 msgid "1 %1$s = %2$s %3$s"
 msgstr "1 %1$s = %2$s %3$s"
 
 #. translators: 1: the asset symbol, 2: the exchange rate, 3: the shop currency
-#: includes/views/ledger-direct_html.php:335
+#: includes/views/ledger-direct_html.php:351
 msgid "Network"
 msgstr "Red"
 
-#: includes/views/ledger-direct_html.php:343
+#: includes/views/ledger-direct_html.php:359
 msgid "Waiting for your payment. This page updates by itself."
 msgstr "Esperando su pago. Esta página se actualiza sola."
 
-#: includes/views/ledger-direct_html.php:344
+#: includes/views/ledger-direct_html.php:360
 msgid "Partial payment received. Waiting for the rest."
 msgstr "Pago parcial recibido. Esperando el resto."
 
-#: includes/views/ledger-direct_html.php:345
+#: includes/views/ledger-direct_html.php:361
 msgid "Payment in the wrong token received. Waiting for the right amount."
 msgstr "Pago recibido en el token equivocado. Esperando el importe correcto."
 
-#: includes/views/ledger-direct_html.php:346
+#: includes/views/ledger-direct_html.php:362
 msgid "A late payment of the old amount is still recognised."
 msgstr "Un pago tardío del importe anterior se sigue reconociendo."
 
-#: includes/views/ledger-direct_html.php:352
+#: includes/views/ledger-direct_html.php:368
 msgid "Check payment now"
 msgstr "Comprobar el pago ahora"
 
-#: includes/views/ledger-direct_html.php:353
+#: includes/views/ledger-direct_html.php:369
 msgid "Checking …"
 msgstr "Comprobando …"
 
-#: includes/views/ledger-direct_html.php:356
+#: includes/views/ledger-direct_html.php:372
 msgid "No payment found yet. A transaction usually takes only a few seconds – please check again in a moment."
 msgstr "Todavía no se ha encontrado ningún pago. Una transacción suele tardar solo unos segundos – vuelva a comprobarlo en un momento."
 
-#: includes/views/ledger-direct_html.php:363
+#: includes/views/ledger-direct_html.php:379
 msgid "Payment received"
 msgstr "Pago recibido"
 
 #. translators: %s: the settled amount with asset symbol, filled in by the script
-#: includes/views/ledger-direct_html.php:365
+#: includes/views/ledger-direct_html.php:381
 #, php-format
 msgid "%s have arrived."
 msgstr "Han llegado %s."
 
 #. translators: %s: the seconds until the redirect, counted down by the script
-#: includes/views/ledger-direct_html.php:368
+#: includes/views/ledger-direct_html.php:384
 #, php-format
 msgid "Continuing to your order in %s s"
 msgstr "Continuando a su pedido en %s s"
 
-#: includes/views/ledger-direct_html.php:369
+#: includes/views/ledger-direct_html.php:385
 msgid "Continue to your order"
 msgstr "Continuar a su pedido"
 
-#: includes/views/ledger-direct_html.php:376
+#: includes/views/ledger-direct_html.php:392
 msgid "Back to cart"
 msgstr "Volver al carrito"
 
-#: includes/views/ledger-direct_html.php:377
+#: includes/views/ledger-direct_html.php:393
 msgid "Paid directly on the Xahau network, with no intermediary."
 msgstr "Pagado directamente en la red Xahau, sin intermediarios."
 
-#: includes/views/ledger-direct_html.php:377
+#: includes/views/ledger-direct_html.php:393
 msgid "Paid directly on the XRP Ledger, with no intermediary."
 msgstr "Pagado directamente en el XRP Ledger, sin intermediarios."
 
@@ -810,3 +804,27 @@ msgstr "Pagar con USDC"
 #: includes/assets/js/frontend/blocks.js:1
 msgid "Pay with XAH (Xahau)"
 msgstr "Pagar con XAH (Xahau)"
+
+#: includes/views/ledger-direct_html.php:261
+msgid "Show the address as a QR code"
+msgstr "Mostrar la dirección como código QR"
+
+#: includes/views/ledger-direct_html.php:269
+msgid "Show the destination tag as a QR code"
+msgstr "Mostrar el destination tag como código QR"
+
+#: includes/views/ledger-direct_html.php:293
+msgid "Close"
+msgstr "Cerrar"
+
+#: includes/views/ledger-direct_html.php:304
+msgid "Scan with Xaman"
+msgstr "Escanear con Xaman"
+
+#: includes/views/ledger-direct_html.php:310
+msgid "Scan with Xaman. Address, destination tag and amount are filled in – please check them before sending."
+msgstr "Escanee con Xaman. La dirección, el destination tag y el importe se rellenan solos – compruébelos antes de enviar."
+
+#: includes/views/ledger-direct_html.php:318
+msgid "Pay with a wallet app (WalletConnect)"
+msgstr "Pagar con una aplicación de cartera (WalletConnect)"

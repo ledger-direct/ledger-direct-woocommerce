@@ -62,6 +62,7 @@ if (is_array($v)) {
     );
 }
 $copy_icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+$qr_icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>';
 $info_icon = '<svg class="ld-notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
 $copy_labels = '<span data-ld-copy-label="idle">' . esc_html__('Copy', 'ledger-direct') . '</span><span data-ld-copy-label="done" hidden>' . esc_html__('Copied', 'ledger-direct') . '</span>';
 $allowed_icon_html = [
@@ -160,7 +161,7 @@ if ($ld_error !== null) {
      <?php if ($v['amount_drops'] !== null) { ?>data-ld-amount-drops="<?php echo esc_attr($v['amount_drops']); ?>"<?php } ?>
      <?php if ($v['currency'] !== null) { ?>data-ld-currency="<?php echo esc_attr($v['currency']); ?>" data-ld-issuer="<?php echo esc_attr((string) $v['issuer']); ?>"<?php } ?>
      <?php if ($v['xaman_key'] !== '') { ?>data-ld-xaman-key="<?php echo esc_attr($v['xaman_key']); ?>"<?php } ?>
-     <?php if ($v['wc_project'] !== '') { ?>data-ld-wc-project="<?php echo esc_attr($v['wc_project']); ?>"<?php } ?>
+     <?php if ($v['wc_project'] !== '') { ?>data-ld-wc-project="<?php echo esc_attr($v['wc_project']); ?>" data-ld-shop-name="<?php echo esc_attr($v['store_name']); ?>"<?php if (get_site_icon_url() !== '') { ?> data-ld-shop-icon="<?php echo esc_url(get_site_icon_url(192)); ?>"<?php } ?><?php } ?>
      style="--ld-accent: <?php echo esc_attr($v['accent']); ?>">
 
     <header class="ld-top">
@@ -257,6 +258,7 @@ if ($ld_error !== null) {
                                 <div class="ld-field-label"><span class="ld-step-no">1</span> <?php esc_html_e('Receiving address', 'ledger-direct'); ?></div>
                                 <div class="ld-field">
                                     <span class="ld-field-value" data-ld-account data-value="<?php echo esc_attr($v['destination_account']); ?>"><?php echo esc_html($v['destination_account']); ?></span>
+                                    <button type="button" class="ld-copy ld-copy--qr" data-ld-qr-show="account" aria-label="<?php esc_attr_e('Show the address as a QR code', 'ledger-direct'); ?>"><?php echo wp_kses($qr_icon, $allowed_icon_html); ?></button>
                                     <button type="button" class="ld-copy" data-copy="account" aria-label="<?php esc_attr_e('Copy address', 'ledger-direct'); ?>"><?php echo wp_kses($copy_icon . $copy_labels, $allowed_icon_html); ?></button>
                                 </div>
                             </li>
@@ -264,6 +266,7 @@ if ($ld_error !== null) {
                                 <div class="ld-field-label"><span class="ld-step-no">2</span> <?php esc_html_e('Destination tag', 'ledger-direct'); ?> <span class="ld-badge ld-badge--required"><?php esc_html_e('Required', 'ledger-direct'); ?></span></div>
                                 <div class="ld-field ld-field--key">
                                     <span class="ld-field-value" data-ld-tag data-value="<?php echo (int) $v['destination_tag']; ?>"><?php echo (int) $v['destination_tag']; ?></span>
+                                    <button type="button" class="ld-copy ld-copy--qr" data-ld-qr-show="tag" aria-label="<?php esc_attr_e('Show the destination tag as a QR code', 'ledger-direct'); ?>"><?php echo wp_kses($qr_icon, $allowed_icon_html); ?></button>
                                     <button type="button" class="ld-copy" data-copy="tag" aria-label="<?php esc_attr_e('Copy destination tag', 'ledger-direct'); ?>"><?php echo wp_kses($copy_icon . $copy_labels, $allowed_icon_html); ?></button>
                                 </div>
                                 <p class="ld-hint"><?php esc_html_e('Without this tag we cannot match the payment to your order.', 'ledger-direct'); ?></p>
@@ -281,6 +284,15 @@ if ($ld_error !== null) {
                             <?php } ?>
                         </ol>
 
+                        <?php /* One field as a QR code, opened by the buttons next to the copy buttons. */ ?>
+                        <dialog class="ld-qr-dialog" data-ld-qr-dialog>
+                            <p class="ld-qr-dialog-title" data-ld-qr-dialog-title="account"><?php esc_html_e('Receiving address', 'ledger-direct'); ?></p>
+                            <p class="ld-qr-dialog-title" data-ld-qr-dialog-title="tag" hidden><?php esc_html_e('Destination tag', 'ledger-direct'); ?></p>
+                            <div class="ld-qr-box"><div data-ld-qr-dialog-code></div></div>
+                            <code class="ld-qr-dialog-value" data-ld-qr-dialog-value></code>
+                            <button type="button" class="ld-btn ld-btn--secondary ld-btn--block" data-ld-qr-dialog-close><?php esc_html_e('Close', 'ledger-direct'); ?></button>
+                        </dialog>
+
                         <details class="ld-exchange">
                             <summary><?php esc_html_e('Paying from an exchange?', 'ledger-direct'); ?></summary>
                             <p><?php esc_html_e("The destination tag is required, and the amount must still arrive in full after the exchange's fee.", 'ledger-direct'); ?></p>
@@ -289,18 +301,22 @@ if ($ld_error !== null) {
 
                     <aside class="ld-col ld-col--side" aria-label="<?php esc_attr_e('Pay with a wallet', 'ledger-direct'); ?>">
                         <details class="ld-qr" data-ld-qr-details open>
-                            <summary><span class="ld-qr-sum-open"><?php esc_html_e('Scan with a wallet app', 'ledger-direct'); ?></span><span class="ld-qr-sum-closed"><?php esc_html_e('Show QR code ▾', 'ledger-direct'); ?></span></summary>
+                            <summary><span class="ld-qr-sum-open"><?php esc_html_e('Scan with Xaman', 'ledger-direct'); ?></span><span class="ld-qr-sum-closed"><?php esc_html_e('Show QR code ▾', 'ledger-direct'); ?></span></summary>
                             <div class="ld-qr-box<?php echo $state === 'expired' ? ' is-void' : ''; ?>" data-ld-qr-box>
                                 <?php /* Server-rendered code of the same payment request, for a browser without scripts; the script redraws it. */ ?>
                                 <div data-ld-qr data-ld-qr-label="<?php esc_attr_e('QR code with address, destination tag and amount', 'ledger-direct'); ?>"><img src="<?php echo esc_attr($v['qr_data_uri']); ?>" alt="<?php esc_attr_e('QR code with address, destination tag and amount', 'ledger-direct'); ?>" width="220" height="220"></div>
                                 <div class="ld-qr-void" data-ld-qr-void <?php echo $state !== 'expired' ? 'hidden' : ''; ?>><?php esc_html_e('Expired – please request a new amount', 'ledger-direct'); ?></div>
                             </div>
-                            <p class="ld-qr-caption"><?php echo $isXahau ? esc_html__('Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending.', 'ledger-direct') : esc_html__('Scan with Xaman or another XRPL wallet. Address, destination tag and amount are filled in – please check them before sending.', 'ledger-direct'); ?></p>
+                            <p class="ld-qr-caption"><?php echo $isXahau ? esc_html__('Scan with Xaman. Address, destination tag and amount are filled in, and Xaman offers to switch to the Xahau network if it is set to another one – please check them before sending.', 'ledger-direct') : esc_html__('Scan with Xaman. Address, destination tag and amount are filled in – please check them before sending.', 'ledger-direct'); ?></p>
                         </details>
 
                         <?php /* Browser wallets, loaded only on click. Every sentence the module can show is rendered here. */ ?>
                         <div data-ld-wallet-section <?php echo $has_wallet_app ? 'data-ld-wallet-mobile' : ''; ?> <?php echo $state === 'expired' ? 'hidden' : ''; ?>>
                             <div class="ld-or"><?php esc_html_e('or', 'ledger-direct'); ?></div>
+                            <?php if ($v['wc_project'] !== '') { ?>
+                                <?php /* WalletConnect connects a wallet app, usually on a phone: its own button, on every width. */ ?>
+                                <button type="button" class="ld-btn ld-btn--secondary ld-btn--block" data-ld-wallet-connect><?php esc_html_e('Pay with a wallet app (WalletConnect)', 'ledger-direct'); ?></button>
+                            <?php } ?>
                             <div data-ld-wallet-desktop>
                                 <button type="button" class="ld-btn ld-btn--secondary ld-btn--block" data-ld-wallet-toggle aria-expanded="false" aria-controls="ld-wallets">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20"/></svg>
@@ -313,8 +329,8 @@ if ($ld_error !== null) {
                                     <p class="ld-hint" data-ld-wallet-status="hint" hidden><?php esc_html_e('The wallet fills in the payment. You confirm it there.', 'ledger-direct'); ?></p>
                                 </div>
                             </div>
-                            <?php if ($has_wallet_app) { ?>
-                                <button type="button" class="ld-btn ld-btn--secondary ld-btn--block" data-ld-wallet-app data-ld-wallet-id="<?php echo $v['xaman_key'] !== '' ? 'xaman' : 'walletconnect'; ?>"><?php esc_html_e('Open in wallet app', 'ledger-direct'); ?></button>
+                            <?php if ($v['xaman_key'] !== '') { ?>
+                                <button type="button" class="ld-btn ld-btn--secondary ld-btn--block" data-ld-wallet-app data-ld-wallet-id="xaman"><?php esc_html_e('Open in wallet app', 'ledger-direct'); ?></button>
                             <?php } ?>
                             <p class="ld-hint" data-ld-wallet-message aria-live="polite" hidden></p>
                             <span hidden data-ld-wallet-text="found"><?php esc_html_e('found', 'ledger-direct'); ?></span>
