@@ -188,7 +188,7 @@ footer are not loaded, only WordPress's head and footer hooks run.
 Behaviour and design come from [`@ledger-direct/payment-ui`](https://github.com/ledger-direct/ledger-direct-payment-ui),
 the package every LedgerDirect plugin shares: the five payment states, the countdown, polling,
 copy buttons, the QR code with address, destination tag and amount, and browser wallets over
-XRPL Connect (Crossmark, GemWallet, MetaMask Snap, Ledger, Otsu, Xyra; Xaman and WalletConnect
+XRPL Connect (Crossmark, GemWallet, MetaMask Snap, Ledger, Otsu, Xyra, and Joey through the package's own adapter; Xaman and WalletConnect
 with the identifiers above). The plugin has no build step for it: it ships the package's built
 files under `public/`.
 

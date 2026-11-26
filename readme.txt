@@ -72,6 +72,9 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 
 == Changelog ==
 
+= Unreleased =
+* The payment page uses @ledger-direct/payment-ui 0.5.0 instead of 0.4.2. Joey Wallet's browser extension is offered in the wallet list when it is installed; it connects on the page's network, pays nothing on another, and a connection Joey ends (access revoked, account gone, network switched) is forgotten, so the next click asks Joey again. A wallet error (another network, a wallet that does not respond, a failed payment) now shows as a warning box instead of grey text under the hint, where it went unseen. The wallet script is unchanged; the page script and the stylesheet change.
+
 = 1.7.3 =
 * The tag 1.7.2 was set on the commit before the release commit, so it carries version 1.7.1 and never reached WordPress.org; tags cannot be moved. 1.7.3 is the same code with its version in place.
 * The payment page uses @ledger-direct/payment-ui 0.4.2 instead of 0.4.0, which fixes partial payments in the wallet flow: after a partial payment, a wallet button opens the payment for the rest instead of reloading the page again and again; an XRP payment whose amount changed while the wallet was connecting reloads instead of signing the old amount; a page that turned paid or expired meanwhile signs nothing; and an older status answer arriving late no longer turns the page back. After payment the page goes to the order confirmation once. The wallet script and the stylesheet are unchanged.
@@ -117,7 +120,7 @@ The payment page's script and stylesheet (`public/js/ledger-direct-payment-ui/pa
 = 1.3.0 =
 * The payment page is redesigned on the shared package @ledger-direct/payment-ui: the amount to send is the largest thing on the page with a copy button, the receiving address, the destination tag (marked as required) and, for tokens, the issuer are numbered fields with copy buttons, a countdown with a bar, one column on phones, dark mode follows the system.
 * One QR code with the receiving address, the destination tag and the amount (for tokens also currency and issuer); a server-rendered code stays for browsers without JavaScript.
-* Browser wallets over XRPL Connect (Crossmark, GemWallet, MetaMask Snap, Ledger, Otsu, Xyra) when detected; Xaman and WalletConnect when the merchant enters their public identifier in the settings. The wallet library is loaded only when the wallet list is opened.
+* Browser wallets over XRPL Connect (Crossmark, GemWallet, MetaMask Snap, Ledger, Otsu, Xyra, Joey) when detected; Xaman and WalletConnect when the merchant enters their public identifier in the settings. The wallet library is loaded only when the wallet list is opened.
 * New settings: the logo of the payment page (site logo, a picture from the media library, or a monogram), an accent colour (refused when too light for white text), the Xaman API key and the WalletConnect project id.
 * The plugin's scripts and styles load on the payment page only, no longer on every page of the site.
 * Icons for XRP, RLUSD and USDC next to the payment options in the checkout.
