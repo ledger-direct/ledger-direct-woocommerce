@@ -156,7 +156,7 @@ WooCommerce → Settings → Payments → LedgerDirect → Manage:
 | XRP quote expiry | How long a quoted amount stays fixed, in minutes. Default 15. |
 | Payment page: logo | What the payment page shows in its header: the site logo, a picture from the media library (its attachment ID or URL in the field below), or the first letter of the site name. |
 | Payment page: accent colour | The one colour of the payment page — buttons, countdown bar, destination tag — with white text on it, so it must be dark enough (contrast 4.5:1). Default `#1f5eff`; a lighter colour is refused on save. |
-| Payment page: Xaman API key, WalletConnect project id | Public identifiers, optional. With the Xaman key, customers on a phone get an "Open in wallet app" button. With the WalletConnect project id, every customer gets a "Pay with a wallet app (WalletConnect)" button: it shows a code to scan with a wallet app such as Joey Wallet, and the app is told the shop's name and site icon. Restrict them to your shop domain in the respective dashboard. |
+| Payment page: Xaman API key, WalletConnect project id | Public identifiers, optional. With the Xaman key, customers on a phone get an "Open in wallet app" button. With the WalletConnect project id, every customer paying on the XRP Ledger gets a "Pay with a wallet app (WalletConnect)" button (the wallet section is the XRP Ledger's: none on Xahau, and none once the amount has expired): it shows a code to scan with a wallet app such as Joey Wallet, and the app is told the shop's name and site icon. Restrict them to your shop domain in the respective dashboard. |
 
 Issuer addresses are not configurable. They are fixed in the core: a wrong issuer would send
 customer funds to a dead trustline.
