@@ -137,7 +137,7 @@ class LedgerDirectAdmin
             ConfigurationService::CONFIG_KEY_WALLETCONNECT_PROJECT_ID => [
                 'title'       => __('Payment page: WalletConnect project id', 'ledger-direct'),
                 'type'        => 'text',
-                'description' => __('The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key.', 'ledger-direct'),
+                'description' => __('Your shop\'s own project ID from dashboard.reown.com (WalletConnect), if you want to offer wallet apps over WalletConnect. Public, not a secret; allow only your shop\'s domain there. Step by step: https://github.com/ledger-direct/ledger-direct-woocommerce#setting-up-walletconnect', 'ledger-direct'),
                 'default'     => '',
                 'desc_tip'    => true
             ]
