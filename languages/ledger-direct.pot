@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-26T20:04:21+00:00\n"
+"POT-Creation-Date: 2026-11-27T08:27:05+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ledger-direct\n"
@@ -184,7 +184,7 @@ msgid "Payment page: WalletConnect project id"
 msgstr ""
 
 #: includes/admin/class-ledger-direct-admin.php:140
-msgid "The project id from cloud.walletconnect.com, if you want to offer WalletConnect wallets. Public, like the Xaman key."
+msgid "Your shop's own project ID from dashboard.reown.com (WalletConnect), if you want to offer wallet apps over WalletConnect. Public, not a secret; allow only your shop's domain there. Step by step: https://github.com/ledger-direct/ledger-direct-woocommerce#setting-up-walletconnect"
 msgstr ""
 
 #: includes/admin/class-ledger-direct-admin.php:189
