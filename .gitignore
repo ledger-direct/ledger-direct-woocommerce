@@ -29,3 +29,6 @@ TODO.md
 # Handover documents (working input for Claude Code sessions, not part of the plugin)
 /Handover-*.md
 /CLAUDE.md
+
+# The decision register, cloned by bin/decisions. It is private: never commit it.
+/.decisions/

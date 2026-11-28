@@ -150,7 +150,7 @@ rsync "${RSYNC_ARGS[@]}" "${PLUGIN_DIR}/" "${DIST_DIR}/"
 # what Composer fetches from Packagist; a path-repository install copies a
 # package directory as it is, ignored files included, and 1.1.0 went out
 # with a handover document under vendor/ that way.
-STRAY_DOCS=$(find "${DIST_DIR}" -type f \( -name 'Handover-*.md' -o -name 'LedgerDirect-*.md' -o -name 'CLAUDE.md' -o -name 'MUSINGS.md' \) -print)
+STRAY_DOCS=$(find "${DIST_DIR}" \( -type f \( -name 'Handover-*.md' -o -name 'LedgerDirect-*.md' -o -name 'CLAUDE.md' -o -name 'MUSINGS.md' -o -name 'AGENTS.md' -o -name 'APPLICABLE.md' \) -o -type d -name '.decisions' \) -print)
 if [[ -n "${STRAY_DOCS}" ]]; then
   err "Developer documents in the dist tree; reinstall the package they belong to from Packagist:"
   echo "${STRAY_DOCS}"
