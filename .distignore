@@ -40,7 +40,7 @@ Thumbs.db
 /README.md
 /TODO.md
 
-# The decision register: its private clone and the local snapshot (bin/decisions), the rules for agents
+# The decision register: its private clone (bin/decisions) and the rules for agents
 /.decisions
 /AGENTS.md
 /docs/adr
