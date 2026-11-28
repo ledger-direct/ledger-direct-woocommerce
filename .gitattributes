@@ -41,3 +41,5 @@ scoper.inc.php export-ignore
 LedgerDirect-*.md export-ignore
 CLAUDE.md export-ignore
 .coderabbit.yaml export-ignore
+AGENTS.md             export-ignore
+docs/adr/             export-ignore

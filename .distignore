@@ -40,5 +40,10 @@ Thumbs.db
 /README.md
 /TODO.md
 
+# The decision register: its private clone and the local snapshot (bin/decisions), the rules for agents
+/.decisions
+/AGENTS.md
+/docs/adr
+
 /vendor/psr/http-message/docs
 /scoper.inc.php
